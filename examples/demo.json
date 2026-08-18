@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "projectName": "MindDeck Demo",
+  "id": "root",
+  "title": "代码之外，研发真正的价值在哪里？",
+  "text": "少做自以为是的创新，多做脚踏实地、真正有人用的功能。",
+  "collapsed": false,
+  "mapLayout": "balanced",
+  "pos": {"x": 0, "y": 0},
+  "presentationOrder": [],
+  "children": [
+    {"id":"n1","title":"为什么只写代码不够","text":"代码只是实现手段。","collapsed":false,"pos":{"x":330,"y":-100},"children":[],"slideElements":[]},
+    {"id":"n2","title":"真正的需求在哪里","text":"通过二手描述很难真正理解现场。","collapsed":false,"pos":{"x":-330,"y":100},"children":[],"slideElements":[]}
+  ],
+  "slideElements": []
+}
