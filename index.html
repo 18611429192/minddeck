@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MindDeck V9.5 RC - 发布候选版</title>
+<title>MindDeck V9.5.1 RC - 发布候选版</title>
 <style>
 :root{
   --app-bg:#f5f7fb;--panel:#fff;--text:#1f2329;--muted:#6f7785;--line:#bac2cf;
@@ -654,9 +654,95 @@ body[data-ui-theme="minimal"]{--accent:#252b34;--accent-soft:#eef0f3;--app-bg:#f
 body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health-actions{grid-template-columns:repeat(3,1fr)}
 @media(max-width:900px){.save-status{display:none}.health-actions{grid-template-columns:repeat(2,1fr)}}
 
-/* V9.5 RC first-run guide */
+/* V9.5.1 RC first-run guide */
 #welcomeOverlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(14,19,27,.48);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}#welcomeOverlay.open{display:flex}.welcome-card{width:min(720px,94vw);max-height:88vh;overflow:auto;background:#fff;border:1px solid rgba(222,227,235,.95);border-radius:22px;padding:22px;box-shadow:0 28px 80px rgba(17,24,38,.28);color:#232a35}.welcome-head{display:flex;align-items:flex-start;gap:16px}.welcome-head>div{flex:1}.welcome-kicker{display:inline-block;font-size:10px;font-weight:800;color:#315efb;background:#edf2ff;border-radius:999px;padding:5px 8px}.welcome-head h2{font-size:24px;line-height:1.35;margin:9px 0 0;letter-spacing:-.5px}.welcome-close{width:34px;height:34px;border:0;border-radius:10px;background:#f1f3f6;font-size:21px;color:#6e7784;cursor:pointer}.welcome-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.welcome-step{padding:14px;border:1px solid #e2e6ed;border-radius:15px;background:#fafbfd}.welcome-step>span{display:flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:9px;background:#315efb;color:#fff;font-size:12px;font-weight:900}.welcome-step b{display:block;font-size:13px;margin-top:10px}.welcome-step p{font-size:10px;line-height:1.65;color:#76808e;margin:5px 0 0}.welcome-foot{display:flex;align-items:center;gap:8px;border-top:1px solid #edf0f4;padding-top:14px}.welcome-foot label{font-size:10px;color:#737c89}.welcome-foot .btn{min-height:38px}body[data-ui-theme="dark"] .welcome-card{background:#1d242e;border-color:#3a4451;color:#e8edf3}body[data-ui-theme="dark"] .welcome-step{background:#171d25;border-color:#36404d}body[data-ui-theme="dark"] .welcome-step p,body[data-ui-theme="dark"] .welcome-foot label{color:#9ca7b5}
 @media(max-width:700px){#welcomeOverlay{padding:10px}.welcome-card{padding:16px;border-radius:18px;max-height:92vh}.welcome-head h2{font-size:19px}.welcome-steps{grid-template-columns:1fr;gap:7px;margin:14px 0}.welcome-step{display:grid;grid-template-columns:32px 1fr;gap:8px;padding:10px}.welcome-step>span{margin-top:2px}.welcome-step b{margin-top:1px}.welcome-step p{margin-top:3px}.welcome-foot{flex-wrap:wrap}.welcome-foot label{width:100%;margin-bottom:4px}.welcome-foot .spacer{display:none}.welcome-foot .btn{flex:1}}
+
+
+/* V9.5.1: presentation must be visually clean */
+body.presentation-mode .topbar,
+body.presentation-mode .map-panel,
+body.presentation-mode #healthPanel,
+body.presentation-mode #welcomeOverlay,
+body.presentation-mode #mobileMainBar,
+body.presentation-mode #mobileNodeContext,
+body.presentation-mode #mobileMainSheet,
+body.presentation-mode #mobileEditorBar,
+body.presentation-mode #mobileActionSheet,
+body.presentation-mode #propPanel,
+body.presentation-mode .master-panel-empty,
+body.presentation-mode .legend{
+  display:none!important;
+}
+body.presentation-mode #app{
+  padding:0!important;
+}
+body.presentation-mode .workspace,
+body.presentation-mode #presentShell{
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+}
+
+/* Collapsible editing side panels */
+.map-panel.panel-collapsed{
+  transform:translateX(calc(100% + 28px))!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+#panelRestoreHandle{
+  display:none;
+  position:fixed;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:95;
+  width:30px;
+  height:82px;
+  border:1px solid #d9e0e9;
+  border-right:0;
+  border-radius:12px 0 0 12px;
+  background:rgba(255,255,255,.96);
+  color:#606a78;
+  box-shadow:0 8px 24px rgba(26,34,48,.12);
+  cursor:pointer;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:800;
+  backdrop-filter:blur(14px);
+}
+#panelRestoreHandle.open{display:flex}
+body.presentation-mode #panelRestoreHandle{display:none!important}
+#workspace:fullscreen .topbar,
+#workspace:fullscreen .map-panel,
+#workspace:fullscreen .legend{display:none!important}
+
+#editorPropRestoreHandle{
+  display:none;
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:70;
+  width:30px;
+  height:82px;
+  border:1px solid #d9e0e9;
+  border-right:0;
+  border-radius:12px 0 0 12px;
+  background:rgba(255,255,255,.96);
+  color:#606a78;
+  box-shadow:0 8px 24px rgba(26,34,48,.12);
+  cursor:pointer;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:800;
+}
+#editorPropRestoreHandle.open{display:flex}
+@media(max-width:700px),(pointer:coarse){
+  #panelRestoreHandle,#editorPropRestoreHandle{display:none!important}
+}
 
 </style>
 </head>
@@ -665,7 +751,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
   <div class="topbar">
     <div class="brand">
       <span class="brand-mark">M</span>
-      <span class="brand-copy">MindDeck V9.5 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small></span>
+      <span class="brand-copy">MindDeck V9.5.1 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small></span>
     </div>
 
     <div class="mode-switch">
@@ -705,7 +791,8 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
     <div class="zoom-status" id="zoomStatus">100%</div>
   </div>
 
-  <div class="workspace" id="workspace">
+  <button id="panelRestoreHandle" title="展开侧边栏">‹</button>
+<div class="workspace" id="workspace">
     <div id="viewport">
       <div id="world">
         <svg id="edges" viewBox="-6000 -6000 12000 12000"></svg>
@@ -905,6 +992,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
 
         <div id="propPanel">
           <button class="btn icon mobile-prop-close" id="mobilePropClose" style="position:absolute;right:10px;top:9px">×</button>
+          <button class="btn icon" id="desktopPropCollapse" title="收起属性栏" style="position:absolute;right:44px;top:9px">›</button>
           <h3 id="propTitle">元素属性</h3>
           <div id="propContent"></div>
         </div>
@@ -915,6 +1003,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
           <div id="mobileSheetContent"></div>
         </div>
 
+        <button id="editorPropRestoreHandle" title="展开属性栏">‹</button>
         <div id="mobileEditorBar">
           <button class="mtool" id="mobileInsertBtn"><span class="ico">＋</span><span>插入</span></button>
           <button class="mtool" id="mobileMultiBtn"><span class="ico">▣</span><span>多选</span></button>
@@ -967,7 +1056,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
 
     <div id="welcomeOverlay" aria-hidden="true">
       <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.5 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
+        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.5.1 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
         <div class="welcome-steps">
           <div class="welcome-step"><span>1</span><div><b>先整理结构</b><p>在思维导图里建立主题、分支和层级。折叠节点时，布局和演示序列都会跟着变化。</p></div></div>
           <div class="welcome-step"><span>2</span><div><b>再设计页面</b><p>演示编辑模式下，选中节点后进入 16:9 页面。文字、图片、视频和形状都可以自由排版。</p></div></div>
@@ -1540,6 +1629,41 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
   function hideMobileNodeContext(){
     document.getElementById("mobileNodeContext")?.classList.remove("open");
   }
+
+  let activeCollapsedMapPanelId=null;
+  function collapseMapPanel(id){
+    const p=document.getElementById(id);
+    if(!p)return;
+    p.classList.add("panel-collapsed");
+    activeCollapsedMapPanelId=id;
+    const h=document.getElementById("panelRestoreHandle");
+    if(h)h.classList.add("open");
+  }
+  function restoreMapPanel(){
+    if(!activeCollapsedMapPanelId)return;
+    const p=document.getElementById(activeCollapsedMapPanelId);
+    if(p){p.classList.remove("panel-collapsed");p.classList.add("open")}
+    activeCollapsedMapPanelId=null;
+    document.getElementById("panelRestoreHandle")?.classList.remove("open");
+  }
+  function collapseEditorPropPanel(){
+    mobilePropOpen=false;
+    propPanel.classList.remove("open");
+    propPanel.classList.add("panel-collapsed");
+    document.getElementById("editorPropRestoreHandle")?.classList.add("open");
+    fitEditorStage(false);
+  }
+  function restoreEditorPropPanel(){
+    propPanel.classList.remove("panel-collapsed");
+    if(selectedEls.size===1){
+      mobilePropOpen=true;
+      showPropertyPanel([...selectedEls][0]);
+      propPanel.classList.add("open");
+    }
+    document.getElementById("editorPropRestoreHandle")?.classList.remove("open");
+    fitEditorStage(false);
+  }
+
   function updateMobileNodeContext(){
     const bar=document.getElementById("mobileNodeContext");
     if(!bar)return;
@@ -1682,7 +1806,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
   }
   function focusNodeTitle(){
     if(appMode==="mindmap"){beginInlineMapEdit(selectedNodeId,"title");return}
-    nodePanel.classList.add("open");
+    document.getElementById("nodePanel")?.classList.remove("panel-collapsed");document.getElementById("panelRestoreHandle")?.classList.remove("open");activeCollapsedMapPanelId=null;nodePanel.classList.add("open");
     const input=document.getElementById("nodeTitle");input.focus();input.select();
   }
 
@@ -1786,7 +1910,13 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
   function selectNode(id){
     selectedNodeId=id;const n=findNode(id);
     document.getElementById("nodeTitle").value=n.title||"";document.getElementById("nodeText").value=n.text||"";
-    if(appMode==="presentation"&&window.innerWidth>700)nodePanel.classList.add("open");else nodePanel.classList.remove("open");
+    if(appMode==="presentation"&&window.innerWidth>700){
+      if(activeCollapsedMapPanelId==="nodePanel"){
+        nodePanel.classList.add("panel-collapsed");
+        nodePanel.classList.remove("open");
+        document.getElementById("panelRestoreHandle")?.classList.add("open");
+      }else nodePanel.classList.add("open");
+    }else nodePanel.classList.remove("open");
     orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");closeMobileMainSheet();
     document.querySelectorAll(".node").forEach(el=>el.classList.toggle("selected",el.dataset.id===id));
     updateMobileNodeContext();
@@ -2216,6 +2346,9 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
       if(isMobileEditor()){
         showPropertyPanel(id);
         propPanel.classList.toggle("open",mobilePropOpen);
+      }else if(propPanel.classList.contains("panel-collapsed")){
+        propPanel.classList.remove("open");
+        document.getElementById("editorPropRestoreHandle")?.classList.add("open");
       }else showPropertyPanel(id);
     }else{
       mobilePropOpen=false;propPanel.classList.remove("open");
@@ -2637,7 +2770,7 @@ body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health
 
   // presentation
   async function enterPresentation(){
-    presentation=true;tocTemporaryOverride=null;document.getElementById("mobileNodeContext")?.classList.remove("open");closeMobileMainSheet();document.body.classList.add("presentation-mode");nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
+    presentation=true;tocTemporaryOverride=null;document.querySelectorAll(".map-panel.open").forEach(p=>p.classList.remove("open"));document.getElementById("healthPanel")?.classList.remove("open");document.getElementById("welcomeOverlay")?.classList.remove("open");document.getElementById("mobileNodeContext")?.classList.remove("open");closeMobileMainSheet();document.body.classList.add("presentation-mode");nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
     presentList=effectiveOrder();presentIndex=Math.max(0,presentList.indexOf(selectedNodeId));if(presentIndex<0)presentIndex=0;
     applyTocSide();renderToc();renderPresentSlide();document.getElementById("presentShell").classList.add("open");fitPresentStage();
     try{if(workspace.requestFullscreen)await workspace.requestFullscreen()}catch(e){}
@@ -2774,7 +2907,7 @@ button,select{font:inherit}.hidden{display:none!important}
 .anim-none{animation:none}.anim-fade{animation:f .5s ease both}.anim-soft{animation:s .65s cubic-bezier(.2,.8,.2,1) both}.anim-up{animation:u .5s cubic-bezier(.2,.8,.2,1) both}.anim-left{animation:l .5s cubic-bezier(.2,.8,.2,1) both}.anim-right{animation:r .5s cubic-bezier(.2,.8,.2,1) both}.anim-zoom{animation:z .46s cubic-bezier(.2,.8,.2,1) both}@keyframes f{from{opacity:0}to{opacity:1}}@keyframes s{from{opacity:0;filter:blur(7px);transform:scale(.985)}to{opacity:1;filter:none;transform:none}}@keyframes u{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}@keyframes l{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}@keyframes r{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}@keyframes z{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
 #tocToggle{position:fixed;left:10px;top:64px;z-index:55;width:40px;height:40px;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(10,14,20,.66);backdrop-filter:blur(8px);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18)}#fullBtn{position:fixed;right:10px;bottom:10px;z-index:55;border:1px solid rgba(255,255,255,.13);background:rgba(10,14,20,.55);color:#d8dde6;border-radius:9px;padding:7px 9px;font-size:11px;backdrop-filter:blur(8px);cursor:pointer}
 #toast{position:fixed;left:50%;top:66px;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 13px;border-radius:9px;font-size:12px;opacity:0;transition:.2s;z-index:100;pointer-events:none}#toast.show{opacity:1}
-body.kind-presentation #top{display:none}body.kind-presentation .view{top:0}body.kind-presentation #tocToggle{top:10px}body.kind-mindmap #switchBox{display:none}body.kind-mindmap .presentOnly{display:none!important}body.kind-presentation .mapOnly{display:none!important}
+body.kind-presentation #top{display:none}body.kind-presentation .view{top:0}body.kind-presentation #tocToggle{top:10px}:fullscreen #top{display:none!important}:fullscreen .view{top:0!important}:fullscreen #fullBtn{display:none!important}body.kind-mindmap #switchBox{display:none}body.kind-mindmap .presentOnly{display:none!important}body.kind-presentation .mapOnly{display:none!important}
 body[data-ui-theme="dark"] #top{background:#171d25;border-color:#313a46;color:#e8edf4}body[data-ui-theme="dark"] #mapVp{background:radial-gradient(circle at 1px 1px,rgba(116,129,147,.25) 1px,transparent 1.2px),linear-gradient(180deg,#171d25,#131920);background-size:24px 24px,100% 100%}body[data-ui-theme="dark"] .node{background:#222a35;border-color:#3b4654;color:#edf1f7}body[data-ui-theme="dark"] .ndesc{color:#9da8b7}body[data-ui-theme="dark"] .tool,body[data-ui-theme="dark"] select{background:#222a35;border-color:#3b4654;color:#d9e0ea}body[data-ui-theme="business"] #mapVp{background:linear-gradient(180deg,#edf2f7,#e5ebf2)}body[data-ui-theme="business"] .node{border-radius:10px;border-color:#bdcada;box-shadow:0 5px 16px rgba(31,52,78,.08)}body[data-ui-theme="minimal"] #mapVp{background:#fafafa}body[data-ui-theme="minimal"] .node{border-radius:8px;box-shadow:none}body[data-ui-theme="minimal"] #top{box-shadow:none;background:#fff}\n@media(max-width:900px),(pointer:coarse){#pLayout,#pLayout.right{grid-template-columns:minmax(0,1fr)}#pLayout:not(.toc-hidden) #toc{display:block;position:fixed;left:0;top:0;bottom:0;width:min(84vw,310px);z-index:48;box-shadow:14px 0 38px rgba(0,0,0,.42);border-right:1px solid rgba(255,255,255,.08)}#pLayout.right:not(.toc-hidden) #toc{left:auto;right:0;box-shadow:-14px 0 38px rgba(0,0,0,.42);border-left:1px solid rgba(255,255,255,.08)}#stageWrap{grid-column:1!important;grid-row:1!important}.tocItem{min-height:43px;font-size:13px}.foldBtn{width:30px;height:30px}.tocAct{min-height:31px}}
 @media(max-width:650px){#top{height:52px;padding:5px 6px;gap:5px;overflow-x:auto}.brand small,.tip{display:none}.brand{font-size:12px}.switch{min-width:185px;flex:1}.switch button{flex:1;font-size:10px;padding:6px}.tool{font-size:10px;padding:6px 7px}.view{top:52px}.node{width:188px;min-height:74px;padding:10px 11px}.node.root{width:218px}.ntitle{font-size:13px}.root .ntitle{font-size:17px}.ndesc{font-size:10px}#tocToggle{top:60px}body.kind-presentation #tocToggle{top:10px}}
 </style></head><body data-ui-theme="${portableTheme}">
@@ -2806,8 +2939,8 @@ function fitStage(){const r=document.getElementById("stageWrap").getBoundingClie
 function switchMode(m){if(KIND!=="fusion")m=KIND==="presentation"?"presentation":"map";mode=m;document.getElementById("mapView").classList.toggle("on",m==="map");document.getElementById("presentationView").classList.toggle("on",m==="presentation");document.getElementById("mapMode").classList.toggle("on",m==="map");document.getElementById("presentMode").classList.toggle("on",m==="presentation");document.getElementById("tocToggle").classList.toggle("hidden",m!=="presentation");document.getElementById("fullBtn").classList.toggle("hidden",m!=="presentation");if(m==="map"){renderMap();setTimeout(fitMap,20)}else{rebuildPresentation(currentP());if(data.master&&data.master.tocSide==="right")document.getElementById("pLayout").classList.add("right");renderPresentation();applyToc()}}
 function exportJson(){const copy=JSON.parse(JSON.stringify(data));if(KIND==="mindmap"){allWalk(copy,function(n){delete n.slideElements});delete copy.master;delete copy.presentationOrder}const blob=new Blob([JSON.stringify(copy,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=(data.projectName||data.title||"minddeck")+(KIND==="mindmap"?"-思维导图":"")+".json";a.click();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
 document.getElementById("mapMode").onclick=function(){switchMode("map")};document.getElementById("presentMode").onclick=function(){switchMode("presentation")};document.getElementById("fitBtn").onclick=fitMap;document.getElementById("layoutSel").value=data.mapLayout||"radial";document.getElementById("layoutSel").onchange=function(e){data.mapLayout=e.target.value;autoLayout()};document.body.dataset.uiTheme=data.uiTheme||"light";document.getElementById("themeSel").value=data.uiTheme||"light";document.getElementById("themeSel").onchange=function(e){data.uiTheme=e.target.value;document.body.dataset.uiTheme=data.uiTheme;saveLocal()};document.getElementById("reflowBtn").onclick=autoLayout;document.getElementById("expandBtn").onclick=function(){setAllFold(false);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("collapseBtn").onclick=function(){setAllFold(true);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("exportMapBtn").onclick=exportJson;document.getElementById("tocToggle").onclick=toggleToc;document.getElementById("fullBtn").onclick=function(){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
-function editing(){const a=document.activeElement;return a&&(["INPUT","TEXTAREA","SELECT"].includes(a.tagName)||a.isContentEditable)}window.addEventListener("keydown",function(e){if(editing())return;if(mode==="presentation"){if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){e.preventDefault();pIndex=(pIndex+1)%pList.length;renderPresentation()}else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();pIndex=(pIndex-1+pList.length)%pList.length;renderPresentation()}else if(e.key==="t"||e.key==="T"){e.preventDefault();toggleToc()}return}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.length===1&&e.key!==" "){e.preventDefault();inlineEdit(sel,"title",e.key);return}if(e.key==="Tab"){e.preventDefault();if(e.shiftKey){const p=parent(sel);if(p){sel=p.id;renderMap()}}else addChild();return}if(e.key==="Enter"){e.preventDefault();addSibling();return}if(e.key===" "){e.preventDefault();const n=find(sel);if(n&&(n.children||[]).length){n.collapsed=!n.collapsed;saveLocal();renderMap()}return}if(e.key==="ArrowLeft"){e.preventDefault();const p=parent(sel);if(p){sel=p.id;renderMap()}return}if(e.key==="ArrowRight"){e.preventDefault();const n=find(sel);if(n&&n.collapsed&&(n.children||[]).length){n.collapsed=false;saveLocal();renderMap()}if(n&&(n.children||[]).length){sel=n.children[0].id;renderMap()}return}if(e.key==="F2"){e.preventDefault();inlineEdit(sel,"title");return}if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();delNode()}});
-const sw=document.getElementById("stageWrap");sw.addEventListener("touchstart",function(e){if(mode==="presentation"&&e.touches.length===1&&!e.target.closest("video")&&!e.target.closest("#toc")){const t=e.touches[0];swipe={x:t.clientX,y:t.clientY,time:Date.now()}}},{passive:true});sw.addEventListener("touchend",function(e){if(!swipe||!e.changedTouches.length)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y,dt=Date.now()-swipe.time;swipe=null;if(dt<900&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25){pIndex=(pIndex+(dx<0?1:-1)+pList.length)%pList.length;renderPresentation()}},{passive:true});window.addEventListener("resize",function(){if(mode==="map")fitMap();else{if(tocOverride===null)applyToc();else fitStage()}});
+function editing(){const a=document.activeElement;return a&&(["INPUT","TEXTAREA","SELECT"].includes(a.tagName)||a.isContentEditable)}window.addEventListener("keydown",function(e){if(editing())return;if(mode==="presentation"){if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "||e.key==="PageDown"){e.preventDefault();pIndex=(pIndex+1)%pList.length;renderPresentation()}else if(e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="PageUp"){e.preventDefault();pIndex=(pIndex-1+pList.length)%pList.length;renderPresentation()}else if(e.key==="t"||e.key==="T"){e.preventDefault();toggleToc()}return}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.length===1&&e.key!==" "){e.preventDefault();inlineEdit(sel,"title",e.key);return}if(e.key==="Tab"){e.preventDefault();if(e.shiftKey){const p=parent(sel);if(p){sel=p.id;renderMap()}}else addChild();return}if(e.key==="Enter"){e.preventDefault();addSibling();return}if(e.key===" "){e.preventDefault();const n=find(sel);if(n&&(n.children||[]).length){n.collapsed=!n.collapsed;saveLocal();renderMap()}return}if(e.key==="ArrowLeft"){e.preventDefault();const p=parent(sel);if(p){sel=p.id;renderMap()}return}if(e.key==="ArrowRight"){e.preventDefault();const n=find(sel);if(n&&n.collapsed&&(n.children||[]).length){n.collapsed=false;saveLocal();renderMap()}if(n&&(n.children||[]).length){sel=n.children[0].id;renderMap()}return}if(e.key==="F2"){e.preventDefault();inlineEdit(sel,"title");return}if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();delNode()}});
+const sw=document.getElementById("stageWrap");sw.addEventListener("touchstart",function(e){if(mode==="presentation"&&e.touches.length===1&&!e.target.closest("video")&&!e.target.closest("#toc")){const t=e.touches[0];swipe={x:t.clientX,y:t.clientY,time:Date.now()}}},{passive:true});sw.addEventListener("touchend",function(e){if(!swipe||!e.changedTouches.length)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y,dt=Date.now()-swipe.time;swipe=null;if(dt<900&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25){pIndex=(pIndex+(dx<0?1:-1)+pList.length)%pList.length;renderPresentation()}},{passive:true});let portableWheelLock=false;window.addEventListener("wheel",function(e){if(mode!=="presentation")return;if(e.target&&e.target.closest&&e.target.closest("#toc,video,input,textarea,select,[contenteditable='true']"))return;if(Math.abs(e.deltaY)<12&&Math.abs(e.deltaX)<12)return;e.preventDefault();if(portableWheelLock)return;portableWheelLock=true;const d=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;pIndex=(pIndex+(d>0?1:-1)+pList.length)%pList.length;renderPresentation();setTimeout(function(){portableWheelLock=false},420)},{passive:false});window.addEventListener("resize",function(){if(mode==="map")fitMap();else{if(tocOverride===null)applyToc();else fitStage()}});
 switchMode(mode);
 __SCRIPT_END__</body></html>`;
     return doc.replace("__SCRIPT_END__","</scr"+"ipt>");
@@ -2920,8 +3053,8 @@ __SCRIPT_END__</body></html>`;
     if(cfg.fusionMode==="fusion")exportFusionFiles();
     else appMode==="mindmap"?exportStandaloneMindmap():exportPresentationFiles();
   }
-  function openOrderPanel(){renderOrderPanel();hideMobileNodeContext();orderPanel.classList.add("open");nodePanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open")}
-  function openExportSettingsPanel(){renderExportSettings();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open");document.getElementById("exportSettingsPanel").classList.add("open")}
+  function openOrderPanel(){renderOrderPanel();hideMobileNodeContext();document.getElementById("orderPanel")?.classList.remove("panel-collapsed");document.getElementById("panelRestoreHandle")?.classList.remove("open");activeCollapsedMapPanelId=null;orderPanel.classList.add("open");nodePanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open")}
+  function openExportSettingsPanel(){renderExportSettings();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open");document.getElementById("exportSettingsPanel")?.classList.remove("panel-collapsed");document.getElementById("panelRestoreHandle")?.classList.remove("open");activeCollapsedMapPanelId=null;document.getElementById("exportSettingsPanel").classList.add("open")}
   function openProjectPicker(){document.getElementById("importFile").click()}
   const APP_COMMANDS={
     fit:()=>fitAll(),
@@ -2948,7 +3081,16 @@ __SCRIPT_END__</body></html>`;
   }
 
   // bindings map
-  document.querySelectorAll("[data-close-panel]").forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.closePanel)?.classList.remove("open");updateMobileNodeContext()});
+  document.querySelectorAll("[data-close-panel]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.closePanel;
+    if(window.innerWidth>700)collapseMapPanel(id);
+    else document.getElementById(id)?.classList.remove("open");
+    updateMobileNodeContext();
+  });
+    document.getElementById("panelRestoreHandle").onclick=restoreMapPanel;
+  document.getElementById("editorPropRestoreHandle").onclick=restoreEditorPropPanel;
+  document.getElementById("desktopPropCollapse")?.addEventListener("click",collapseEditorPropPanel);
+
   document.getElementById("mobileMainSheetClose").onclick=closeMobileMainSheet;
   document.getElementById("mobileMainMore").onclick=openMobileMainSheet;
   document.getElementById("mobileMainFit").onclick=()=>{closeMobileMainSheet();runAppCommand("fit")};
@@ -2956,7 +3098,7 @@ __SCRIPT_END__</body></html>`;
   document.getElementById("mobileMainPage").onclick=()=>runAppCommand("page");
   document.getElementById("mobileMainPresent").onclick=()=>runAppCommand("present");
   document.getElementById("mobileEditPageBtn").onclick=()=>runAppCommand("page");
-  document.getElementById("mobileNodeDetailBtn").onclick=()=>{closeMobileMainSheet();hideMobileNodeContext();nodePanel.classList.add("open")};
+  document.getElementById("mobileNodeDetailBtn").onclick=()=>{closeMobileMainSheet();hideMobileNodeContext();document.getElementById("nodePanel")?.classList.remove("panel-collapsed");document.getElementById("panelRestoreHandle")?.classList.remove("open");activeCollapsedMapPanelId=null;nodePanel.classList.add("open")};
   document.getElementById("mobileNodeChildBtn").onclick=()=>runAppCommand("add");
   document.getElementById("mobileNodeContextClose").onclick=()=>document.getElementById("mobileNodeContext").classList.remove("open");
 
@@ -3015,14 +3157,14 @@ __SCRIPT_END__</body></html>`;
 
   // editor bindings
   document.getElementById("mobileSheetClose").onclick=closeMobileEditorSheet;
-  document.getElementById("mobilePropClose").onclick=()=>{mobilePropOpen=false;propPanel.classList.remove("open")};
+  document.getElementById("mobilePropClose").onclick=()=>{if(window.innerWidth>700)collapseEditorPropPanel();else{mobilePropOpen=false;propPanel.classList.remove("open")}};
   document.getElementById("mobileInsertBtn").onclick=()=>openMobileEditorSheet("insert");
   document.getElementById("mobileAlignBtn").onclick=()=>{if(selectedEls.size<2){toast("请先多选至少两个元素");return}openMobileEditorSheet("align")};
   document.getElementById("mobileLayerBtn").onclick=()=>{if(!selectedEls.size){toast("请先选择元素");return}openMobileEditorSheet("layer")};
   document.getElementById("mobilePropBtn").onclick=()=>{
     closeMobileEditorSheet();
     if(selectedEls.size!==1){toast("请先选择一个元素");return}
-    mobilePropOpen=true;showPropertyPanel([...selectedEls][0]);propPanel.classList.add("open");
+    propPanel.classList.remove("panel-collapsed");document.getElementById("editorPropRestoreHandle")?.classList.remove("open");mobilePropOpen=true;showPropertyPanel([...selectedEls][0]);propPanel.classList.add("open");
   };
   document.getElementById("mobileMultiBtn").onclick=()=>{
     mobileMultiSelectMode=!mobileMultiSelectMode;mobilePropOpen=false;propPanel.classList.remove("open");closeMobileEditorSheet();
@@ -3071,7 +3213,25 @@ __SCRIPT_END__</body></html>`;
     const a=document.activeElement;
     return !!a && (["INPUT","TEXTAREA","SELECT"].includes(a.tagName) || a.isContentEditable);
   }
-  window.addEventListener("keydown",e=>{
+  
+  let presentationWheelLocked=false;
+  function presentationStep(delta){
+    if(!presentation)return;
+    navigate(delta>0?1:-1);
+  }
+  window.addEventListener("wheel",e=>{
+    if(!presentation)return;
+    const target=e.target;
+    if(target?.closest?.(".toc,#toc,video,input,textarea,select,[contenteditable='true']"))return;
+    if(Math.abs(e.deltaY)<12 && Math.abs(e.deltaX)<12)return;
+    e.preventDefault();
+    if(presentationWheelLocked)return;
+    presentationWheelLocked=true;
+    const primary=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+    presentationStep(primary>0?1:-1);
+    setTimeout(()=>presentationWheelLocked=false,420);
+  },{passive:false});
+window.addEventListener("keydown",e=>{
     const mod=e.ctrlKey||e.metaKey;
     const textEditing=isTextEditingTarget();
 
@@ -3099,8 +3259,8 @@ __SCRIPT_END__</body></html>`;
     }
 
     if(presentation){
-      if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){e.preventDefault();navigate(1)}
-      if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();navigate(-1)}
+      if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "||e.key==="PageDown"){e.preventDefault();navigate(1)}
+      if(e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="PageUp"){e.preventDefault();navigate(-1)}
       if(e.key==="t"||e.key==="T"){e.preventDefault();togglePresentationToc()}
       return
     }
