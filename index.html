@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MindDeck V9.0 - 导出运行时功能对齐版</title>
+<title>MindDeck V9.5 RC - 发布候选版</title>
 <style>
 :root{
   --app-bg:#f5f7fb;--panel:#fff;--text:#1f2329;--muted:#6f7785;--line:#bac2cf;
@@ -632,6 +632,32 @@ button{cursor:pointer}
   .layout-select{max-width:105px;padding-left:6px;padding-right:20px}
 }
 
+/* V9.1 project health check */
+.health-summary{display:flex;align-items:center;gap:12px;padding:12px;margin:2px 0 12px;border:1px solid #e1e6ed;border-radius:14px;background:#f8f9fb}
+.health-score{width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#e9edf3;color:#56606f;font-size:18px;font-weight:900;flex:none}
+.health-summary.ok .health-score{background:#e8f7ef;color:#21794b}.health-summary.warn .health-score{background:#fff3db;color:#9a6511}.health-summary.fail .health-score{background:#fdebec;color:#b7363f}
+.health-meta{font-size:10px;color:#8e97a5;margin-top:4px;line-height:1.45}.health-check{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;padding:10px 4px;border-bottom:1px solid #edf0f4}.health-check:last-child{border-bottom:0}
+.health-icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}.health-check.pass .health-icon{background:#e8f7ef;color:#21794b}.health-check.warn .health-icon{background:#fff3db;color:#9a6511}.health-check.fail .health-icon{background:#fdebec;color:#b7363f}
+.health-name{font-size:12px;font-weight:800;color:#303846}.health-detail{font-size:10px;color:#7e8795;line-height:1.5;margin-top:3px;word-break:break-word}.health-actions{position:sticky;bottom:-18px;background:rgba(255,255,255,.98);padding-top:10px;padding-bottom:4px;border-top:1px solid #edf0f4}
+@media(max-width:700px){#healthPanel{max-height:68vh!important}.health-summary{padding:10px}.health-score{width:46px;height:46px}.health-check{padding:9px 2px}}
+
+/* V9.3 visual themes */
+.theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.theme-card{border:1px solid #dfe4eb;background:#fff;border-radius:13px;padding:9px;text-align:left;cursor:pointer;color:inherit}.theme-card:hover{border-color:#aebbef}.theme-card.active{border-color:#315efb;box-shadow:0 0 0 3px rgba(49,94,251,.10)}.theme-card b{display:block;font-size:12px;margin-top:7px}.theme-card small{display:block;font-size:9px;color:#8c95a2;margin-top:2px;line-height:1.4}.theme-preview{height:52px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(0,0,0,.06)}.theme-preview i{display:block;width:26px;height:22px;border-radius:6px;box-shadow:0 3px 9px rgba(0,0,0,.10)}.theme-preview.light{background:#f3f5f8}.theme-preview.light i{background:#fff}.theme-preview.dark{background:#151a22}.theme-preview.dark i{background:#252d39}.theme-preview.business{background:#e9eef6}.theme-preview.business i{background:#f8fafc;border:1px solid #b9c7da}.theme-preview.minimal{background:#fff}.theme-preview.minimal i{background:#fff;border:1px solid #d8dde5;box-shadow:none}
+body[data-ui-theme="dark"]{--app-bg:#11161d;--panel:#1d242e;--text:#e7ebf1;--muted:#939dac;--line:#3c4654;--accent:#7f9cff;--accent-soft:#222d4b;background:#11161d;color:#e7ebf1}
+body[data-ui-theme="dark"] .topbar,body[data-ui-theme="dark"] #mobileMainBar{background:rgba(22,28,36,.97);border-color:#303945;color:#e7ebf1}body[data-ui-theme="dark"] .toolbar-group,body[data-ui-theme="dark"] .mode-switch{background:#222a35;border-color:#343e4b}body[data-ui-theme="dark"] .toolbar-group .btn,body[data-ui-theme="dark"] .mode-btn{color:#b8c1cd}body[data-ui-theme="dark"] .toolbar-group .btn:hover,body[data-ui-theme="dark"] .mode-btn.active{background:#303947;color:#fff}body[data-ui-theme="dark"] #viewport{background:radial-gradient(circle at 1px 1px,rgba(119,132,151,.24) 1px,transparent 1.2px),linear-gradient(180deg,#171d25,#141920);background-size:24px 24px,100% 100%}body[data-ui-theme="dark"] .node{background:#222a35;border-color:#3a4554;color:#edf1f7;box-shadow:0 8px 24px rgba(0,0,0,.18)}body[data-ui-theme="dark"] .node.center{background:linear-gradient(155deg,#293341,#202730);border-color:#6f82a0}body[data-ui-theme="dark"] .node .desc,body[data-ui-theme="dark"] .node .meta{color:#9ba6b5}body[data-ui-theme="dark"] .map-panel,body[data-ui-theme="dark"] #mobileMainSheet,body[data-ui-theme="dark"] #mobileNodeContext{background:rgba(29,36,46,.98);border-color:#3a4451;color:#e7ebf1}body[data-ui-theme="dark"] .panel-head{border-color:#323b47}body[data-ui-theme="dark"] .field input,body[data-ui-theme="dark"] .field textarea,body[data-ui-theme="dark"] .field select{background:#171d25;border-color:#3b4654;color:#eef2f7}body[data-ui-theme="dark"] .theme-card{background:#202832;border-color:#3a4654}body[data-ui-theme="dark"] .health-summary{background:#181f28;border-color:#37414d}body[data-ui-theme="dark"] .health-check{border-color:#313a46}body[data-ui-theme="dark"] .health-name{color:#e6ebf2}body[data-ui-theme="dark"] .health-detail,body[data-ui-theme="dark"] .hint{color:#98a3b2}
+body[data-ui-theme="business"]{--accent:#24568f;--accent-soft:#e9f0f8;--app-bg:#e8edf4;--text:#263448;--muted:#6e7b8e}body[data-ui-theme="business"] .topbar{background:rgba(247,249,252,.97);border-bottom-color:#ccd6e2}body[data-ui-theme="business"] #viewport{background:linear-gradient(180deg,#edf2f7,#e6ecf3)}body[data-ui-theme="business"] .node{border-radius:10px;border-color:#c4cfdd;box-shadow:0 5px 16px rgba(31,52,78,.08)}body[data-ui-theme="business"] .node.center{border-color:#55718f}body[data-ui-theme="business"] .map-panel{border-radius:14px}
+body[data-ui-theme="minimal"]{--accent:#252b34;--accent-soft:#eef0f3;--app-bg:#f7f7f7}body[data-ui-theme="minimal"] .topbar{background:#fff;box-shadow:none}body[data-ui-theme="minimal"] #viewport{background:#fafafa}body[data-ui-theme="minimal"] .node{border-radius:8px;box-shadow:none;border-color:#d9dde3}body[data-ui-theme="minimal"] .node.center{box-shadow:none;background:#fff;border-color:#7e8793}body[data-ui-theme="minimal"] .map-panel{box-shadow:0 8px 28px rgba(25,32,42,.08);border-radius:12px}body[data-ui-theme="minimal"] .toolbar-group{background:#fff}body[data-ui-theme="minimal"] .legend{box-shadow:none}
+@media(max-width:700px){.theme-grid{grid-template-columns:repeat(2,1fr)}#themePanel{max-height:58vh!important}}
+
+/* V9.4 autosave / recovery */
+.save-status{display:flex;align-items:center;gap:5px;min-width:62px;padding:5px 8px;border-radius:999px;background:#eef1f5;color:#6d7582;font-size:10px;white-space:nowrap}.save-status span{width:7px;height:7px;border-radius:50%;background:#55a573}.save-status.pending span{background:#d19a37}.save-status.error span{background:#d85b62}.save-status.pending b{color:#8d681f}.save-status.error b{color:#ae343b}.save-status b{font-weight:700}.recovery-note{font-size:10px;color:#7e8795}
+body[data-ui-theme="dark"] .save-status{background:#252d38;color:#aab4c2}.health-actions{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.save-status{display:none}.health-actions{grid-template-columns:repeat(2,1fr)}}
+
+/* V9.5 RC first-run guide */
+#welcomeOverlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(14,19,27,.48);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}#welcomeOverlay.open{display:flex}.welcome-card{width:min(720px,94vw);max-height:88vh;overflow:auto;background:#fff;border:1px solid rgba(222,227,235,.95);border-radius:22px;padding:22px;box-shadow:0 28px 80px rgba(17,24,38,.28);color:#232a35}.welcome-head{display:flex;align-items:flex-start;gap:16px}.welcome-head>div{flex:1}.welcome-kicker{display:inline-block;font-size:10px;font-weight:800;color:#315efb;background:#edf2ff;border-radius:999px;padding:5px 8px}.welcome-head h2{font-size:24px;line-height:1.35;margin:9px 0 0;letter-spacing:-.5px}.welcome-close{width:34px;height:34px;border:0;border-radius:10px;background:#f1f3f6;font-size:21px;color:#6e7784;cursor:pointer}.welcome-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.welcome-step{padding:14px;border:1px solid #e2e6ed;border-radius:15px;background:#fafbfd}.welcome-step>span{display:flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:9px;background:#315efb;color:#fff;font-size:12px;font-weight:900}.welcome-step b{display:block;font-size:13px;margin-top:10px}.welcome-step p{font-size:10px;line-height:1.65;color:#76808e;margin:5px 0 0}.welcome-foot{display:flex;align-items:center;gap:8px;border-top:1px solid #edf0f4;padding-top:14px}.welcome-foot label{font-size:10px;color:#737c89}.welcome-foot .btn{min-height:38px}body[data-ui-theme="dark"] .welcome-card{background:#1d242e;border-color:#3a4451;color:#e8edf3}body[data-ui-theme="dark"] .welcome-step{background:#171d25;border-color:#36404d}body[data-ui-theme="dark"] .welcome-step p,body[data-ui-theme="dark"] .welcome-foot label{color:#9ca7b5}
+@media(max-width:700px){#welcomeOverlay{padding:10px}.welcome-card{padding:16px;border-radius:18px;max-height:92vh}.welcome-head h2{font-size:19px}.welcome-steps{grid-template-columns:1fr;gap:7px;margin:14px 0}.welcome-step{display:grid;grid-template-columns:32px 1fr;gap:8px;padding:10px}.welcome-step>span{margin-top:2px}.welcome-step b{margin-top:1px}.welcome-step p{margin-top:3px}.welcome-foot{flex-wrap:wrap}.welcome-foot label{width:100%;margin-bottom:4px}.welcome-foot .spacer{display:none}.welcome-foot .btn{flex:1}}
+
 </style>
 </head>
 <body>
@@ -639,7 +665,7 @@ button{cursor:pointer}
   <div class="topbar">
     <div class="brand">
       <span class="brand-mark">M</span>
-      <span class="brand-copy">MindDeck V9.0<small>导出运行时功能对齐</small></span>
+      <span class="brand-copy">MindDeck V9.5 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small></span>
     </div>
 
     <div class="mode-switch">
@@ -667,11 +693,15 @@ button{cursor:pointer}
       <button class="btn" id="exportBtn">保存项目</button>
       <button class="btn" id="importBtn">打开</button>
       <button class="btn" id="exportViewerBtn">导出演示</button>
+      <button class="btn" id="healthCheckBtn" title="检查项目结构、导出和演示运行时">自检</button>
+      <button class="btn icon" id="helpBtn" title="使用说明">?</button>
+      <button class="btn icon" id="appearanceBtn" title="MindDeck 外观主题">◐</button>
       <button class="btn icon presentation-only" id="exportSettingsBtn" title="高级导出设置">⚙</button>
     </div>
 
     <button class="btn primary presentation-only desktop-present-btn" id="presentBtn">开始演示</button>
     <input class="file-input" id="importFile" type="file" accept=".json,.minddeck,application/json,application/zip">
+    <div class="save-status saved" id="saveStatus" title="浏览器自动保存状态"><span></span><b>已保存</b></div>
     <div class="zoom-status" id="zoomStatus">100%</div>
   </div>
 
@@ -704,7 +734,7 @@ button{cursor:pointer}
     </div>
 
     <div class="map-panel" id="exportSettingsPanel">
-      <div class="panel-head"><div><h3>高级导出设置</h3><div class="panel-sub">统一运行时 9.0 · 一般保持默认即可</div></div><button class="panel-close" data-close-panel="exportSettingsPanel">×</button></div>
+      <div class="panel-head"><div><h3>高级导出设置</h3><div class="panel-sub">统一运行时 9.5 · Release Candidate</div></div><button class="panel-close" data-close-panel="exportSettingsPanel">×</button></div>
       <div class="hint" style="margin-top:0">
         默认不需要修改。阈值只决定是否额外生成 <b>.minddeck</b> 项目资源包；
         HTML 始终包含完整演示内容，可以单独发给别人播放。
@@ -749,6 +779,32 @@ button{cursor:pointer}
         外部视频 URL 不计入本地资源大小。<br>
         .minddeck 内部结构：project.json + manifest.json + assets/。
       </div>
+    </div>
+
+    <div class="map-panel" id="themePanel">
+      <div class="panel-head"><div><h3>外观主题</h3><div class="panel-sub">只改变工作界面和导图，不修改页面设计</div></div><button class="panel-close" data-close-panel="themePanel">×</button></div>
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-card" data-theme-choice="light"><span class="theme-preview light"><i></i><i></i><i></i></span><b>明亮</b><small>默认，适合日常编辑</small></button>
+        <button class="theme-card" data-theme-choice="dark"><span class="theme-preview dark"><i></i><i></i><i></i></span><b>深色</b><small>低光环境、长时间编辑</small></button>
+        <button class="theme-card" data-theme-choice="business"><span class="theme-preview business"><i></i><i></i><i></i></span><b>商务</b><small>蓝灰、克制、正式</small></button>
+        <button class="theme-card" data-theme-choice="minimal"><span class="theme-preview minimal"><i></i><i></i><i></i></span><b>极简</b><small>更少阴影和装饰</small></button>
+      </div>
+      <div class="hint">主题会保存在项目中，导出的纯思维导图和融合 HTML 会继承导图外观；PPT 页面仍完全由母版和页面元素决定。</div>
+    </div>
+
+    <div class="map-panel" id="healthPanel">
+      <div class="panel-head"><div><h3>项目自检</h3><div class="panel-sub">发布和正式演示前建议运行一次</div></div><button class="panel-close" data-close-panel="healthPanel">×</button></div>
+      <div class="health-summary" id="healthSummary">
+        <div class="health-score" id="healthScore">—</div>
+        <div><b id="healthTitle">尚未检查</b><div class="health-meta" id="healthMeta">检查项目结构、导出、媒体和演示运行时</div></div>
+      </div>
+      <div id="healthList"></div>
+      <div class="actions health-actions">
+        <button class="btn primary" id="runHealthCheckBtn">重新检查</button>
+        <button class="btn" id="copyHealthReportBtn">复制报告</button>
+        <button class="btn" id="restoreBackupBtn">恢复备份</button>
+      </div>
+      <div class="hint">红色项目会阻止正式导出；黄色项目可以继续使用，但建议处理后再做正式汇报。</div>
     </div>
 
     <div class="map-panel" id="orderPanel">
@@ -909,13 +965,24 @@ button{cursor:pointer}
       </div>
     </div>
 
+    <div id="welcomeOverlay" aria-hidden="true">
+      <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.5 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
+        <div class="welcome-steps">
+          <div class="welcome-step"><span>1</span><div><b>先整理结构</b><p>在思维导图里建立主题、分支和层级。折叠节点时，布局和演示序列都会跟着变化。</p></div></div>
+          <div class="welcome-step"><span>2</span><div><b>再设计页面</b><p>演示编辑模式下，选中节点后进入 16:9 页面。文字、图片、视频和形状都可以自由排版。</p></div></div>
+          <div class="welcome-step"><span>3</span><div><b>最后现场演示</b><p>演示时目录可以随时开关，也可以临时展开或收起分支，播放路径会实时重算。</p></div></div>
+        </div>
+        <div class="welcome-foot"><label><input type="checkbox" id="welcomeDontShow" checked> 下次不再自动显示</label><div class="spacer"></div><button class="btn" id="welcomeMindmap">先看导图</button><button class="btn primary" id="welcomeStart">开始使用</button></div>
+      </div>
+    </div>
     <div class="toast" id="toast"></div>
   </div>
 </div>
 
 <script>
 (() => {
-  const W=1600,H=900;
+  const W=1600,H=900,APP_VERSION="9.5 RC",RUNTIME_VERSION="9.5",RELEASE_CHANNEL="rc";
   const animTypes=[["inherit","跟随默认"],["none","无动画"],["fade","淡入"],["soft","平滑显现"],["up","向上浮入"],["left","从右向左"],["right","从左向右"],["zoom","轻微缩放"]];
 
   const defaultMaster=()=>({
@@ -977,11 +1044,21 @@ button{cursor:pointer}
         {id:"owner",title:"对结果负责",text:"从完成任务转向把问题解决。",collapsed:false,pos:{x:-735,y:250},children:[]}
       ]}
     ],
-    schemaVersion:1,presentationOrder:[],mapLayout:"balanced",master:defaultMaster()
+    schemaVersion:1,presentationOrder:[],mapLayout:"balanced",uiTheme:"light",master:defaultMaster()
   };
 
-  let stored=JSON.parse(localStorage.getItem("minddeck-v8-data")||"null");
-  if(!stored) stored=JSON.parse(localStorage.getItem("minddeck-v6-data")||"null")||JSON.parse(localStorage.getItem("minddeck-v5-data")||"null")||demo;
+  const STORAGE_KEY="minddeck-v9-data",BACKUP_KEY="minddeck-v9-backup",LEGACY_STORAGE_KEYS=["minddeck-v8-data","minddeck-v6-data","minddeck-v5-data"];
+  let startupRecovery=null,loadedStorageKey=null;
+  function safeStorageRead(key){
+    try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw)}catch(err){console.warn("MindDeck storage read failed",key,err);return null}
+  }
+  let stored=safeStorageRead(STORAGE_KEY);if(stored)loadedStorageKey=STORAGE_KEY;
+  if(!stored){
+    const envelope=safeStorageRead(BACKUP_KEY);
+    if(envelope?.project){stored=envelope.project;startupRecovery={reason:"主自动保存不可用，已载入恢复备份",savedAt:envelope.savedAt};loadedStorageKey=BACKUP_KEY}
+  }
+  if(!stored){for(const key of LEGACY_STORAGE_KEYS){const old=safeStorageRead(key);if(old){stored=old;loadedStorageKey=key;break}}}
+  if(!stored)stored=demo;
   let data=stored;
   if(!Array.isArray(data.presentationOrder))data.presentationOrder=[];
   if(!data.master || !data.master.elements)data.master=defaultMaster();
@@ -1011,14 +1088,36 @@ button{cursor:pointer}
 
   function uid(){return "e_"+Math.random().toString(36).slice(2,10)}
   function clone(o){return JSON.parse(JSON.stringify(o))}
-  function save(){
+  let autosaveTimer=null,lastSavedJson="",lastBackupAt=0,storageError=false;
+  function setSaveStatus(state,label){const el=document.getElementById("saveStatus");if(!el)return;el.classList.remove("saved","pending","error");el.classList.add(state);el.querySelector("b").textContent=label}
+  function backupEnvelopeFromJson(json,reason){try{return {format:1,savedAt:new Date().toISOString(),reason,project:JSON.parse(json)}}catch{return null}}
+  function writeRecoveryBackup(json,reason="autosave-previous",force=false){
+    if(!json)return false;if(!force&&Date.now()-lastBackupAt<60000)return false;
+    try{const env=backupEnvelopeFromJson(json,reason);if(!env)return false;localStorage.setItem(BACKUP_KEY,JSON.stringify(env));lastBackupAt=Date.now();updateRecoveryButton();return true}catch(err){console.warn("MindDeck backup skipped",err);return false}
+  }
+  function persistProjectNow(reason="autosave"){
+    if(autosaveTimer){clearTimeout(autosaveTimer);autosaveTimer=null}
     try{
-      localStorage.setItem("minddeck-v8-data",JSON.stringify(data));
+      const json=JSON.stringify(data);
+      if(lastSavedJson&&lastSavedJson!==json)writeRecoveryBackup(lastSavedJson,"previous-save",false);
+      localStorage.setItem(STORAGE_KEY,json);lastSavedJson=json;storageError=false;setSaveStatus("saved","已保存");return true;
     }catch(err){
-      // Large embedded videos can exceed localStorage quota. The current session
-      // still works and can be exported; warn instead of destroying the document.
-      toast("浏览器本地存储空间不足，请尽快保存项目 JSON 或导出演示 HTML");
+      storageError=true;console.warn("MindDeck autosave failed",err);setSaveStatus("error","未保存");toast("浏览器本地存储空间不足，请保存项目 JSON 或 .minddeck");return false;
     }
+  }
+  function save(force=false){
+    if(force)return persistProjectNow("manual");
+    setSaveStatus("pending","待保存");if(autosaveTimer)clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>persistProjectNow("autosave"),450);return true;
+  }
+  function saveNow(reason="manual"){return persistProjectNow(reason)}
+  function createRecoveryBackup(reason="manual-backup"){
+    try{const json=JSON.stringify(data);const env=backupEnvelopeFromJson(json,reason);if(!env)return false;localStorage.setItem(BACKUP_KEY,JSON.stringify(env));lastBackupAt=Date.now();updateRecoveryButton();return true}catch(err){console.warn("MindDeck recovery backup failed",err);return false}
+  }
+  function readRecoveryBackup(){const env=safeStorageRead(BACKUP_KEY);return env?.project?env:null}
+  function updateRecoveryButton(){const btn=document.getElementById("restoreBackupBtn");if(!btn)return;const env=readRecoveryBackup();btn.disabled=!env;btn.title=env?`备份时间：${new Date(env.savedAt||Date.now()).toLocaleString()}`:"暂无可恢复备份"}
+  function restoreRecoveryBackup(){
+    const env=readRecoveryBackup();if(!env){toast("暂无可恢复备份");return}if(!confirm(`恢复 ${new Date(env.savedAt||Date.now()).toLocaleString()} 的备份？当前内容会先保存为新的恢复点。`))return;
+    createRecoveryBackup("before-restore");data=clone(env.project);normalize();applyUiTheme();syncMapLayoutControls();selectedNodeId=data.id;saveNow("restore");renderMap();renderOrderPanel();fitAll();updateMobileNodeContext();toast("已恢复备份");
   }
   function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
   function walk(n,fn,parent=null,depth=0){fn(n,parent,depth);(n.children||[]).forEach(c=>walk(c,fn,n,depth+1))}
@@ -1038,6 +1137,7 @@ button{cursor:pointer}
   function normalize(){
     if(!data.schemaVersion)data.schemaVersion=1;
     if(!["balanced","right","left","down","radial"].includes(data.mapLayout))data.mapLayout="radial";
+    if(!["light","dark","business","minimal"].includes(data.uiTheme))data.uiTheme="light";
     walk(data,n=>{
       if(!n.pos)n.pos={x:0,y:0};
       if(!Array.isArray(n.slideElements))n.slideElements=nodeSlideFromLegacy(n);
@@ -1069,7 +1169,8 @@ button{cursor:pointer}
     if(historyLock)return;
     const s=dataSnapshot();
     if(!undoStack.length || undoStack[undoStack.length-1]!==s)undoStack.push(s);
-    if(undoStack.length>80)undoStack.shift();
+    const historyLimit=s.length>8*1024*1024?6:s.length>2*1024*1024?20:80;
+    while(undoStack.length>historyLimit)undoStack.shift();
     redoStack=[];
   }
   function restoreSnapshot(s){
@@ -1091,6 +1192,95 @@ button{cursor:pointer}
     if(!redoStack.length)return;
     const cur=dataSnapshot(),next=redoStack.pop();
     undoStack.push(cur);restoreSnapshot(next);toast("已重做");
+  }
+
+  let lastHealthReport=null;
+  function byteEstimate(str){return new Blob([String(str||"")]).size}
+  function formatBytes(n){n=Math.max(0,Number(n)||0);if(n<1024)return n+" B";if(n<1024*1024)return (n/1024).toFixed(1)+" KB";return (n/1024/1024).toFixed(2)+" MB"}
+  function healthResult(level,name,detail){return {level,name,detail}}
+  function projectHealthChecks(){
+    const results=[],ids=new Map(),elementIds=new Map(),badGeometry=[],badMedia=[],badLayers=[],staleOrder=[];
+    let nodeCount=0,visibleCount=0,elementCount=0,mediaBytes=0;
+    walk(data,n=>{
+      nodeCount++;
+      if(!n.id)results.push(healthResult("fail","节点 ID","发现没有 ID 的节点："+(n.title||"未命名")));
+      else ids.set(n.id,(ids.get(n.id)||0)+1);
+      if(!Array.isArray(n.children))results.push(healthResult("fail","节点结构",`${n.title||n.id} 的 children 不是数组`));
+      (n.slideElements||[]).forEach(e=>{
+        elementCount++;
+        if(e.id)elementIds.set(e.id,(elementIds.get(e.id)||0)+1);
+        const nums=[e.x,e.y,e.w,e.h].map(Number);
+        if(nums.some(v=>!Number.isFinite(v))||Number(e.w)<=0||Number(e.h)<=0)badGeometry.push(`${n.title||n.id} / ${e.type||"元素"}`);
+        if((e.type==="image"||e.type==="video")){if(!e.src)badMedia.push(`${n.title||n.id} / ${e.type}`);else if(String(e.src).startsWith("data:"))mediaBytes+=Math.ceil(String(e.src).length*.75)}
+        if(Number(e.z)<SLIDE_Z_MIN||Number(e.z)>SLIDE_Z_MAX)badLayers.push(`${n.title||n.id} / ${e.id||e.type}`);
+      });
+    });
+    visibleWalk(data,()=>visibleCount++);
+    (data.master?.elements||[]).forEach(e=>{
+      elementCount++;
+      if(e.id)elementIds.set(e.id,(elementIds.get(e.id)||0)+1);
+      if(Number(e.z)<MASTER_Z_MIN||Number(e.z)>MASTER_Z_MAX)badLayers.push(`母版 / ${e.id||e.type}`);
+      if((e.type==="image"||e.type==="video")&&e.src&&String(e.src).startsWith("data:"))mediaBytes+=Math.ceil(String(e.src).length*.75);
+    });
+    const dupNodes=[...ids].filter(([,n])=>n>1).map(([id])=>id);
+    const dupElements=[...elementIds].filter(([,n])=>n>1).map(([id])=>id);
+    const allIds=new Set(ids.keys());
+    (data.presentationOrder||[]).forEach(id=>{if(!allIds.has(id))staleOrder.push(id)});
+
+    results.push(dupNodes.length?healthResult("fail","节点唯一性",`重复节点 ID：${dupNodes.slice(0,6).join(", ")}${dupNodes.length>6?" …":""}`):healthResult("pass","节点唯一性",`${nodeCount} 个节点 ID 均唯一`));
+    results.push(dupElements.length?healthResult("fail","元素唯一性",`重复元素 ID：${dupElements.slice(0,6).join(", ")}${dupElements.length>6?" …":""}`):healthResult("pass","元素唯一性",`${elementCount} 个页面/母版元素未发现重复 ID`));
+    results.push(badGeometry.length?healthResult("fail","页面几何",`发现 ${badGeometry.length} 个尺寸或坐标异常元素：${badGeometry.slice(0,4).join("；")}`):healthResult("pass","页面几何","页面元素坐标和尺寸有效"));
+    results.push(badLayers.length?healthResult("warn","图层范围",`发现 ${badLayers.length} 个图层值超出页面/母版约定范围；保存时会尝试归一化`):healthResult("pass","图层范围","页面与母版图层区间正常"));
+    results.push(badMedia.length?healthResult("warn","媒体资源",`发现 ${badMedia.length} 个图片/视频缺少资源地址`):healthResult("pass","媒体资源",`未发现空媒体资源；内嵌媒体约 ${formatBytes(mediaBytes)}`));
+    results.push(staleOrder.length?healthResult("warn","演示顺序",`自定义顺序中有 ${staleOrder.length} 个已不存在的节点引用，运行时会自动忽略`):healthResult("pass","演示顺序",`${effectiveOrder().length} 个当前可播放节点，顺序引用有效`));
+    const layoutOk=["balanced","right","left","down","radial"].includes(data.mapLayout);
+    results.push(layoutOk?healthResult("pass","导图布局",`当前布局：${data.mapLayout}；当前可见节点 ${visibleCount}`):healthResult("fail","导图布局",`未知布局：${data.mapLayout}`));
+    const themeOk=["light","dark","business","minimal"].includes(data.uiTheme);
+    results.push(themeOk?healthResult("pass","外观主题",`当前主题：${data.uiTheme}`):healthResult("fail","外观主题",`未知主题：${data.uiTheme}`));
+    const tocOk=["auto","show","hide"].includes(data.master?.tocVisibility)&&["left","right"].includes(data.master?.tocSide);
+    results.push(tocOk?healthResult("pass","演示目录",`目录：${data.master.tocVisibility} / ${data.master.tocSide}`):healthResult("fail","演示目录","母版目录显示或位置配置无效"));
+    const json=JSON.stringify(data);
+    try{JSON.parse(json);results.push(healthResult("pass","项目序列化",`项目数据约 ${formatBytes(byteEstimate(json))}`))}catch(err){results.push(healthResult("fail","项目序列化",err.message))}
+    if(byteEstimate(json)>4*1024*1024)results.push(healthResult("warn","浏览器本地存储","项目已超过约 4 MB；不同浏览器 localStorage 上限不同，请优先保存 JSON/.minddeck"));
+    const recovery=readRecoveryBackup();results.push(storageError?healthResult("warn","自动保存","当前浏览器自动保存失败，请立即导出项目文件"):healthResult("pass","自动保存",recovery?`自动保存正常；有恢复备份 ${new Date(recovery.savedAt||Date.now()).toLocaleString()}`:"自动保存正常；首次产生改动后会建立恢复点"));
+    results.push(Math.abs(W/H-16/9)<1e-9?healthResult("pass","16:9 舞台",`${W}×${H} 固定虚拟画布，响应式仅等比缩放`):healthResult("fail","16:9 舞台",`当前虚拟画布为 ${W}×${H}`));
+    return results;
+  }
+  function exportHealthChecks(){
+    const results=[];
+    [["思维导图 HTML",buildStandaloneMindmapHtml],["独立演示 HTML",buildStandaloneViewerHtml],["融合 HTML",buildStandaloneFusionHtml]].forEach(([name,builder])=>{
+      try{const out=builder();validateExportHtml(out,name);results.push(healthResult("pass",name,`生成成功，${formatBytes(byteEstimate(out))}，Runtime ${RUNTIME_VERSION}`))}
+      catch(err){results.push(healthResult("fail",name,err?.message||String(err)))}
+    });
+    return results;
+  }
+  function runProjectHealthCheck(includeExports=true){
+    normalize();
+    const results=projectHealthChecks();
+    if(includeExports)results.push(...exportHealthChecks());
+    const fail=results.filter(r=>r.level==="fail").length,warn=results.filter(r=>r.level==="warn").length,pass=results.filter(r=>r.level==="pass").length;
+    const score=Math.max(0,Math.round(100-fail*22-warn*5));
+    lastHealthReport={version:APP_VERSION,runtimeVersion:RUNTIME_VERSION,time:new Date().toISOString(),score,pass,warn,fail,results};
+    return lastHealthReport;
+  }
+  function renderHealthReport(report){
+    const summary=document.getElementById("healthSummary"),score=document.getElementById("healthScore"),title=document.getElementById("healthTitle"),meta=document.getElementById("healthMeta"),list=document.getElementById("healthList");
+    summary.classList.remove("ok","warn","fail");summary.classList.add(report.fail?"fail":report.warn?"warn":"ok");score.textContent=report.score;
+    title.textContent=report.fail?`${report.fail} 项需要处理`:report.warn?`${report.warn} 项风险提示`:"核心检查全部通过";
+    meta.textContent=`通过 ${report.pass} · 警告 ${report.warn} · 失败 ${report.fail} · ${new Date(report.time).toLocaleString()}`;
+    list.innerHTML="";report.results.forEach(r=>{const row=document.createElement("div");row.className=`health-check ${r.level}`;row.innerHTML=`<div class="health-icon">${r.level==="pass"?"✓":r.level==="warn"?"!":"×"}</div><div><div class="health-name"></div><div class="health-detail"></div></div>`;row.querySelector(".health-name").textContent=r.name;row.querySelector(".health-detail").textContent=r.detail;list.appendChild(row)});
+  }
+  function openHealthPanel(){
+    closeMobileMainSheet();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
+    const panel=document.getElementById("healthPanel");panel.classList.add("open");const report=runProjectHealthCheck(true);renderHealthReport(report);
+    toast(report.fail?"自检发现需要处理的问题":report.warn?"自检完成：有风险提示":"自检通过");
+  }
+  function healthReportText(report=lastHealthReport){
+    if(!report)return "MindDeck 尚未运行项目自检";
+    return [`MindDeck V${report.version} 项目自检`,`时间：${report.time}`,`评分：${report.score} / 100`,`通过 ${report.pass} · 警告 ${report.warn} · 失败 ${report.fail}`,"",...report.results.map(r=>`[${r.level.toUpperCase()}] ${r.name}：${r.detail}`)].join("\n");
+  }
+  function assertProjectExportReady(){
+    const report=runProjectHealthCheck(false);if(report.fail){hideMobileNodeContext();renderHealthReport(report);document.getElementById("healthPanel").classList.add("open");throw new Error(`项目自检有 ${report.fail} 项失败，请先处理`)}return report;
   }
 
   const DEFAULT_EXPORT_SETTINGS={
@@ -1288,7 +1478,8 @@ button{cursor:pointer}
       format:"MindDeck",
       version:1,
       schemaVersion:project.schemaVersion||1,
-      runtimeVersion:"9.0",
+      runtimeVersion:RUNTIME_VERSION,
+      releaseChannel:RELEASE_CHANNEL,
       projectName,
       exportedAt:new Date().toISOString(),
       assets:assets.map(a=>({path:a.path,mime:a.mime,size:a.bytes.length,kind:a.kind,label:a.label}))
@@ -1323,6 +1514,29 @@ button{cursor:pointer}
     return project;
   }
 
+  const ONBOARDING_KEY="minddeck-v9-onboarded";
+  function showWelcome(force=false){
+    if(!force){try{if(localStorage.getItem(ONBOARDING_KEY)==="1")return}catch{}}
+    const el=document.getElementById("welcomeOverlay");el.classList.add("open");el.setAttribute("aria-hidden","false");
+  }
+  function closeWelcome(){
+    const el=document.getElementById("welcomeOverlay");el.classList.remove("open");el.setAttribute("aria-hidden","true");
+    if(document.getElementById("welcomeDontShow")?.checked){try{localStorage.setItem(ONBOARDING_KEY,"1")}catch{}}
+  }
+
+  const UI_THEMES=["light","dark","business","minimal"];
+  function applyUiTheme(){
+    const theme=UI_THEMES.includes(data.uiTheme)?data.uiTheme:"light";data.uiTheme=theme;document.body.dataset.uiTheme=theme;
+    document.querySelectorAll("[data-theme-choice]").forEach(el=>el.classList.toggle("active",el.dataset.themeChoice===theme));
+  }
+  function setUiTheme(theme){
+    if(!UI_THEMES.includes(theme))return;checkpoint();data.uiTheme=theme;applyUiTheme();save();toast(`已切换为${({light:"明亮",dark:"深色",business:"商务",minimal:"极简"})[theme]}主题`);
+  }
+  function openThemePanel(){
+    closeMobileMainSheet();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
+    document.getElementById("themePanel").classList.add("open");applyUiTheme();
+  }
+
   function hideMobileNodeContext(){
     document.getElementById("mobileNodeContext")?.classList.remove("open");
   }
@@ -1347,12 +1561,14 @@ button{cursor:pointer}
       <button class="btn" data-mm="reset">按当前可见节点重排</button>
       <button class="btn" data-mm="save">保存项目 JSON</button>
       <button class="btn" data-mm="import">打开项目</button>
-      <button class="btn" data-mm="export">导出当前模式</button>`;
+      <button class="btn" data-mm="export">导出当前模式</button>
+      <button class="btn" data-mm="health">项目自检</button>
+      <button class="btn" data-mm="appearance">外观主题</button>
+      <button class="btn" data-mm="help">使用说明</button>`;
     if(appMode==="presentation")items+=`
       <button class="btn" data-mm="order">演示顺序</button>
       <button class="btn" data-mm="master">编辑母版</button>
-      <button class="btn" data-mm="settings">导出设置</button>
-      <button class="btn" data-mm="page">编辑当前页面</button>`;
+      <button class="btn" data-mm="settings">导出设置</button>`;
     box.innerHTML=`<div class="mobile-main-sheet-grid">${items}
       <div class="mobile-layout-box">
         <label>思维导图布局</label>
@@ -1370,15 +1586,7 @@ button{cursor:pointer}
     layoutSel.onchange=()=>{const v=layoutSel.value;closeMobileMainSheet();setMapLayout(v,true)};
     sheet.classList.add("open");
     box.querySelectorAll("[data-mm]").forEach(b=>b.onclick=()=>{
-      const a=b.dataset.mm;closeMobileMainSheet();
-      if(a==="reset")document.getElementById("resetLayoutBtn").click();
-      else if(a==="save")document.getElementById("exportBtn").click();
-      else if(a==="import")document.getElementById("importBtn").click();
-      else if(a==="export")document.getElementById("exportViewerBtn").click();
-      else if(a==="order")document.getElementById("orderBtn").click();
-      else if(a==="master")document.getElementById("masterBtn").click();
-      else if(a==="settings")document.getElementById("exportSettingsBtn").click();
-      else if(a==="page")openEditor("slide",selectedNodeId);
+      const a=b.dataset.mm;closeMobileMainSheet();runAppCommand(a);
     });
   }
 
@@ -1395,6 +1603,8 @@ button{cursor:pointer}
     if(appMode==="mindmap")document.getElementById("nodePanel").classList.remove("open");
     document.getElementById("exportSettingsPanel").classList.remove("open");
     document.getElementById("orderPanel").classList.remove("open");
+    document.getElementById("healthPanel").classList.remove("open");
+    document.getElementById("themePanel").classList.remove("open");
     closeMobileMainSheet();
     renderMap();updateMobileNodeContext();
   }
@@ -2538,6 +2748,7 @@ button{cursor:pointer}
     const project=buildPortableData(kind);
     const payload=JSON.stringify(project).replace(/</g,"\\u003c");
     const kindJson=JSON.stringify(kind);
+    const portableTheme=UI_THEMES.includes(project.uiTheme)?project.uiTheme:"light";
     const title=((data.projectName||findNode(data.id)?.title||"MindDeck").replace(/[<>]/g,""));
     const doc=String.raw`<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -2564,15 +2775,15 @@ button,select{font:inherit}.hidden{display:none!important}
 #tocToggle{position:fixed;left:10px;top:64px;z-index:55;width:40px;height:40px;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(10,14,20,.66);backdrop-filter:blur(8px);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18)}#fullBtn{position:fixed;right:10px;bottom:10px;z-index:55;border:1px solid rgba(255,255,255,.13);background:rgba(10,14,20,.55);color:#d8dde6;border-radius:9px;padding:7px 9px;font-size:11px;backdrop-filter:blur(8px);cursor:pointer}
 #toast{position:fixed;left:50%;top:66px;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 13px;border-radius:9px;font-size:12px;opacity:0;transition:.2s;z-index:100;pointer-events:none}#toast.show{opacity:1}
 body.kind-presentation #top{display:none}body.kind-presentation .view{top:0}body.kind-presentation #tocToggle{top:10px}body.kind-mindmap #switchBox{display:none}body.kind-mindmap .presentOnly{display:none!important}body.kind-presentation .mapOnly{display:none!important}
-@media(max-width:900px),(pointer:coarse){#pLayout,#pLayout.right{grid-template-columns:minmax(0,1fr)}#pLayout:not(.toc-hidden) #toc{display:block;position:fixed;left:0;top:0;bottom:0;width:min(84vw,310px);z-index:48;box-shadow:14px 0 38px rgba(0,0,0,.42);border-right:1px solid rgba(255,255,255,.08)}#pLayout.right:not(.toc-hidden) #toc{left:auto;right:0;box-shadow:-14px 0 38px rgba(0,0,0,.42);border-left:1px solid rgba(255,255,255,.08)}#stageWrap{grid-column:1!important;grid-row:1!important}.tocItem{min-height:43px;font-size:13px}.foldBtn{width:30px;height:30px}.tocAct{min-height:31px}}
+body[data-ui-theme="dark"] #top{background:#171d25;border-color:#313a46;color:#e8edf4}body[data-ui-theme="dark"] #mapVp{background:radial-gradient(circle at 1px 1px,rgba(116,129,147,.25) 1px,transparent 1.2px),linear-gradient(180deg,#171d25,#131920);background-size:24px 24px,100% 100%}body[data-ui-theme="dark"] .node{background:#222a35;border-color:#3b4654;color:#edf1f7}body[data-ui-theme="dark"] .ndesc{color:#9da8b7}body[data-ui-theme="dark"] .tool,body[data-ui-theme="dark"] select{background:#222a35;border-color:#3b4654;color:#d9e0ea}body[data-ui-theme="business"] #mapVp{background:linear-gradient(180deg,#edf2f7,#e5ebf2)}body[data-ui-theme="business"] .node{border-radius:10px;border-color:#bdcada;box-shadow:0 5px 16px rgba(31,52,78,.08)}body[data-ui-theme="minimal"] #mapVp{background:#fafafa}body[data-ui-theme="minimal"] .node{border-radius:8px;box-shadow:none}body[data-ui-theme="minimal"] #top{box-shadow:none;background:#fff}\n@media(max-width:900px),(pointer:coarse){#pLayout,#pLayout.right{grid-template-columns:minmax(0,1fr)}#pLayout:not(.toc-hidden) #toc{display:block;position:fixed;left:0;top:0;bottom:0;width:min(84vw,310px);z-index:48;box-shadow:14px 0 38px rgba(0,0,0,.42);border-right:1px solid rgba(255,255,255,.08)}#pLayout.right:not(.toc-hidden) #toc{left:auto;right:0;box-shadow:-14px 0 38px rgba(0,0,0,.42);border-left:1px solid rgba(255,255,255,.08)}#stageWrap{grid-column:1!important;grid-row:1!important}.tocItem{min-height:43px;font-size:13px}.foldBtn{width:30px;height:30px}.tocAct{min-height:31px}}
 @media(max-width:650px){#top{height:52px;padding:5px 6px;gap:5px;overflow-x:auto}.brand small,.tip{display:none}.brand{font-size:12px}.switch{min-width:185px;flex:1}.switch button{flex:1;font-size:10px;padding:6px}.tool{font-size:10px;padding:6px 7px}.view{top:52px}.node{width:188px;min-height:74px;padding:10px 11px}.node.root{width:218px}.ntitle{font-size:13px}.root .ntitle{font-size:17px}.ndesc{font-size:10px}#tocToggle{top:60px}body.kind-presentation #tocToggle{top:10px}}
-</style></head><body>
-<div id="top"><div class="brand">MindDeck<small>Portable Runtime 9.0</small></div><div class="switch" id="switchBox"><button id="mapMode" class="on">思维导图</button><button id="presentMode">演示</button></div><button class="tool mapOnly" id="fitBtn">全局</button><select class="tool mapOnly" id="layoutSel"><option value="balanced">左右展开</option><option value="right">向右展开</option><option value="left">向左展开</option><option value="down">向下树状</option><option value="radial">自由放射</option></select><button class="tool mapOnly" id="reflowBtn">重排</button><button class="tool mapOnly" id="expandBtn">全开</button><button class="tool mapOnly" id="collapseBtn">全收</button><button class="tool mapOnly" id="exportMapBtn">导出 JSON</button><div class="spacer"></div><div class="tip mapOnly">Tab 子节点 · Enter 同级 · Space 收放 · F2 编辑</div></div>
+</style></head><body data-ui-theme="${portableTheme}">
+<div id="top"><div class="brand">MindDeck<small>Portable Runtime ${RUNTIME_VERSION}</small></div><div class="switch" id="switchBox"><button id="mapMode" class="on">思维导图</button><button id="presentMode">演示</button></div><button class="tool mapOnly" id="fitBtn">全局</button><select class="tool mapOnly" id="layoutSel"><option value="balanced">左右展开</option><option value="right">向右展开</option><option value="left">向左展开</option><option value="down">向下树状</option><option value="radial">自由放射</option></select><select class="tool mapOnly" id="themeSel"><option value="light">明亮</option><option value="dark">深色</option><option value="business">商务</option><option value="minimal">极简</option></select><button class="tool mapOnly" id="reflowBtn">重排</button><button class="tool mapOnly" id="expandBtn">全开</button><button class="tool mapOnly" id="collapseBtn">全收</button><button class="tool mapOnly" id="exportMapBtn">导出 JSON</button><div class="spacer"></div><div class="tip mapOnly">Tab 子节点 · Enter 同级 · Space 收放 · F2 编辑</div></div>
 <div id="mapView" class="view"><div id="mapVp"><div id="mapWorld"><svg id="mapEdges" viewBox="-9000 -9000 18000 18000"></svg><div id="mapNodes"></div></div></div></div>
 <div id="presentationView" class="view"><div id="pLayout"><aside id="toc"></aside><main id="stageWrap"><div id="stage"></div></main></div></div>
 <button id="tocToggle" class="presentOnly" title="显示/隐藏目录">☰</button><button id="fullBtn" class="presentOnly">全屏</button><div id="toast"></div>
 <script>
-const data=${payload};const KIND=${kindJson},W=1600,H=900,RUNTIME_VERSION="9.0";let mode=KIND==="presentation"?"presentation":"map",sel=data.id,mapScale=.8,mapTx=innerWidth/2,mapTy=innerHeight/2,mapPan=false,lastX=0,lastY=0,drag=false,dragId=null,dragStart=null,dragTree=null,moved=false,pList=[],pIndex=0,tocOverride=null,swipe=null;
+const data=${payload};const KIND=${kindJson},W=1600,H=900,RUNTIME_VERSION="${RUNTIME_VERSION}";let mode=KIND==="presentation"?"presentation":"map",sel=data.id,mapScale=.8,mapTx=innerWidth/2,mapTy=innerHeight/2,mapPan=false,lastX=0,lastY=0,drag=false,dragId=null,dragStart=null,dragTree=null,moved=false,pList=[],pIndex=0,tocOverride=null,swipe=null;
 document.body.classList.add("kind-"+KIND);
 function allWalk(n,fn,p=null,d=0){fn(n,p,d);(n.children||[]).forEach(function(c){allWalk(c,fn,n,d+1)})}function visibleWalk(n,fn,p=null,d=0){fn(n,p,d);if(!n.collapsed)(n.children||[]).forEach(function(c){visibleWalk(c,fn,n,d+1)})}function find(id){let r=null;allWalk(data,function(n){if(n.id===id)r=n});return r}function parent(id){let r=null;allWalk(data,function(n,p){if(n.id===id)r=p});return r}function visibleKids(n){return n&&n.collapsed?[]:(n.children||[])}function weight(n){const k=visibleKids(n);return k.length?k.reduce(function(s,c){return s+weight(c)},0):1}function uid(){return "n_"+Math.random().toString(36).slice(2,9)}function toast(s){const t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},1400)}
 function saveLocal(){if(KIND==="presentation")return;try{localStorage.setItem("minddeck-portable-"+(data.projectName||data.id),JSON.stringify(data))}catch(e){}}if(KIND!=="presentation"){try{const x=localStorage.getItem("minddeck-portable-"+(data.projectName||data.id));if(x){const parsed=JSON.parse(x);Object.keys(data).forEach(function(k){delete data[k]});Object.assign(data,parsed)}}catch(e){}}
@@ -2594,7 +2805,7 @@ function renderPresentation(){if(!pList.length)rebuildPresentation(data.id);cons
 function fitStage(){const r=document.getElementById("stageWrap").getBoundingClientRect(),aw=Math.max(1,r.width-16),ah=Math.max(1,r.height-16),s=Math.max(.01,Math.min(aw/W,ah/H)),st=document.getElementById("stage");st.style.width=W+"px";st.style.height=H+"px";st.style.minWidth=W+"px";st.style.minHeight=H+"px";st.style.flex="0 0 auto";st.style.transform="scale("+s+")"}function cfgToc(){const m=data.master&&data.master.tocVisibility||"auto";return m==="show"?true:m==="hide"?false:innerWidth>900}function applyToc(){const show=tocOverride===null?cfgToc():tocOverride,p=document.getElementById("pLayout"),b=document.getElementById("tocToggle");p.classList.toggle("toc-hidden",!show);b.textContent=show?"×":"☰";requestAnimationFrame(fitStage)}function toggleToc(){tocOverride=!(tocOverride===null?cfgToc():tocOverride);applyToc()}
 function switchMode(m){if(KIND!=="fusion")m=KIND==="presentation"?"presentation":"map";mode=m;document.getElementById("mapView").classList.toggle("on",m==="map");document.getElementById("presentationView").classList.toggle("on",m==="presentation");document.getElementById("mapMode").classList.toggle("on",m==="map");document.getElementById("presentMode").classList.toggle("on",m==="presentation");document.getElementById("tocToggle").classList.toggle("hidden",m!=="presentation");document.getElementById("fullBtn").classList.toggle("hidden",m!=="presentation");if(m==="map"){renderMap();setTimeout(fitMap,20)}else{rebuildPresentation(currentP());if(data.master&&data.master.tocSide==="right")document.getElementById("pLayout").classList.add("right");renderPresentation();applyToc()}}
 function exportJson(){const copy=JSON.parse(JSON.stringify(data));if(KIND==="mindmap"){allWalk(copy,function(n){delete n.slideElements});delete copy.master;delete copy.presentationOrder}const blob=new Blob([JSON.stringify(copy,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=(data.projectName||data.title||"minddeck")+(KIND==="mindmap"?"-思维导图":"")+".json";a.click();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
-document.getElementById("mapMode").onclick=function(){switchMode("map")};document.getElementById("presentMode").onclick=function(){switchMode("presentation")};document.getElementById("fitBtn").onclick=fitMap;document.getElementById("layoutSel").value=data.mapLayout||"radial";document.getElementById("layoutSel").onchange=function(e){data.mapLayout=e.target.value;autoLayout()};document.getElementById("reflowBtn").onclick=autoLayout;document.getElementById("expandBtn").onclick=function(){setAllFold(false);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("collapseBtn").onclick=function(){setAllFold(true);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("exportMapBtn").onclick=exportJson;document.getElementById("tocToggle").onclick=toggleToc;document.getElementById("fullBtn").onclick=function(){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+document.getElementById("mapMode").onclick=function(){switchMode("map")};document.getElementById("presentMode").onclick=function(){switchMode("presentation")};document.getElementById("fitBtn").onclick=fitMap;document.getElementById("layoutSel").value=data.mapLayout||"radial";document.getElementById("layoutSel").onchange=function(e){data.mapLayout=e.target.value;autoLayout()};document.body.dataset.uiTheme=data.uiTheme||"light";document.getElementById("themeSel").value=data.uiTheme||"light";document.getElementById("themeSel").onchange=function(e){data.uiTheme=e.target.value;document.body.dataset.uiTheme=data.uiTheme;saveLocal()};document.getElementById("reflowBtn").onclick=autoLayout;document.getElementById("expandBtn").onclick=function(){setAllFold(false);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("collapseBtn").onclick=function(){setAllFold(true);setTimeout(function(){if(mode==="map")fitMap()},20)};document.getElementById("exportMapBtn").onclick=exportJson;document.getElementById("tocToggle").onclick=toggleToc;document.getElementById("fullBtn").onclick=function(){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
 function editing(){const a=document.activeElement;return a&&(["INPUT","TEXTAREA","SELECT"].includes(a.tagName)||a.isContentEditable)}window.addEventListener("keydown",function(e){if(editing())return;if(mode==="presentation"){if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){e.preventDefault();pIndex=(pIndex+1)%pList.length;renderPresentation()}else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();pIndex=(pIndex-1+pList.length)%pList.length;renderPresentation()}else if(e.key==="t"||e.key==="T"){e.preventDefault();toggleToc()}return}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.length===1&&e.key!==" "){e.preventDefault();inlineEdit(sel,"title",e.key);return}if(e.key==="Tab"){e.preventDefault();if(e.shiftKey){const p=parent(sel);if(p){sel=p.id;renderMap()}}else addChild();return}if(e.key==="Enter"){e.preventDefault();addSibling();return}if(e.key===" "){e.preventDefault();const n=find(sel);if(n&&(n.children||[]).length){n.collapsed=!n.collapsed;saveLocal();renderMap()}return}if(e.key==="ArrowLeft"){e.preventDefault();const p=parent(sel);if(p){sel=p.id;renderMap()}return}if(e.key==="ArrowRight"){e.preventDefault();const n=find(sel);if(n&&n.collapsed&&(n.children||[]).length){n.collapsed=false;saveLocal();renderMap()}if(n&&(n.children||[]).length){sel=n.children[0].id;renderMap()}return}if(e.key==="F2"){e.preventDefault();inlineEdit(sel,"title");return}if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();delNode()}});
 const sw=document.getElementById("stageWrap");sw.addEventListener("touchstart",function(e){if(mode==="presentation"&&e.touches.length===1&&!e.target.closest("video")&&!e.target.closest("#toc")){const t=e.touches[0];swipe={x:t.clientX,y:t.clientY,time:Date.now()}}},{passive:true});sw.addEventListener("touchend",function(e){if(!swipe||!e.changedTouches.length)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y,dt=Date.now()-swipe.time;swipe=null;if(dt<900&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25){pIndex=(pIndex+(dx<0?1:-1)+pList.length)%pList.length;renderPresentation()}},{passive:true});window.addEventListener("resize",function(){if(mode==="map")fitMap();else{if(tocOverride===null)applyToc();else fitStage()}});
 switchMode(mode);
@@ -2608,7 +2819,7 @@ __SCRIPT_END__</body></html>`;
     function copyNode(n){
       return {id:n.id,title:n.title||"",text:n.text||"",collapsed:!!n.collapsed,pos:{x:n.pos?.x||0,y:n.pos?.y||0},children:(n.children||[]).map(copyNode)};
     }
-    const root=copyNode(data);root.mapLayout=data.mapLayout||"radial";return root;
+    const root=copyNode(data);root.mapLayout=data.mapLayout||"radial";root.uiTheme=data.uiTheme||"light";return root;
   }
 
   function buildStandaloneMindmapHtml(){return buildPortableHtml("mindmap")}
@@ -2618,7 +2829,7 @@ __SCRIPT_END__</body></html>`;
     if(!htmlText.includes("<!DOCTYPE html")||!htmlText.includes("</html>"))throw new Error(`${kind} 文档结构不完整`);
     const rootTitle=(findNode(data.id)?.title||"").trim();
     if(rootTitle && !htmlText.includes(rootTitle))throw new Error(`${kind} 未包含当前项目内容`);
-    if(!htmlText.includes("Portable Runtime 9.0"))throw new Error(`${kind} 未使用当前统一运行时`);
+    if(!htmlText.includes(`Portable Runtime ${RUNTIME_VERSION}`))throw new Error(`${kind} 未使用当前统一运行时`);
     const scripts=[...htmlText.matchAll(/<script>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
     if(!scripts.length)throw new Error(`${kind} 缺少运行脚本`);
     for(const js of scripts){try{new Function(js)}catch(err){throw new Error(`${kind} 脚本校验失败：${err.message}`)}}
@@ -2627,6 +2838,7 @@ __SCRIPT_END__</body></html>`;
 
   function exportStandaloneMindmap(){
     try{
+    assertProjectExportReady();
       normalize();
       const name=sanitizeFilename(data.projectName||findNode(data.id)?.title||"思维导图");
       const out=buildStandaloneMindmapHtml();
@@ -2642,6 +2854,7 @@ __SCRIPT_END__</body></html>`;
 
   function exportFusionFiles(){
     try{
+    assertProjectExportReady();
     normalize();
     const defaultName=sanitizeFilename(data.projectName||findNode(data.id)?.title||"MindDeck");
     const asked=prompt("导出文件名：",data.projectName||defaultName);
@@ -2668,6 +2881,7 @@ __SCRIPT_END__</body></html>`;
 
   function exportPresentationFiles(){
     try{
+    assertProjectExportReady();
     normalize();
     const defaultName=sanitizeFilename(data.projectName||data.title||data?.title||data?.children?.[0]?.title||data?.id||"MindDeck演示");
     const rootTitle=sanitizeFilename(findNode(data.id)?.title||defaultName);
@@ -2696,27 +2910,75 @@ __SCRIPT_END__</body></html>`;
     }
   }
 
+  function saveProjectJson(){
+    normalize();saveNow("save-project-json");
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=u;a.download=sanitizeFilename(data.projectName||findNode(data.id)?.title||"minddeck-project")+".json";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);toast("项目 JSON 已保存");
+  }
+  function exportCurrentMode(){
+    const cfg=getExportSettings();
+    if(cfg.fusionMode==="fusion")exportFusionFiles();
+    else appMode==="mindmap"?exportStandaloneMindmap():exportPresentationFiles();
+  }
+  function openOrderPanel(){renderOrderPanel();hideMobileNodeContext();orderPanel.classList.add("open");nodePanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open")}
+  function openExportSettingsPanel(){renderExportSettings();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("healthPanel").classList.remove("open");document.getElementById("exportSettingsPanel").classList.add("open")}
+  function openProjectPicker(){document.getElementById("importFile").click()}
+  const APP_COMMANDS={
+    fit:()=>fitAll(),
+    reset:()=>autoLayout(true),
+    reflow:()=>autoLayout(true),
+    add:()=>addChildNode(),
+    page:()=>openEditor("slide",selectedNodeId),
+    master:()=>openEditor("master",selectedNodeId),
+    order:()=>openOrderPanel(),
+    present:()=>enterPresentation(),
+    save:()=>saveProjectJson(),
+    saveProject:()=>saveProjectJson(),
+    import:()=>openProjectPicker(),
+    openProject:()=>openProjectPicker(),
+    export:()=>exportCurrentMode(),
+    exportCurrent:()=>exportCurrentMode(),
+    settings:()=>openExportSettingsPanel(),
+    health:()=>openHealthPanel(),
+    appearance:()=>openThemePanel(),
+    help:()=>showWelcome(true),
+  };
+  function runAppCommand(name){
+    const fn=APP_COMMANDS[name];if(!fn){console.warn("Unknown MindDeck command",name);return false}fn();return true;
+  }
+
   // bindings map
   document.querySelectorAll("[data-close-panel]").forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.closePanel)?.classList.remove("open");updateMobileNodeContext()});
   document.getElementById("mobileMainSheetClose").onclick=closeMobileMainSheet;
   document.getElementById("mobileMainMore").onclick=openMobileMainSheet;
-  document.getElementById("mobileMainFit").onclick=()=>{closeMobileMainSheet();fitAll()};
-  document.getElementById("mobileMainAdd").onclick=()=>{closeMobileMainSheet();addChildNode()};
-  document.getElementById("mobileMainPage").onclick=()=>openEditor("slide",selectedNodeId);
-  document.getElementById("mobileMainPresent").onclick=()=>document.getElementById("presentBtn").click();
-  document.getElementById("mobileEditPageBtn").onclick=()=>openEditor("slide",selectedNodeId);
+  document.getElementById("mobileMainFit").onclick=()=>{closeMobileMainSheet();runAppCommand("fit")};
+  document.getElementById("mobileMainAdd").onclick=()=>{closeMobileMainSheet();runAppCommand("add")};
+  document.getElementById("mobileMainPage").onclick=()=>runAppCommand("page");
+  document.getElementById("mobileMainPresent").onclick=()=>runAppCommand("present");
+  document.getElementById("mobileEditPageBtn").onclick=()=>runAppCommand("page");
   document.getElementById("mobileNodeDetailBtn").onclick=()=>{closeMobileMainSheet();hideMobileNodeContext();nodePanel.classList.add("open")};
-  document.getElementById("mobileNodeChildBtn").onclick=()=>addChildNode();
+  document.getElementById("mobileNodeChildBtn").onclick=()=>runAppCommand("add");
   document.getElementById("mobileNodeContextClose").onclick=()=>document.getElementById("mobileNodeContext").classList.remove("open");
 
+  document.getElementById("healthCheckBtn").onclick=()=>runAppCommand("health");
+  document.getElementById("appearanceBtn").onclick=()=>runAppCommand("appearance");
+  document.getElementById("helpBtn").onclick=()=>runAppCommand("help");
+  document.querySelectorAll("[data-theme-choice]").forEach(btn=>btn.onclick=()=>setUiTheme(btn.dataset.themeChoice));
+  document.getElementById("welcomeClose").onclick=closeWelcome;
+  document.getElementById("welcomeStart").onclick=closeWelcome;
+  document.getElementById("welcomeMindmap").onclick=()=>{setAppMode("mindmap");closeWelcome();setTimeout(fitAll,40)};
+  document.getElementById("welcomeOverlay").onclick=e=>{if(e.target.id==="welcomeOverlay")closeWelcome()};
+  document.getElementById("runHealthCheckBtn").onclick=()=>{const r=runProjectHealthCheck(true);renderHealthReport(r);toast(r.fail?"自检发现失败项":r.warn?"自检完成：有风险提示":"自检通过")};
+  document.getElementById("copyHealthReportBtn").onclick=async()=>{if(!lastHealthReport){renderHealthReport(runProjectHealthCheck(true))}const text=healthReportText();try{await navigator.clipboard.writeText(text);toast("自检报告已复制")}catch{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("自检报告已复制")}};
+  document.getElementById("restoreBackupBtn").onclick=restoreRecoveryBackup;
   document.getElementById("presentationModeBtn").onclick=()=>setAppMode("presentation");
   document.getElementById("mindmapModeBtn").onclick=()=>setAppMode("mindmap");
-  document.getElementById("fitBtn").onclick=fitAll;
+  document.getElementById("fitBtn").onclick=()=>runAppCommand("fit");
   document.getElementById("mapLayoutSelect").onchange=e=>setMapLayout(e.target.value,true);
-  document.getElementById("resetLayoutBtn").onclick=()=>autoLayout(true);
-  document.getElementById("orderBtn").onclick=()=>{renderOrderPanel();hideMobileNodeContext();orderPanel.classList.add("open");nodePanel.classList.remove("open")};
-  document.getElementById("masterBtn").onclick=()=>openEditor("master",selectedNodeId);
-  document.getElementById("presentBtn").onclick=enterPresentation;
+  document.getElementById("resetLayoutBtn").onclick=()=>runAppCommand("reflow");
+  document.getElementById("orderBtn").onclick=()=>runAppCommand("order");
+  document.getElementById("masterBtn").onclick=()=>runAppCommand("master");
+  document.getElementById("presentBtn").onclick=()=>runAppCommand("present");
   document.getElementById("presentTocToggle").onclick=e=>{e.stopPropagation();togglePresentationToc()};
   document.getElementById("saveNodeBtn").onclick=()=>{checkpoint();const n=findNode(selectedNodeId);n.title=document.getElementById("nodeTitle").value.trim()||"未命名节点";n.text=document.getElementById("nodeText").value.trim();save();renderMap();toast("节点已保存")};
   document.getElementById("editSlideBtn").onclick=()=>openEditor("slide",selectedNodeId);
@@ -2728,29 +2990,23 @@ __SCRIPT_END__</body></html>`;
     const pairs=[...document.querySelectorAll("[data-order-id]")].map(i=>({id:i.dataset.orderId,n:Number(i.value)||9999})).sort((a,b)=>a.n-b.n);
     data.presentationOrder=[data.id,...pairs.map(x=>x.id)];save();renderMap();renderOrderPanel();toast("顺序已保存")
   };
-  document.getElementById("exportBtn").onclick=()=>{
-    normalize();save();
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=sanitizeFilename(data.projectName||findNode(data.id)?.title||"minddeck-project")+".json";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);toast("项目 JSON 已保存")
-  };
-  document.getElementById("exportViewerBtn").onclick=()=>{
-    const s=getExportSettings();
-    if(s.fusionMode==="fusion")exportFusionFiles();
-    else appMode==="mindmap"?exportStandaloneMindmap():exportPresentationFiles();
-  };
-  document.getElementById("exportSettingsBtn").onclick=()=>{renderExportSettings();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.add("open")};
+  document.getElementById("exportBtn").onclick=()=>runAppCommand("saveProject");
+  document.getElementById("exportViewerBtn").onclick=()=>runAppCommand("exportCurrent");
+  document.getElementById("exportSettingsBtn").onclick=()=>runAppCommand("settings");
   document.getElementById("saveExportSettingsBtn").onclick=()=>{setExportSettings(readExportSettings());document.getElementById("exportSettingsPanel").classList.remove("open");setAppMode(appMode);toast("高级导出设置已保存")};
   document.getElementById("resetExportSettingsBtn").onclick=()=>{setExportSettings(DEFAULT_EXPORT_SETTINGS);renderExportSettings();setAppMode(appMode);toast("已恢复默认导出设置")};
-  document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+  document.getElementById("importBtn").onclick=()=>runAppCommand("openProject");
   document.getElementById("importFile").onchange=async e=>{
     const f=e.target.files?.[0];if(!f)return;
+    createRecoveryBackup("before-import");
     try{
       if(f.name.toLowerCase().endsWith(".minddeck")){
         const entries=unzipStored(await f.arrayBuffer());
         data=restoreMinddeckProject(entries);
-        normalize();syncMapLayoutControls();save();renderMap();renderOrderPanel();fitAll();toast("MindDeck 项目包已打开");
+        normalize();applyUiTheme();syncMapLayoutControls();saveNow("import-minddeck");renderMap();renderOrderPanel();fitAll();{const hr=runProjectHealthCheck(false);toast(hr.fail?"MindDeck 项目包已打开，但自检发现问题":hr.warn?"MindDeck 项目包已打开，有风险提示":"MindDeck 项目包已打开")};
       }else{
         data=JSON.parse(await f.text());
-        normalize();syncMapLayoutControls();save();renderMap();renderOrderPanel();fitAll();toast("JSON 项目已导入");
+        normalize();applyUiTheme();syncMapLayoutControls();saveNow("import-json");renderMap();renderOrderPanel();fitAll();{const hr=runProjectHealthCheck(false);toast(hr.fail?"JSON 项目已导入，但自检发现问题":hr.warn?"JSON 项目已导入，有风险提示":"JSON 项目已导入")};
       }
     }catch(err){
       console.error(err);toast("打开失败："+(err?.message||"文件格式不正确"));
@@ -2820,7 +3076,7 @@ __SCRIPT_END__</body></html>`;
     const textEditing=isTextEditingTarget();
 
     if(mod && (e.key==="s"||e.key==="S")){
-      e.preventDefault();save();toast(appMode==="mindmap"?"思维导图已保存到浏览器":"已保存到浏览器；建议同时导出项目 JSON");
+      e.preventDefault();saveNow("shortcut");toast(appMode==="mindmap"?"思维导图已保存到浏览器":"已保存到浏览器；建议同时导出项目 JSON");
       return
     }
 
@@ -2849,6 +3105,8 @@ __SCRIPT_END__</body></html>`;
       return
     }
 
+    if(!textEditing && e.key==="?"){e.preventDefault();showWelcome(true);return}
+
     if(appMode==="mindmap" && !textEditing){
       if(!mod && !e.altKey && e.key.length===1 && e.key!==" "){
         e.preventDefault();beginInlineMapEdit(selectedNodeId,"title",e.key);return
@@ -2868,13 +3126,14 @@ __SCRIPT_END__</body></html>`;
     if(!textEditing && ((mod&&(e.key==="y"||e.key==="Y"))||(mod&&e.shiftKey&&(e.key==="z"||e.key==="Z")))){e.preventDefault();redo();return}
     if(e.key==="0")fitAll()
   });
+  window.addEventListener("beforeunload",()=>{try{saveNow("beforeunload")}catch{}});
   window.addEventListener("resize",()=>{
     if(editorOpen)fitEditorStage(false);
     if(presentation){if(tocTemporaryOverride===null)applyTocVisibility();else fitPresentStage()}
     else{fitAll();updateMobileNodeContext();if(window.innerWidth>700)closeMobileMainSheet()}
   });
 
-  normalize();syncMapLayoutControls();updateMasterPanel();renderExportSettings();save();setAppMode(appMode);renderOrderPanel();setTimeout(fitAll,60);
+  normalize();applyUiTheme();syncMapLayoutControls();updateMasterPanel();renderExportSettings();lastSavedJson=JSON.stringify(data);saveNow("startup-migrate");updateRecoveryButton();setAppMode(appMode);renderOrderPanel();setTimeout(()=>{fitAll();if(startupRecovery)toast("已从自动恢复备份载入项目");setTimeout(()=>showWelcome(false),220)},60);
 })();
 </script>
 </body>
