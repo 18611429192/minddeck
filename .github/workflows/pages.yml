@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -20,9 +21,16 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The repository must be enabled once in:
+      # Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
       - name: Build static site
         run: |
           rm -rf _site
@@ -30,10 +38,15 @@ jobs:
           cp -R site/. _site/
           cp index.html _site/app.html
           cp examples/demo.json _site/examples/demo.json
-          if [ -f docs/assets/minddeck-demo.gif ]; then cp docs/assets/minddeck-demo.gif _site/assets/minddeck-demo.gif; fi
-      - uses: actions/upload-pages-artifact@v3
+          if [ -f docs/assets/minddeck-demo.gif ]; then
+            cp docs/assets/minddeck-demo.gif _site/assets/minddeck-demo.gif
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

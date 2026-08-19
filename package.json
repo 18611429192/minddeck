@@ -1,6 +1,6 @@
 {
   "name": "minddeck",
-  "version": "9.5.0-rc.1",
+  "version": "9.5.1-rc.1",
   "private": true,
   "type": "module",
   "description": "Mind map structured, freeform slide presentation tool",
