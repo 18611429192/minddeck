@@ -23,9 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Build static site
+        run: |
+          rm -rf _site
+          mkdir -p _site/examples _site/assets
+          cp -R site/. _site/
+          cp index.html _site/app.html
+          cp examples/demo.json _site/examples/demo.json
+          if [ -f docs/assets/minddeck-demo.gif ]; then cp docs/assets/minddeck-demo.gif _site/assets/minddeck-demo.gif; fi
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
