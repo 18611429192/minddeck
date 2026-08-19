@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MindDeck V9.5.2 RC - 发布候选版</title>
+<title>MindDeck V9.5.3 RC - 发布候选版</title>
 <style>
 :root{
   --app-bg:#f5f7fb;--panel:#fff;--text:#1f2329;--muted:#6f7785;--line:#bac2cf;
@@ -760,6 +760,21 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
   border-color:#dacdf4;
 }
 
+
+/* V9.5.3: master uses the exact same page editor model */
+#masterSettingsBtn{display:none}
+#editorShell.master-editing #masterSettingsBtn{display:inline-flex!important}
+#editorShell.master-editing .master-panel-empty{display:none!important}
+#editorShell.master-editing #editorModePill{
+  background:#f1ebfb;color:#6843b5;border-color:#dacdf4
+}
+#editorShell.master-editing #editorStage{
+  outline:2px solid rgba(139,99,217,.14);outline-offset:8px
+}
+@media(max-width:700px),(pointer:coarse){
+  #masterSettingsBtn{display:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -767,7 +782,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
   <div class="topbar">
     <div class="brand">
       <span class="brand-mark">M</span>
-      <span class="brand-copy">MindDeck V9.5.2 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small></span>
+      <span class="brand-copy">MindDeck V9.5.3 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small></span>
     </div>
 
     <div class="mode-switch">
@@ -995,6 +1010,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
         <button class="btn" id="backBtn">置于底层</button>
         <button class="btn danger" id="deleteElBtn">删除</button>
         <div class="spacer"></div>
+        <button class="btn" id="masterSettingsBtn" style="display:none">母版设置</button>
         <button class="btn" id="toggleMasterModeBtn">切到母版</button>
         <button class="btn primary" id="saveEditorBtn">保存</button>
       </div>
@@ -1072,7 +1088,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 
     <div id="welcomeOverlay" aria-hidden="true">
       <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.5.2 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
+        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.5.3 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
         <div class="welcome-steps">
           <div class="welcome-step"><span>1</span><div><b>先整理结构</b><p>在思维导图里建立主题、分支和层级。折叠节点时，布局和演示序列都会跟着变化。</p></div></div>
           <div class="welcome-step"><span>2</span><div><b>再设计页面</b><p>演示编辑模式下，选中节点后进入 16:9 页面。文字、图片、视频和形状都可以自由排版。</p></div></div>
@@ -1087,7 +1103,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 
 <script>
 (() => {
-  const W=1600,H=900,APP_VERSION="9.5.2 RC",RUNTIME_VERSION="9.5",RELEASE_CHANNEL="rc";
+  const W=1600,H=900,APP_VERSION="9.5.3 RC",RUNTIME_VERSION="9.5",RELEASE_CHANNEL="rc";
   const animTypes=[["inherit","跟随默认"],["none","无动画"],["fade","淡入"],["soft","平滑显现"],["up","向上浮入"],["left","从右向左"],["right","从左向右"],["zoom","轻微缩放"]];
 
   const defaultMaster=()=>({
@@ -2178,13 +2194,12 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
   }
 
   function resetEditorPanelsForMode(mode){
-    // An editor session must never inherit a stale presentation/collapsed-panel state.
+    // Page and master share one editor. Switching mode starts from a clean selection/panel state.
     document.body.classList.remove("presentation-mode");
     document.getElementById("presentShell")?.classList.remove("open");
     propPanel.classList.remove("open","panel-collapsed");
     document.getElementById("editorPropRestoreHandle")?.classList.remove("open");
     masterEmptyPanel.classList.remove("open");
-    if(mode==="master")updateMasterPanel();
   }
   function openEditor(mode="slide",nodeId=selectedNodeId){
     if(presentation){
@@ -2195,8 +2210,9 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     editorMode=mode;editorNodeId=nodeId;selectedEls.clear();selectionAnchorId=null;editorOpen=true;editorShell.classList.add("open");
     editorShell.classList.toggle("master-editing",mode==="master");
     document.getElementById("editorModePill").textContent=mode==="master"?"母版":"页面";
-    document.getElementById("editorTitle").textContent=mode==="master"?"母版画布":(findNode(nodeId)?.title||"页面");
-    document.getElementById("toggleMasterModeBtn").textContent=mode==="master"?"切到当前页":"切到母版";
+    document.getElementById("editorTitle").textContent=mode==="master"?"母版":(findNode(nodeId)?.title||"页面");
+    document.getElementById("toggleMasterModeBtn").textContent=mode==="master"?"返回当前页":"切到母版";
+    document.getElementById("masterSettingsBtn").style.display=mode==="master"?"inline-flex":"none";
     mobileMultiSelectMode=false;mobilePropOpen=false;editorPanX=0;editorPanY=0;editorViewTouched=false;
     document.getElementById("mobileNodeContext")?.classList.remove("open");closeMobileMainSheet();
     document.getElementById("mobileMultiBtn")?.classList.remove("active");
@@ -2228,20 +2244,11 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
       currentEditorElements().slice().sort((a,b)=>(a.z||0)-(b.z||0)).forEach(e=>editorStage.appendChild(renderCanvasElement(e,false,true)));
     }
     updateSelectionVisual();
+    masterEmptyPanel.classList.remove("open");
     if(selectedEls.size===1){
-      masterEmptyPanel.classList.remove("open");
-      if(editorMode==="master"){
-        // Master element properties must not be hidden by a collapse state inherited from slide editing.
-        propPanel.classList.remove("panel-collapsed");
-        document.getElementById("editorPropRestoreHandle")?.classList.remove("open");
-      }
       showPropertyPanel([...selectedEls][0]);
     }else{
       propPanel.classList.remove("open");
-      if(editorMode==="master"){
-        updateMasterPanel();
-        masterEmptyPanel.classList.add("open");
-      }else masterEmptyPanel.classList.remove("open");
     }
   }
   function renderCanvasElement(e,isMaster,interactive){
@@ -2383,14 +2390,10 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 
   function refreshSelectionUI(){
     updateSelectionVisual();
+    masterEmptyPanel.classList.remove("open");
     if(selectedEls.size===1){
       const id=[...selectedEls][0];
-      masterEmptyPanel.classList.remove("open");
-      if(editorMode==="master"){
-        propPanel.classList.remove("panel-collapsed");
-        document.getElementById("editorPropRestoreHandle")?.classList.remove("open");
-        showPropertyPanel(id);
-      }else if(isMobileEditor()){
+      if(isMobileEditor()){
         showPropertyPanel(id);
         propPanel.classList.toggle("open",mobilePropOpen);
       }else if(propPanel.classList.contains("panel-collapsed")){
@@ -2399,10 +2402,6 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
       }else showPropertyPanel(id);
     }else{
       mobilePropOpen=false;propPanel.classList.remove("open");
-      if(editorMode==="master"){
-        updateMasterPanel();
-        masterEmptyPanel.classList.add("open");
-      }else masterEmptyPanel.classList.remove("open");
     }
     updateMobileEditorButtons();
   }
@@ -2751,7 +2750,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     const multi=document.getElementById("mobileMultiBtn");
     multi?.classList.toggle("active",mobileMultiSelectMode);
     const prop=document.getElementById("mobilePropBtn");
-    if(prop)prop.disabled=selectedEls.size!==1;
+    if(prop)prop.disabled=selectedEls.size!==1 && editorMode!=="master";
     const align=document.getElementById("mobileAlignBtn");
     if(align)align.disabled=selectedEls.size<2;
     const layer=document.getElementById("mobileLayerBtn");
@@ -2810,12 +2809,64 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     });
   }
 
-  // master background
+  // Master settings are an explicit property panel, not a second editor UI.
   function updateMasterPanel(){
-    document.getElementById("masterBgColor").value=data.master.bgColor||"#ffffff";
-    document.getElementById("masterBgFit").value=data.master.bgFit||"cover";
-    document.getElementById("masterTocVisibility").value=data.master.tocVisibility||"auto";
-    document.getElementById("masterTocSide").value=data.master.tocSide||"left"
+    // Kept for old project/runtime compatibility; the active editor uses showMasterSettingsPanel().
+    const c=document.getElementById("masterBgColor"),f=document.getElementById("masterBgFit"),
+      v=document.getElementById("masterTocVisibility"),s=document.getElementById("masterTocSide");
+    if(c)c.value=data.master.bgColor||"#ffffff";
+    if(f)f.value=data.master.bgFit||"cover";
+    if(v)v.value=data.master.tocVisibility||"auto";
+    if(s)s.value=data.master.tocSide||"left";
+  }
+  function showMasterSettingsPanel(){
+    if(editorMode!=="master")return;
+    selectedEls.clear();selectionAnchorId=null;updateSelectionVisual();
+    masterEmptyPanel.classList.remove("open");
+    propPanel.classList.remove("panel-collapsed");
+    document.getElementById("editorPropRestoreHandle")?.classList.remove("open");
+    document.getElementById("propTitle").textContent="母版设置";
+    propContent.innerHTML=`
+      <div class="small-note" style="margin-bottom:12px">母版画布和普通页面使用完全相同的编辑方式。这里只放背景、目录和默认动画等全局设置。</div>
+      <div class="field"><label>背景颜色</label><input type="color" data-master-p="bgColor" value="${data.master.bgColor||"#ffffff"}"></div>
+      <div class="field"><label>背景图片</label><input type="file" id="masterSettingsBgFile" accept="image/*"></div>
+      <div class="actions" style="margin-top:6px"><button class="btn" id="clearMasterBgImage" ${data.master.bgImage?"":"disabled"}>清除背景图片</button></div>
+      <div class="field"><label>背景适配</label><select data-master-p="bgFit">
+        <option value="cover" ${(data.master.bgFit||"cover")==="cover"?"selected":""}>铺满</option>
+        <option value="contain" ${data.master.bgFit==="contain"?"selected":""}>完整显示</option>
+      </select></div>
+      <div class="field"><label>目录显示</label><select data-master-p="tocVisibility">
+        <option value="auto" ${(data.master.tocVisibility||"auto")==="auto"?"selected":""}>自动（桌面显示，手机隐藏）</option>
+        <option value="show" ${data.master.tocVisibility==="show"?"selected":""}>始终显示</option>
+        <option value="hide" ${data.master.tocVisibility==="hide"?"selected":""}>始终隐藏</option>
+      </select></div>
+      <div class="field"><label>目录位置</label><select data-master-p="tocSide">
+        <option value="left" ${(data.master.tocSide||"left")==="left"?"selected":""}>左侧</option>
+        <option value="right" ${data.master.tocSide==="right"?"selected":""}>右侧</option>
+      </select></div>
+      <div class="field"><label>默认动画</label><select data-master-p="defaultAnimation">
+        ${animTypes.filter(([v])=>v!=="inherit").map(([v,t])=>`<option value="${v}" ${(data.master.defaultAnimation||"soft")===v?"selected":""}>${t}</option>`).join("")}
+      </select></div>
+      <div class="hint">文字、图片、视频、形状请直接用顶部“插入”工具添加到母版画布，操作和普通页面完全一致。</div>`;
+    propPanel.classList.add("open");
+    propContent.querySelectorAll("[data-master-p]").forEach(input=>{
+      input.onfocus=()=>checkpoint();
+      const apply=()=>{
+        const p=input.dataset.masterP;
+        data.master[p]=input.value;
+        save();
+        if(p==="bgColor"||p==="bgFit")renderEditor();
+      };
+      input.oninput=apply;input.onchange=apply;
+    });
+    const file=propContent.querySelector("#masterSettingsBgFile");
+    if(file)file.onchange=e=>{
+      const f=e.target.files?.[0];if(!f)return;checkpoint();
+      const r=new FileReader();r.onload=()=>{data.master.bgImage=r.result;save();renderEditor();showMasterSettingsPanel()};r.readAsDataURL(f)
+    };
+    const clear=propContent.querySelector("#clearMasterBgImage");
+    if(clear)clear.onclick=()=>{if(!data.master.bgImage)return;checkpoint();data.master.bgImage=null;save();renderEditor();showMasterSettingsPanel()};
+    updateMobileEditorButtons();
   }
 
   // presentation
@@ -3222,8 +3273,11 @@ __SCRIPT_END__</body></html>`;
   document.getElementById("mobileLayerBtn").onclick=()=>{if(!selectedEls.size){toast("请先选择元素");return}openMobileEditorSheet("layer")};
   document.getElementById("mobilePropBtn").onclick=()=>{
     closeMobileEditorSheet();
-    if(selectedEls.size!==1){toast("请先选择一个元素");return}
-    propPanel.classList.remove("panel-collapsed");document.getElementById("editorPropRestoreHandle")?.classList.remove("open");mobilePropOpen=true;showPropertyPanel([...selectedEls][0]);propPanel.classList.add("open");
+    propPanel.classList.remove("panel-collapsed");document.getElementById("editorPropRestoreHandle")?.classList.remove("open");mobilePropOpen=true;
+    if(selectedEls.size===1)showPropertyPanel([...selectedEls][0]);
+    else if(editorMode==="master")showMasterSettingsPanel();
+    else{toast("请先选择一个元素");return}
+    propPanel.classList.add("open");
   };
   document.getElementById("mobileMultiBtn").onclick=()=>{
     mobileMultiSelectMode=!mobileMultiSelectMode;mobilePropOpen=false;propPanel.classList.remove("open");closeMobileEditorSheet();
@@ -3236,7 +3290,8 @@ __SCRIPT_END__</body></html>`;
     else setEditorZoom(editorScale*1.55);
   };
   document.getElementById("backToMapBtn").onclick=closeEditor;
-  document.getElementById("saveEditorBtn").onclick=()=>{save();toast("页面已保存")};
+  document.getElementById("saveEditorBtn").onclick=()=>{save();toast(editorMode==="master"?"母版已保存":"页面已保存")};
+  document.getElementById("masterSettingsBtn").onclick=showMasterSettingsPanel;
   document.getElementById("toggleMasterModeBtn").onclick=()=>openEditor(editorMode==="master"?"slide":"master",editorNodeId||selectedNodeId);
   document.getElementById("addTextBtn").onclick=()=>addElement("text");
   document.getElementById("addRectBtn").onclick=()=>addElement("rect");
