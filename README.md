@@ -2,7 +2,7 @@
 
 **MindDeck 是一个把思维导图和演示页面放在一起的浏览器工具。**
 
-> 当前版本：**V9.6.5 RC**  
+> 当前版本：**V9.6.6 RC**  
 > 先看清整件事，再讲清每一页。
 
 普通 PPT 很适合一页一页讲，但很多内容本身不是一条直线，而是一棵树。
@@ -63,7 +63,7 @@ MindDeck 把一份演示拆成三层：
 
 不需要注册。
 
-仓库里的 `examples/demo.json` 是一份完整的产品方案 Showcase，可以直接导入 MindDeck 继续编辑。当前 Demo 按 **V9.6.5 RC** 验证，包含母版、章节配色、不同页面布局、轻量动画和三级分支。
+仓库里的 `examples/demo.json` 是一份完整的产品方案 Showcase，可以直接导入 MindDeck 继续编辑。当前 Demo 按 **V9.6.6 RC** 验证，包含母版、章节配色、不同页面布局、轻量动画和三级分支。
 
 建议体验时专门试一下“安全”分支：进入演示后把它收起，观察权限 / 数据 / 审计从后续序列里消失，再重新展开。
 
@@ -109,7 +109,7 @@ V9.6 做的重点不是继续堆功能，而是解决一个长期问题：
 
 > 编辑器修好了，但导出还是旧行为。
 
-现在 Tree、Project、Layout、Presentation、TOC、Map Renderer、Slide / Element Renderer、Animation、Viewport、Input、Fullscreen、Diagnostics、Recovery 等业务规则都已经收口到共享 Runtime。
+现在 Tree、Project、Layout、Presentation、TOC、Map Renderer、Slide / Element Renderer、Animation、Viewport、Input、Fullscreen、Diagnostics、Recovery 等业务规则都已经收口到共享 Runtime。V9.6.6 又把演示视图层收进 `PresentationView`：编辑器内演示和导出演示共用同一套页面刷新、TOC、舞台缩放、键盘、滚轮和触摸流程。
 
 ```text
 src/runtime/
@@ -176,7 +176,7 @@ Pages 部署由 `.github/workflows/pages.yml` 完成：
 
 ## 项目阶段
 
-目前仍处于 **Release Candidate** 阶段，当前基线是 **V9.6.5 RC**。
+目前仍处于 **Release Candidate** 阶段，当前基线是 **V9.6.6 RC**。
 
 V9.6 已完成业务框架统一。接下来优先完善演示能力、正式汇报可靠性、手机 / 桌面体验和真实项目中的使用问题，而不是重新复制 Runtime。
 

@@ -1,6 +1,6 @@
 # Demo
 
-`demo.json` 是一份完整的 MindDeck Showcase，当前按 **V9.6.5 RC** 验证。
+`demo.json` 是一份完整的 MindDeck Showcase，当前按 **V9.6.6 RC** 验证。
 
 建议：
 

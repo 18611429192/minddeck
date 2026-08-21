@@ -1,6 +1,6 @@
 # GitHub Pages 结构
 
-当前 Pages 对应 **MindDeck V9.6.5 RC**。
+当前 Pages 对应 **MindDeck V9.6.6 RC**。
 
 - `/`：产品首页
 - `/demo.html`：无需导入即可操作的 Showcase

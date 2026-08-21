@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const VERSION='9.6';
+  const VERSION='9.6.6';
   const LAYOUTS=['balanced','right','left','down','radial'];
   const THEMES=['light','dark','business','minimal'];
   const THEME_LABELS=Object.freeze({light:'明亮',dark:'深色',business:'商务',minimal:'极简'});
@@ -702,6 +702,113 @@
     }
   };
 
+  const PresentationView={
+  defaults:Object.freeze({
+    width:1600,height:900,stagePadding:20,tocBaseIndent:8,tocIndent:15,
+    expandGlyph:'＋',collapseGlyph:'−',wheelThreshold:12,wheelThrottle:420,swipeAxisRatio:1.3
+  }),
+  create(options={}){
+    const doc=options.document||global.document,win=options.window||global;
+    const data=options.data,session=options.session;
+    if(!doc||!win||!data||!session)throw new Error('PresentationView requires document, window, data and session');
+    const resolve=value=>typeof value==='function'?value():value;
+    const cfg={...PresentationView.defaults,...(options.config||{})};
+    let bound=false,touchStart=null,wheelLocked=false;
+    const listeners=[];
+    const on=(target,type,handler,listenerOptions)=>{if(!target?.addEventListener)return;target.addEventListener(type,handler,listenerOptions);listeners.push(()=>target.removeEventListener(type,handler,listenerOptions))};
+    const active=()=>options.isActive?!!options.isActive():true;
+    const view={
+      data,session,
+      fit(){return Stage.apply(resolve(options.stage),resolve(options.stageWrap),{width:cfg.width,height:cfg.height,padding:cfg.stagePadding})},
+      applySide(){
+        const layout=resolve(options.tocLayout),toc=resolve(options.tocContainer),right=data.master?.tocSide==='right';
+        if(layout&&options.rightClass)layout.classList.toggle(options.rightClass,right);
+        if(toc&&options.tocRightClass)toc.classList.toggle(options.tocRightClass,right);
+        if(layout&&toc&&options.moveToc){if(right)layout.appendChild(toc);else layout.insertBefore(toc,layout.firstChild)}
+        return right;
+      },
+      applyTocVisibility(fit=true){
+        const layout=resolve(options.tocLayout),button=resolve(options.tocToggle),show=session.actualTocVisible(win.innerWidth);
+        if(layout)layout.classList.toggle(options.tocHiddenClass||'toc-hidden',!show);
+        if(button){button.textContent=show?'×':'☰';button.title=show?'隐藏目录':'显示目录'}
+        options.onTocVisibility?.(show,view);
+        if(fit)win.requestAnimationFrame?.(()=>view.fit());
+        return show;
+      },
+      toggleToc(){session.toggleToc(win.innerWidth);return view.applyTocVisibility()},
+      renderToc(){
+        const tree=resolve(options.tocTree);if(!tree)return null;
+        const count=resolve(options.tocCount);
+        if(count){const format=options.tocCountFormatter||((n)=>n+' 项');count.textContent=format(session.order.length)}
+        return TocRenderer.render(tree,session,{
+          document:doc,itemClass:options.itemClass||'toc-item',activeClass:options.activeClass||'active',ancestorClass:options.ancestorClass||'ancestor',
+          foldClass:options.foldClass||'fold-mini',placeholderClass:options.placeholderClass||'placeholder',numberClass:options.numberClass||'num',labelClass:options.labelClass||'label',
+          foldFirst:false,baseIndent:cfg.tocBaseIndent,indent:cfg.tocIndent,expandGlyph:cfg.expandGlyph,collapseGlyph:cfg.collapseGlyph,
+          onFold:node=>{session.toggleCollapsed(node.id);options.onFold?.(node,view);view.render({rebuild:false})},
+          onGoto:node=>{session.goto(node.id);options.onGoto?.(node,view);view.render({rebuild:false})},
+          decorateItem:options.decorateTocItem
+        });
+      },
+      updateHighlight(){
+        const tree=resolve(options.tocTree);if(!tree)return;
+        TocRenderer.updateHighlight(tree,session,{itemClass:options.itemClass||'toc-item',activeClass:options.activeClass||'active',ancestorClass:options.ancestorClass||'ancestor'});
+      },
+      render(renderOptions={}){
+        if(renderOptions.rebuild!==false)session.rebuild(session.currentId(),session.index);
+        const stage=resolve(options.stage);if(!stage)return null;
+        Slide.render(stage,data,session.currentNode()||data,{
+          elementOptions:{baseClass:options.elementClass||'present-el',animate:true,defaultAnimation:data.master?.defaultAnimation||'soft',...(options.elementOptions||{})},
+          decorate:options.decorateSlideElement
+        });
+        view.applySide();view.renderToc();view.applyTocVisibility(false);view.updateHighlight();view.fit();
+        if(options.scrollActive){const tree=resolve(options.tocTree);tree?.querySelector?.('.'+(options.itemClass||'toc-item')+'.'+(options.activeClass||'active'))?.scrollIntoView?.({behavior:'smooth',block:'center'})}
+        options.afterRender?.(session.currentNode()||data,view);
+        return stage;
+      },
+      refresh(preferredId=session.currentId(),fallback=session.index){session.rebuild(preferredId,fallback);return view.render({rebuild:false})},
+      step(delta,wrap=true){session.step(delta,wrap);return view.render({rebuild:false})},
+      action(action){
+        if(['next','prev','first','last'].includes(action)){session.action(action);view.render({rebuild:false});return true}
+        if(action==='toc'){view.toggleToc();return true}
+        if(action==='fullscreen'){Fullscreen.toggle(resolve(options.fullscreenTarget)||doc.documentElement,doc);return true}
+        if(action==='exit'){
+          if(options.onExit)options.onExit(view);
+          else if(Fullscreen.isActive(doc))Fullscreen.exit(doc);
+          return true;
+        }
+        return false;
+      },
+      handleKey(event){
+        if(!active())return false;
+        const action=Input.presentationKeyAction(event);if(!action)return false;
+        event.preventDefault?.();return view.action(action);
+      },
+      bindInput(){
+        if(bound)return view;bound=true;
+        const touchTarget=resolve(options.touchTarget)||resolve(options.stageWrap),exclude=options.excludeSelector||'.toc,#toc,video,input,textarea,select,[contenteditable="true"]';
+        on(touchTarget,'touchstart',event=>{
+          if(!active()||event.touches?.length!==1||event.target?.closest?.(exclude))return;
+          const t=event.touches[0];touchStart={x:t.clientX,y:t.clientY,time:Date.now()};
+        },{passive:true});
+        on(touchTarget,'touchend',event=>{
+          if(!active()||!touchStart||!event.changedTouches?.length)return;
+          const t=event.changedTouches[0],step=Input.swipeStep(touchStart,{x:t.clientX,y:t.clientY,time:Date.now()},{axisRatio:cfg.swipeAxisRatio});touchStart=null;
+          if(step)view.step(step);
+        },{passive:true});
+        on(win,'wheel',event=>{
+          if(!active()||event.target?.closest?.(exclude))return;
+          const step=Input.wheelStep(event,cfg.wheelThreshold);if(!step)return;
+          event.preventDefault?.();if(wheelLocked)return;wheelLocked=true;view.step(step);win.setTimeout(()=>wheelLocked=false,cfg.wheelThrottle);
+        },{passive:false});
+        on(win,'resize',()=>{if(!active())return;if(session.tocOverride===null)view.applyTocVisibility();else view.fit()});
+        return view;
+      },
+      destroy(){listeners.splice(0).forEach(off=>off());bound=false;touchStart=null;wheelLocked=false}
+    };
+    return view;
+  }
+};
+
   const ExportData={
     project(project,kind='fusion'){
       const copy=Project.clone(project);
@@ -720,7 +827,7 @@
       const W=options.width||1600,H=options.height||900;
       Project.normalize(data,{normalizeLayers:false});
       let mode=kind==='presentation'?'presentation':'map',selectedId=data.id;
-      let mapScale=.8,mapTx=win.innerWidth/2,mapTy=win.innerHeight/2,moved=false,nodeDrag=null,mapPan=null,touchState=null,swipe=null,wheelLock=false;
+      let mapScale=.8,mapTx=win.innerWidth/2,mapTy=win.innerHeight/2,moved=false,nodeDrag=null,mapPan=null,touchState=null;
       const session=PresentationSession.create(data,data.id,0);
       const $=id=>doc.getElementById(id),find=id=>Tree.findNode(data,id),parent=id=>Tree.findParent(data,id);
       const mapVp=$('mapVp'),mapWorld=$('mapWorld');
@@ -797,39 +904,29 @@
         renderMap();
       };
       const autoLayout=()=>{Layout.apply(data,data.mapLayout||'radial');saveLocal();renderMap();setTimeout(fitMap,20)};
-      const setAllFold=value=>{session.setAllCollapsed(value);saveLocal();renderMap();if(mode==='presentation')renderPresentation()};
-      const renderToc=()=>{
-        const container=$('toc');
-        const head=doc.createElement('div');head.id='tocHead';
-        head.innerHTML='<div id="tocHeadTop"><div class="tocTitle"></div><button class="tocAct" id="pOpen">全开</button><button class="tocAct" id="pClose">全收</button><button class="tocAct" id="pHide">×</button></div>';
-        container.innerHTML='';container.appendChild(head);head.querySelector('.tocTitle').textContent=`演示目录 · ${session.order.length} 项`;
-        const body=doc.createElement('div');body.id='tocBody';container.appendChild(body);
-        TocRenderer.render(body,session,{
-          document:doc,itemClass:'tocItem',foldClass:'foldBtn',placeholderClass:'placeholder',numberClass:'num',labelClass:'label',
-          baseIndent:5,indent:13,expandGlyph:'+',collapseGlyph:'−',
-          onFold:node=>{session.toggleCollapsed(node.id);saveLocal();renderMap();renderPresentation()},
-          onGoto:node=>{session.goto(node.id);renderPresentation()}
-        });
-        $('pOpen').onclick=()=>setAllFold(false);$('pClose').onclick=()=>setAllFold(true);$('pHide').onclick=()=>{session.tocOverride=false;applyToc()};
-      };
-      const fitStage=()=>Stage.apply($('stage'),$('stageWrap'),{width:W,height:H,padding:16});
-      const renderPresentation=()=>{
-        session.rebuild(session.currentId(),session.index);
-        Slide.render($('stage'),data,session.currentNode(),{elementOptions:{baseClass:'el',animate:true,defaultAnimation:data.master?.defaultAnimation||'soft'}});
-        renderToc();fitStage();
-      };
-      const applyToc=()=>{
-        const show=session.actualTocVisible(win.innerWidth),layout=$('pLayout'),button=$('tocToggle');
-        layout.classList.toggle('toc-hidden',!show);button.textContent=show?'×':'☰';win.requestAnimationFrame(fitStage);
-      };
-      const toggleToc=()=>{session.toggleToc(win.innerWidth);applyToc()};
+      const tocContainer=$('toc');
+      const tocHead=doc.createElement('div');tocHead.id='tocHead';
+      tocHead.innerHTML='<div id="tocHeadTop"><div class="tocTitle"></div><button class="tocAct" id="pOpen">全开</button><button class="tocAct" id="pClose">全收</button><button class="tocAct" id="pHide">×</button></div>';
+      const tocBody=doc.createElement('div');tocBody.id='tocBody';tocContainer.innerHTML='';tocContainer.append(tocHead,tocBody);
+      const presentationView=PresentationView.create({
+        data,session,document:doc,window:win,stage:$('stage'),stageWrap:$('stageWrap'),tocTree:tocBody,tocLayout:$('pLayout'),tocContainer,tocToggle:$('tocToggle'),tocCount:tocHead.querySelector('.tocTitle'),
+        tocCountFormatter:n=>`演示目录 · ${n} 项`,rightClass:'right',tocHiddenClass:'toc-hidden',itemClass:'tocItem',foldClass:'foldBtn',placeholderClass:'placeholder',numberClass:'num',labelClass:'label',elementClass:'el',
+        fullscreenTarget:doc.documentElement,isActive:()=>mode==='presentation',onFold:()=>{saveLocal();renderMap()}
+      });
+      presentationView.bindInput();
+      const renderPresentation=()=>presentationView.render();
+      const fitStage=()=>presentationView.fit();
+      const applyToc=()=>presentationView.applyTocVisibility();
+      const toggleToc=()=>presentationView.toggleToc();
+      const setAllFold=value=>{session.setAllCollapsed(value);saveLocal();renderMap();if(mode==='presentation')presentationView.render({rebuild:false})};
+      $('pOpen').onclick=()=>setAllFold(false);$('pClose').onclick=()=>setAllFold(true);$('pHide').onclick=()=>{session.tocOverride=false;presentationView.applyTocVisibility()};
       const switchMode=next=>{
         if(kind!=='fusion')next=kind==='presentation'?'presentation':'map';mode=next;
         $('mapView').classList.toggle('on',next==='map');$('presentationView').classList.toggle('on',next==='presentation');
         $('mapMode').classList.toggle('on',next==='map');$('presentMode').classList.toggle('on',next==='presentation');
         $('tocToggle').classList.toggle('hidden',next!=='presentation');$('fullBtn').classList.toggle('hidden',next!=='presentation');
         if(next==='map'){renderMap();setTimeout(fitMap,20)}
-        else{session.rebuild(session.currentId(),session.index);$('pLayout').classList.toggle('right',data.master?.tocSide==='right');renderPresentation();applyToc()}
+        else{presentationView.render();presentationView.applyTocVisibility()}
       };
       const exportJson=()=>{
         const copy=ExportData.project(data,kind==='mindmap'?'mindmap':'fusion');
@@ -840,28 +937,17 @@
       $('layoutSel').value=data.mapLayout||'radial';$('layoutSel').onchange=event=>{data.mapLayout=event.target.value;autoLayout()};
       Theme.apply(doc.body,data.uiTheme);$('themeSel').value=data.uiTheme||'light';$('themeSel').onchange=event=>{data.uiTheme=Theme.normalize(event.target.value);Theme.apply(doc.body,data.uiTheme);saveLocal()};
       $('reflowBtn').onclick=autoLayout;$('expandBtn').onclick=()=>setAllFold(false);$('collapseBtn').onclick=()=>setAllFold(true);$('exportMapBtn').onclick=exportJson;
-      $('tocToggle').onclick=toggleToc;$('fullBtn').onclick=()=>Fullscreen.toggle(doc.documentElement,doc);
+      $('tocToggle').onclick=toggleToc;$('fullBtn').onclick=()=>presentationView.action('fullscreen');
       const editing=()=>{const a=doc.activeElement;return a&&(['INPUT','TEXTAREA','SELECT'].includes(a.tagName)||a.isContentEditable)};
       win.addEventListener('keydown',event=>{
         if(editing())return;
-        if(mode==='presentation'){
-          const action=Input.presentationKeyAction(event);if(!action)return;event.preventDefault();
-          if(['next','prev','first','last'].includes(action)){session.action(action);renderPresentation()}
-          else if(action==='toc')toggleToc();
-          else if(action==='fullscreen')Fullscreen.toggle(doc.documentElement,doc);
-          else if(action==='exit'&&Fullscreen.isActive(doc))Fullscreen.exit(doc);
-          return;
-        }
+        if(mode==='presentation'){presentationView.handleKey(event);return}
         const action=Input.mapKeyAction(event);if(!action)return;event.preventDefault();
         if(action==='type-title')startInline(selectedId,'title',event.key);
         else if(action==='edit-title')startInline(selectedId,'title');
         else mapAction(action);
       });
-      const stageWrap=$('stageWrap');
-      stageWrap?.addEventListener('touchstart',event=>{if(mode==='presentation'&&event.touches.length===1&&!event.target.closest('video')&&!event.target.closest('#toc')){const t=event.touches[0];swipe={x:t.clientX,y:t.clientY,time:Date.now()}}},{passive:true});
-      stageWrap?.addEventListener('touchend',event=>{if(!swipe||!event.changedTouches.length)return;const t=event.changedTouches[0],step=Input.swipeStep(swipe,{x:t.clientX,y:t.clientY,time:Date.now()});swipe=null;if(step){session.step(step);renderPresentation()}},{passive:true});
-      win.addEventListener('wheel',event=>{if(mode!=='presentation'||event.target?.closest?.('#toc,video,input,textarea,select,[contenteditable="true"]'))return;const step=Input.wheelStep(event,12);if(!step)return;event.preventDefault();if(wheelLock)return;wheelLock=true;session.step(step);renderPresentation();setTimeout(()=>wheelLock=false,420)},{passive:false});
-      win.addEventListener('resize',()=>{if(mode==='map')fitMap();else{if(session.tocOverride===null)applyToc();else fitStage()}});
+      win.addEventListener('resize',()=>{if(mode==='map')fitMap()});
       switchMode(mode);
       return {data,session,renderMap,renderPresentation,fitMap,fitStage,switchMode};
     }
@@ -869,13 +955,13 @@
 
   const Architecture=Object.freeze({
     singleSources:Object.freeze({
-      ids:'Ids',tree:'Tree',project:'Project',layout:'Layout',commands:'Commands',presentation:'Presentation + PresentationSession',
+      ids:'Ids',tree:'Tree',project:'Project',layout:'Layout',commands:'Commands',presentation:'Presentation + PresentationSession + PresentationView',
       mapRender:'MapRenderer',tocRender:'TocRenderer',slideRender:'Slide + Element',animation:'Animation',
       viewport:'Stage + MapViewport',input:'Input',fullscreen:'Fullscreen',theme:'Theme',
-      diagnostics:'Diagnostics',recovery:'Recovery',portable:'Portable'
+      diagnostics:'Diagnostics',recovery:'Recovery',presentationView:'PresentationView',portable:'Portable'
     }),
     adapters:Object.freeze(['main-editor-ui','portable-shell','storage-adapters','file-system-build'])
   });
 
-  global.MindDeckCore=Object.freeze({VERSION,LAYOUTS:Object.freeze(LAYOUTS.slice()),THEMES:Object.freeze(THEMES.slice()),RANGES:Object.freeze({MASTER_Z_MIN,MASTER_Z_MAX,SLIDE_Z_MIN,SLIDE_Z_MAX}),Ids,Tree,Theme,Project,Layout,Presentation,PresentationSession,Commands,Stage,MapViewport,Animation,Element,Slide,Fullscreen,Input,Recovery,Diagnostics,InlineEditor,MapRenderer,TocRenderer,ExportData,Portable,Architecture});
+  global.MindDeckCore=Object.freeze({VERSION,LAYOUTS:Object.freeze(LAYOUTS.slice()),THEMES:Object.freeze(THEMES.slice()),RANGES:Object.freeze({MASTER_Z_MIN,MASTER_Z_MAX,SLIDE_Z_MIN,SLIDE_Z_MAX}),Ids,Tree,Theme,Project,Layout,Presentation,PresentationSession,Commands,Stage,MapViewport,Animation,Element,Slide,Fullscreen,Input,Recovery,Diagnostics,InlineEditor,MapRenderer,TocRenderer,PresentationView,ExportData,Portable,Architecture});
 })(typeof globalThis!=='undefined'?globalThis:window);

@@ -20,9 +20,9 @@ const required = [
   ['main map uses shared renderer', 'MapRendererCore.render(data,{'],
   ['main map editing uses shared inline editor', 'InlineEditorCore.start({'],
   ['main map commands use shared dispatcher', 'CommandsCore.applyMapAction(data,selectedNodeId,action'],
-  ['main presentation uses shared session', 'PresentationSessionCore.create(data,selectedNodeId,0)'],
-  ['main TOC uses shared renderer', 'TocRendererCore.render(tree,presentationSession,{'],
-  ['main slide uses shared renderer', 'SlideCore.render(stage,data,node'],
+  ['main presentation uses shared view', 'PresentationViewCore.create({'],
+  ['main presentation delegates TOC to shared view', 'function renderToc(){return presentationView?.renderToc()}'],
+  ['main presentation delegates slide render to shared view', 'function renderPresentSlide(){return presentationView?.render()}'],
   ['main diagnostics use shared core', 'DiagnosticsCore.inspect(data,{'],
   ['main recovery uses shared core', 'RecoveryCore.historyLimitForBytes('],
   ['portable export data uses shared core', 'ExportDataCore.project(data,kind)'],
@@ -31,6 +31,7 @@ const required = [
   ['portable shell mounts shared runtime', 'globalThis.MindDeckCore.Portable.mount({data,kind:KIND'],
 ];
 for (const [name, marker] of required) assert.ok(app.includes(marker), `${name} missing`);
+assert.ok(runtime.includes('const presentationView=PresentationView.create({'), 'portable presentation does not use shared PresentationView');
 
 const forbiddenAppBusiness = [
   /function\s+subtreeWeight\s*\(/,
@@ -40,6 +41,8 @@ const forbiddenAppBusiness = [
   /function\s+presentationOrder\s*\(/,
   /function\s+resolvePresentationIndex\s*\(/,
   /function\s+renderPresentElement\s*\(/,
+  /let\s+presentationWheelLocked\b/ ,
+  /let\s+presentTouchStart\b/ ,
   /function\s+baseText\s*\(/,
   /function\s+baseShape\s*\(/,
   /function\s+extractMindmapData\s*\(/,
@@ -74,7 +77,7 @@ for (const path of adapters) {
 const singleSources = [
   'Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport',
   'Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor',
-  'MapRenderer','TocRenderer','ExportData','Portable','Architecture'
+  'MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'
 ];
 for (const name of singleSources) assert.ok(runtime.includes(`const ${name}=`) || runtime.includes(`const ${name} =`), `shared source missing ${name}`);
 

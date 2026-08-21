@@ -1,6 +1,6 @@
 # V9.6 最终架构审计
 
-结论：**业务层未发现双实现 / 多实现。**
+结论：**业务层未发现双实现 / 多实现。演示视图层也已由 `PresentationView` 统一。**
 
 审计口径：同一个 Tree / Layout / Presentation / TOC / Map Renderer / Slide Renderer / Animation / Viewport / Input / Fullscreen / Project / Diagnostics / Recovery 规则，在代码库中只能有一个实现源。UI Adapter 可以存在，但不能重新解释业务。
 
@@ -49,3 +49,14 @@ MindDeck release check: ALL OK
 ```
 
 架构检查会拒绝 Portable 模板重新出现第二套业务算法。
+
+
+## V9.6.6 PresentationView 收口
+
+编辑器内演示与 Portable 演示现在共同使用 `PresentationView`：
+
+- 页面刷新、TOC 渲染、TOC 展开/收起、舞台缩放统一。
+- 舞台边距统一为 20px。
+- TOC 缩进统一为 8 + depth × 15，展开符号统一为 `＋ / −`。
+- 键盘、滚轮、触摸输入统一由 PresentationView 调用 Shared Input。
+- Host 只保留退出目的地、全屏目标、Portable 顶部壳等环境差异。

@@ -93,3 +93,16 @@ npm run release:check
 ```
 
 禁止直接在 `buildPortableHtml()` 里补一份算法。
+
+
+## V9.6.6：PresentationView 统一
+
+V9.6.6 把演示视图层也收口到 Shared Runtime。编辑器内演示和 Portable 演示都创建 `PresentationView`，共享：
+
+- Slide 刷新和当前页状态
+- TOC 渲染、折叠、跳转、显示/隐藏
+- 1600×900 舞台缩放参数
+- 键盘、滚轮、触摸输入绑定
+- 当前页高亮与目录滚动
+
+Host 层只保留环境差异，例如退出后回编辑器还是只退出浏览器全屏。

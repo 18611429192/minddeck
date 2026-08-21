@@ -31,7 +31,7 @@ const slides=[
 {id:'audit',t:'审计',d:2,parent:'security',c:'#8b63d9',sub:'问题发生时，要能回答谁、做了什么、结果如何。',cards:[['谁','操作主体'],['动作','对象与操作'],['结果','时间和异常']]},
 {id:'ops',t:'运维',d:1,c:'#f28c5b',sub:'真正的使用方式，往往和设计阶段想象的不完全一样。',cards:[['上线前','按文档验证'],['现场','真实流程分叉'],['上线后','边界逐步暴露']]},
 {id:'solution',t:'我们的方案',d:0,c:'#20a89a',sub:'结构、页面、演示三层分开，但由同一份数据连接。',cards:[['结构层','思维导图保留关系'],['页面层','节点是 16:9 页面'],['演示层','展开状态决定序列']]},
-{id:'runtime',t:'统一 Runtime',d:0,c:'#4f6ef7',sub:'V9.6 完成业务框架统一，编辑与导出不再维护第二套业务规则。',cards:[['Shared Core','Tree / Layout / Presentation'],['Shared Render','Map / TOC / Slide'],['Architecture Audit','阻止双实现重新出现']]},
+{id:'runtime',t:'统一 Runtime',d:0,c:'#4f6ef7',sub:'V9.6.6 连演示视图层也完成统一，编辑器内演示与导出演示共用 PresentationView。',cards:[['Shared Core','Tree / Layout / Presentation'],['PresentationView','TOC / Stage / Input'],['Architecture Audit','阻止双实现重新出现']]},
 {id:'result',t:'预期结果',d:0,c:'#e9b949',sub:'不是更炫的 PPT，而是更接近真实思考和现场讨论的表达方式。',cards:[['结构不丢','始终知道在哪'],['现场灵活','问题来了再展开'],['行为一致','编辑和导出同一业务框架']]}
 ];
 let securityOpen=true,idx=0,wheelLock=false,tocVisible=true;
