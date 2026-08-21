@@ -1,6 +1,6 @@
 # Demo
 
-`demo.json` 是一份完整的 MindDeck Showcase。
+`demo.json` 是一份完整的 MindDeck Showcase，当前按 **V9.6.5 RC** 验证。
 
 建议：
 
@@ -12,3 +12,5 @@
 6. 继续翻页，再重新展开“安全”
 
 这个示例使用了母版、章节配色、轻量动画、多层节点和动态演示序列。
+
+在线可直接体验：<https://18611429192.github.io/minddeck/demo.html>

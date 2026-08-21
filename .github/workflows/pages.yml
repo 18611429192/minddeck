@@ -26,8 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # The repository must be enabled once in:
-      # Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 
@@ -41,6 +39,36 @@ jobs:
           if [ -f docs/assets/minddeck-demo.gif ]; then
             cp docs/assets/minddeck-demo.gif _site/assets/minddeck-demo.gif
           fi
+
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const base = pkg.version.split('-')[0];
+          const isRc = /-rc(?:\.|$)/.test(pkg.version);
+          const displayVersion = `V${base}${isRc ? ' RC' : ''}`;
+
+          function walk(dir) {
+            for (const name of fs.readdirSync(dir)) {
+              const file = path.join(dir, name);
+              const stat = fs.statSync(file);
+              if (stat.isDirectory()) walk(file);
+              else if (file.endsWith('.html')) {
+                const text = fs.readFileSync(file, 'utf8')
+                  .replaceAll('__MINDDECK_VERSION__', displayVersion)
+                  .replaceAll('__MINDDECK_PACKAGE_VERSION__', pkg.version);
+                fs.writeFileSync(file, text);
+              }
+            }
+          }
+
+          walk('_site');
+          fs.writeFileSync('_site/version.json', JSON.stringify({
+            packageVersion: pkg.version,
+            displayVersion,
+            commit: process.env.GITHUB_SHA || null
+          }, null, 2) + '\n');
+          NODE
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
