@@ -1,0 +1,302 @@
+name: Apply V9.6.6 PresentationView Refactor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v966-presentation-view.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply PresentationView refactor
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re, json
+
+          root=Path('.')
+          runtime_path=root/'src/runtime/shared-core.js'
+          index_path=root/'index.html'
+          runtime=runtime_path.read_text(encoding='utf-8')
+          index=index_path.read_text(encoding='utf-8')
+
+          def must_replace(text, old, new, name):
+              if old not in text:
+                  raise SystemExit(f'missing marker: {name}')
+              return text.replace(old,new,1)
+
+          runtime=must_replace(runtime,"const VERSION='9.6';","const VERSION='9.6.6';",'runtime version')
+
+          presentation_view=r'''  const PresentationView={
+            defaults:Object.freeze({
+              width:1600,height:900,stagePadding:20,tocBaseIndent:8,tocIndent:15,
+              expandGlyph:'＋',collapseGlyph:'−',wheelThreshold:12,wheelThrottle:420,swipeAxisRatio:1.3
+            }),
+            create(options={}){
+              const doc=options.document||global.document,win=options.window||global;
+              const data=options.data,session=options.session;
+              if(!doc||!win||!data||!session)throw new Error('PresentationView requires document, window, data and session');
+              const resolve=value=>typeof value==='function'?value():value;
+              const cfg={...PresentationView.defaults,...(options.config||{})};
+              let bound=false,touchStart=null,wheelLocked=false;
+              const listeners=[];
+              const on=(target,type,handler,listenerOptions)=>{if(!target?.addEventListener)return;target.addEventListener(type,handler,listenerOptions);listeners.push(()=>target.removeEventListener(type,handler,listenerOptions))};
+              const active=()=>options.isActive?!!options.isActive():true;
+              const view={
+                data,session,
+                fit(){return Stage.apply(resolve(options.stage),resolve(options.stageWrap),{width:cfg.width,height:cfg.height,padding:cfg.stagePadding})},
+                applySide(){
+                  const layout=resolve(options.tocLayout),toc=resolve(options.tocContainer),right=data.master?.tocSide==='right';
+                  if(layout&&options.rightClass)layout.classList.toggle(options.rightClass,right);
+                  if(toc&&options.tocRightClass)toc.classList.toggle(options.tocRightClass,right);
+                  if(layout&&toc&&options.moveToc){if(right)layout.appendChild(toc);else layout.insertBefore(toc,layout.firstChild)}
+                  return right;
+                },
+                applyTocVisibility(fit=true){
+                  const layout=resolve(options.tocLayout),button=resolve(options.tocToggle),show=session.actualTocVisible(win.innerWidth);
+                  if(layout)layout.classList.toggle(options.tocHiddenClass||'toc-hidden',!show);
+                  if(button){button.textContent=show?'×':'☰';button.title=show?'隐藏目录':'显示目录'}
+                  options.onTocVisibility?.(show,view);
+                  if(fit)win.requestAnimationFrame?.(()=>view.fit());
+                  return show;
+                },
+                toggleToc(){session.toggleToc(win.innerWidth);return view.applyTocVisibility()},
+                renderToc(){
+                  const tree=resolve(options.tocTree);if(!tree)return null;
+                  const count=resolve(options.tocCount);
+                  if(count){const format=options.tocCountFormatter||((n)=>n+' 项');count.textContent=format(session.order.length)}
+                  return TocRenderer.render(tree,session,{
+                    document:doc,itemClass:options.itemClass||'toc-item',activeClass:options.activeClass||'active',ancestorClass:options.ancestorClass||'ancestor',
+                    foldClass:options.foldClass||'fold-mini',placeholderClass:options.placeholderClass||'placeholder',numberClass:options.numberClass||'num',labelClass:options.labelClass||'label',
+                    foldFirst:false,baseIndent:cfg.tocBaseIndent,indent:cfg.tocIndent,expandGlyph:cfg.expandGlyph,collapseGlyph:cfg.collapseGlyph,
+                    onFold:node=>{session.toggleCollapsed(node.id);options.onFold?.(node,view);view.render({rebuild:false})},
+                    onGoto:node=>{session.goto(node.id);options.onGoto?.(node,view);view.render({rebuild:false})},
+                    decorateItem:options.decorateTocItem
+                  });
+                },
+                updateHighlight(){
+                  const tree=resolve(options.tocTree);if(!tree)return;
+                  TocRenderer.updateHighlight(tree,session,{itemClass:options.itemClass||'toc-item',activeClass:options.activeClass||'active',ancestorClass:options.ancestorClass||'ancestor'});
+                },
+                render(renderOptions={}){
+                  if(renderOptions.rebuild!==false)session.rebuild(session.currentId(),session.index);
+                  const stage=resolve(options.stage);if(!stage)return null;
+                  Slide.render(stage,data,session.currentNode()||data,{
+                    elementOptions:{baseClass:options.elementClass||'present-el',animate:true,defaultAnimation:data.master?.defaultAnimation||'soft',...(options.elementOptions||{})},
+                    decorate:options.decorateSlideElement
+                  });
+                  view.applySide();view.renderToc();view.applyTocVisibility(false);view.updateHighlight();view.fit();
+                  if(options.scrollActive){const tree=resolve(options.tocTree);tree?.querySelector?.('.'+(options.itemClass||'toc-item')+'.'+(options.activeClass||'active'))?.scrollIntoView?.({behavior:'smooth',block:'center'})}
+                  options.afterRender?.(session.currentNode()||data,view);
+                  return stage;
+                },
+                refresh(preferredId=session.currentId(),fallback=session.index){session.rebuild(preferredId,fallback);return view.render({rebuild:false})},
+                step(delta,wrap=true){session.step(delta,wrap);return view.render({rebuild:false})},
+                action(action){
+                  if(['next','prev','first','last'].includes(action)){session.action(action);view.render({rebuild:false});return true}
+                  if(action==='toc'){view.toggleToc();return true}
+                  if(action==='fullscreen'){Fullscreen.toggle(resolve(options.fullscreenTarget)||doc.documentElement,doc);return true}
+                  if(action==='exit'){
+                    if(options.onExit)options.onExit(view);
+                    else if(Fullscreen.isActive(doc))Fullscreen.exit(doc);
+                    return true;
+                  }
+                  return false;
+                },
+                handleKey(event){
+                  if(!active())return false;
+                  const action=Input.presentationKeyAction(event);if(!action)return false;
+                  event.preventDefault?.();return view.action(action);
+                },
+                bindInput(){
+                  if(bound)return view;bound=true;
+                  const touchTarget=resolve(options.touchTarget)||resolve(options.stageWrap),exclude=options.excludeSelector||'.toc,#toc,video,input,textarea,select,[contenteditable="true"]';
+                  on(touchTarget,'touchstart',event=>{
+                    if(!active()||event.touches?.length!==1||event.target?.closest?.(exclude))return;
+                    const t=event.touches[0];touchStart={x:t.clientX,y:t.clientY,time:Date.now()};
+                  },{passive:true});
+                  on(touchTarget,'touchend',event=>{
+                    if(!active()||!touchStart||!event.changedTouches?.length)return;
+                    const t=event.changedTouches[0],step=Input.swipeStep(touchStart,{x:t.clientX,y:t.clientY,time:Date.now()},{axisRatio:cfg.swipeAxisRatio});touchStart=null;
+                    if(step)view.step(step);
+                  },{passive:true});
+                  on(win,'wheel',event=>{
+                    if(!active()||event.target?.closest?.(exclude))return;
+                    const step=Input.wheelStep(event,cfg.wheelThreshold);if(!step)return;
+                    event.preventDefault?.();if(wheelLocked)return;wheelLocked=true;view.step(step);win.setTimeout(()=>wheelLocked=false,cfg.wheelThrottle);
+                  },{passive:false});
+                  on(win,'resize',()=>{if(!active())return;if(session.tocOverride===null)view.applyTocVisibility();else view.fit()});
+                  return view;
+                },
+                destroy(){listeners.splice(0).forEach(off=>off());bound=false;touchStart=null;wheelLocked=false}
+              };
+              return view;
+            }
+          };
+
+          '''
+          runtime=must_replace(runtime,'  const ExportData={\n',presentation_view+'  const ExportData={\n','PresentationView insert')
+          runtime=must_replace(runtime,"let mapScale=.8,mapTx=win.innerWidth/2,mapTy=win.innerHeight/2,moved=false,nodeDrag=null,mapPan=null,touchState=null,swipe=null,wheelLock=false;","let mapScale=.8,mapTx=win.innerWidth/2,mapTy=win.innerHeight/2,moved=false,nodeDrag=null,mapPan=null,touchState=null;",'portable transient input state')
+
+          portable_block=r'''      const tocContainer=$('toc');
+                const tocHead=doc.createElement('div');tocHead.id='tocHead';
+                tocHead.innerHTML='<div id="tocHeadTop"><div class="tocTitle"></div><button class="tocAct" id="pOpen">全开</button><button class="tocAct" id="pClose">全收</button><button class="tocAct" id="pHide">×</button></div>';
+                const tocBody=doc.createElement('div');tocBody.id='tocBody';tocContainer.innerHTML='';tocContainer.append(tocHead,tocBody);
+                const presentationView=PresentationView.create({
+                  data,session,document:doc,window:win,stage:$('stage'),stageWrap:$('stageWrap'),tocTree:tocBody,tocLayout:$('pLayout'),tocContainer,tocToggle:$('tocToggle'),tocCount:tocHead.querySelector('.tocTitle'),
+                  tocCountFormatter:n=>`演示目录 · ${n} 项`,rightClass:'right',tocHiddenClass:'toc-hidden',itemClass:'tocItem',foldClass:'foldBtn',placeholderClass:'placeholder',numberClass:'num',labelClass:'label',elementClass:'el',
+                  fullscreenTarget:doc.documentElement,isActive:()=>mode==='presentation',onFold:()=>{saveLocal();renderMap()}
+                });
+                presentationView.bindInput();
+                const renderPresentation=()=>presentationView.render();
+                const fitStage=()=>presentationView.fit();
+                const applyToc=()=>presentationView.applyTocVisibility();
+                const toggleToc=()=>presentationView.toggleToc();
+                const setAllFold=value=>{session.setAllCollapsed(value);saveLocal();renderMap();if(mode==='presentation')presentationView.render({rebuild:false})};
+                $('pOpen').onclick=()=>setAllFold(false);$('pClose').onclick=()=>setAllFold(true);$('pHide').onclick=()=>{session.tocOverride=false;presentationView.applyTocVisibility()};
+          '''
+          pattern=r"      const setAllFold=value=>\{session\.setAllCollapsed\(value\);[\s\S]*?      const toggleToc=\(\)=>\{session\.toggleToc\(win\.innerWidth\);applyToc\(\)\};\n"
+          runtime,n=re.subn(pattern,portable_block,runtime,count=1)
+          if n!=1: raise SystemExit('portable presentation adapter block not found')
+
+          runtime=must_replace(runtime,"else{session.rebuild(session.currentId(),session.index);$('pLayout').classList.toggle('right',data.master?.tocSide==='right');renderPresentation();applyToc()}","else{presentationView.render();presentationView.applyTocVisibility()}",'portable switch presentation')
+          runtime=must_replace(runtime,"$('tocToggle').onclick=toggleToc;$('fullBtn').onclick=()=>Fullscreen.toggle(doc.documentElement,doc);","$('tocToggle').onclick=toggleToc;$('fullBtn').onclick=()=>presentationView.action('fullscreen');",'portable full button')
+          runtime,n=re.subn(r"        if\(mode==='presentation'\)\{\n          const action=Input\.presentationKeyAction\(event\);[\s\S]*?          return;\n        \}\n","        if(mode==='presentation'){presentationView.handleKey(event);return}\n",runtime,count=1)
+          if n!=1: raise SystemExit('portable key adapter not found')
+          runtime,n=re.subn(r"      const stageWrap=\$\('stageWrap'\);\n      stageWrap\?\.addEventListener\('touchstart',[\s\S]*?      win\.addEventListener\('resize',\(\)=>\{if\(mode==='map'\)fitMap\(\);else\{if\(session\.tocOverride===null\)applyToc\(\);else fitStage\(\)\}\}\);","      win.addEventListener('resize',()=>{if(mode==='map')fitMap()});",runtime,count=1)
+          if n!=1: raise SystemExit('portable touch/wheel adapter block not found')
+          runtime=must_replace(runtime,"presentation:'Presentation + PresentationSession',","presentation:'Presentation + PresentationSession + PresentationView',",'architecture presentation')
+          runtime=must_replace(runtime,"diagnostics:'Diagnostics',recovery:'Recovery',portable:'Portable'","diagnostics:'Diagnostics',recovery:'Recovery',presentationView:'PresentationView',portable:'Portable'",'architecture view source')
+          runtime=must_replace(runtime,"Slide,Fullscreen,Input,Recovery,Diagnostics,InlineEditor,MapRenderer,TocRenderer,ExportData,Portable,Architecture","Slide,Fullscreen,Input,Recovery,Diagnostics,InlineEditor,MapRenderer,TocRenderer,PresentationView,ExportData,Portable,Architecture",'runtime export')
+          runtime_path.write_text(runtime,encoding='utf-8')
+
+          index=must_replace(index,'MindDeck V9.6.5 RC - 发布候选版','MindDeck V9.6.6 RC - 发布候选版','title version')
+          index=must_replace(index,'APP_VERSION="9.6.5 RC",RUNTIME_VERSION="9.6"','APP_VERSION="9.6.6 RC",RUNTIME_VERSION="9.6.6"','app/runtime version')
+          index=must_replace(index,'TocRenderer:TocRendererCore,ExportData:ExportDataCore,Portable:PortableCore','TocRenderer:TocRendererCore,PresentationView:PresentationViewCore,ExportData:ExportDataCore,Portable:PortableCore','core destructuring')
+          index=must_replace(index,'let presentation=false,presentationSession=null;','let presentation=false,presentationSession=null,presentationView=null;','presentation state')
+          index=must_replace(index,'    if(presentation){\n      presentation=false;\n      presentationSession=null;\n    }','    if(presentation){\n      presentation=false;\n      presentationView?.destroy();presentationView=null;\n      presentationSession=null;\n    }','editor presentation cleanup')
+
+          main_block=r'''  // presentation host: rendering, TOC, viewport and input are shared by PresentationViewCore.
+            function createMainPresentationView(){
+              presentationSession=PresentationSessionCore.create(data,selectedNodeId,0);presentationSession.resetToc();
+              presentationView=PresentationViewCore.create({
+                data,session:presentationSession,document,window,stage:document.getElementById("presentStage"),stageWrap:document.getElementById("presentStageWrap"),touchTarget:document.getElementById("presentShell"),
+                tocTree:document.getElementById("tocTree"),tocLayout:document.getElementById("presentLayout"),tocContainer:document.getElementById("toc"),tocToggle:document.getElementById("presentTocToggle"),tocCount:document.getElementById("tocCount"),
+                rightClass:"toc-right",tocRightClass:"right",tocHiddenClass:"toc-hidden",moveToc:true,itemClass:"toc-item",foldClass:"fold-mini",numberClass:"num",labelClass:"label",elementClass:"present-el",fullscreenTarget:workspace,scrollActive:true,
+                isActive:()=>presentation,onFold:()=>{save();renderMap();renderOrderPanel()},onExit:()=>exitPresentation(),
+                decorateSlideElement:(el,item)=>{el.className=`present-el ${item.element.type}`}
+              });
+              presentationView.bindInput();return presentationView;
+            }
+            async function enterPresentation(){
+              presentation=true;createMainPresentationView();
+              document.querySelectorAll(".map-panel.open").forEach(p=>p.classList.remove("open"));document.getElementById("healthPanel")?.classList.remove("open");document.getElementById("welcomeOverlay")?.classList.remove("open");document.getElementById("mobileNodeContext")?.classList.remove("open");closeMobileMainSheet();document.body.classList.add("presentation-mode");nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
+              document.getElementById("presentShell").classList.add("open");presentationView.render();
+              if(!(await FullscreenCore.enter(workspace)))toast("浏览器未允许全屏，已进入窗口演示；按 Esc 退出");
+            }
+            async function exitPresentation(fromFs=false){
+              const wasPresentation=presentation;
+              presentation=false;presentationView?.destroy();presentationView=null;presentationSession=null;
+              document.body.classList.remove("presentation-mode");
+              document.getElementById("presentShell")?.classList.remove("open");
+              if(wasPresentation){renderMap();fitAll();updateMobileNodeContext()}
+              if(!fromFs)await FullscreenCore.exit(document);
+            }
+            function applyTocSide(){return presentationView?.applySide()}
+            function applyTocVisibility(){return presentationView?.applyTocVisibility()}
+            function togglePresentationToc(){return presentationView?.toggleToc()}
+            function renderToc(){return presentationView?.renderToc()}
+            function updateTocHighlight(){return presentationView?.updateHighlight()}
+            function refreshPresentation(){return presentationView?.refresh()}
+            function renderPresentSlide(){return presentationView?.render()}
+            function fitPresentStage(){return presentationView?.fit()}
+            function navigate(d){if(!presentation)return;return presentationView?.step(d,true)}
+          '''
+          index,n=re.subn(r"  // presentation\n  async function enterPresentation\(\)\{[\s\S]*?\n  function toast\(msg\)",main_block+'\n  function toast(msg)',index,count=1)
+          if n!=1: raise SystemExit('main presentation adapter block not found')
+          index,n=re.subn(r"  let presentationWheelLocked=false;\n  function presentationStep\(delta\)\{[\s\S]*?  \},\{passive:false\}\);\n",'',index,count=1)
+          if n!=1: raise SystemExit('main wheel adapter block not found')
+          index,n=re.subn(r"    if\(presentation\)\{[\s\S]*?    \}\n\n    if\(!textEditing && e\.key===\"\?\"\)","    if(presentation){presentationView?.handleKey(e);return}\n\n    if(!textEditing && e.key===\"?\")",index,count=1)
+          if n!=1: raise SystemExit('main key adapter block not found')
+          index=must_replace(index,'  window.addEventListener("resize",()=>{\n    if(editorOpen)fitEditorStage(false);\n    if(presentation){if(presentationSession?.tocOverride===null)applyTocVisibility();else fitPresentStage()}\n    else{fitAll();updateMobileNodeContext();if(window.innerWidth>700)closeMobileMainSheet()}\n  });','  window.addEventListener("resize",()=>{\n    if(editorOpen)fitEditorStage(false);\n    if(!presentation){fitAll();updateMobileNodeContext();if(window.innerWidth>700)closeMobileMainSheet()}\n  });','main resize adapter')
+          index_path.write_text(index,encoding='utf-8')
+
+          pkg_path=root/'package.json'; pkg=json.loads(pkg_path.read_text(encoding='utf-8')); pkg['version']='9.6.6-rc.1'; pkg_path.write_text(json.dumps(pkg,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          p=root/'tests/shared-runtime.test.mjs'; t=p.read_text(encoding='utf-8')
+          t=must_replace(t,"assert.equal(Core.VERSION,'9.6');","assert.equal(Core.VERSION,'9.6.6');",'shared test version')
+          t=must_replace(t,"'MapRenderer','TocRenderer','ExportData','Portable','Architecture'","'MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'",'shared core list')
+          t=must_replace(t,"'presentation','project'","'presentation','presentationView','project'",'architecture key list')
+          t=must_replace(t,"assert.equal(Core.Input.wheelStep({deltaX:0,deltaY:-100}),-1);","assert.equal(Core.Input.wheelStep({deltaX:0,deltaY:-100}),-1);\nassert.equal(Core.PresentationView.defaults.stagePadding,20);\nassert.equal(Core.PresentationView.defaults.tocBaseIndent,8);\nassert.equal(Core.PresentationView.defaults.tocIndent,15);",'PresentationView defaults test')
+          p.write_text(t,encoding='utf-8')
+
+          p=root/'scripts/verify-architecture.mjs'; t=p.read_text(encoding='utf-8')
+          t=must_replace(t,"['main presentation uses shared session', 'PresentationSessionCore.create(data,selectedNodeId,0)'],","['main presentation uses shared view', 'PresentationViewCore.create({'],",'architecture main view')
+          t=must_replace(t,"['main TOC uses shared renderer', 'TocRendererCore.render(tree,presentationSession,{'],","['main presentation delegates TOC to shared view', 'function renderToc(){return presentationView?.renderToc()}'],",'architecture TOC delegation')
+          t=must_replace(t,"['main slide uses shared renderer', 'SlideCore.render(stage,data,node'],","['main presentation delegates slide render to shared view', 'function renderPresentSlide(){return presentationView?.render()}'],",'architecture slide delegation')
+          t=must_replace(t,"for (const [name, marker] of required) assert.ok(app.includes(marker), `${name} missing`);","for (const [name, marker] of required) assert.ok(app.includes(marker), `${name} missing`);\nassert.ok(runtime.includes('const presentationView=PresentationView.create({'), 'portable presentation does not use shared PresentationView');",'portable view audit')
+          t=must_replace(t,"/function\\s+renderPresentElement\\s*\\(/,","/function\\s+renderPresentElement\\s*\\(/,\n  /let\\s+presentationWheelLocked\\b/ ,\n  /let\\s+presentTouchStart\\b/ ,",'forbidden old presentation input')
+          t=must_replace(t,"'MapRenderer','TocRenderer','ExportData','Portable','Architecture'","'MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'",'single source view')
+          p.write_text(t,encoding='utf-8')
+
+          p=root/'scripts/verify-interaction-contracts.mjs'; t=p.read_text(encoding='utf-8')
+          t=must_replace(t,"const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');","const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');\nconst runtime = fs.readFileSync(new URL('../src/runtime/shared-core.js', import.meta.url), 'utf8');",'interaction runtime read')
+          t=must_replace(t,"'runAppCommand(\"health\")','runAppCommand(\"present\")','InputCore.presentationKeyAction(e)',","'runAppCommand(\"health\")','runAppCommand(\"present\")','presentationView?.handleKey(e)',",'interaction presentation view key')
+          t += "\nif(!runtime.includes('PresentationView.defaults')) throw new Error('Shared PresentationView defaults missing');\n"
+          p.write_text(t,encoding='utf-8')
+
+          p=root/'scripts/verify-rc-contracts.mjs'; t=p.read_text(encoding='utf-8')
+          t=must_replace(t,"'PresentationSessionCore.create('","'PresentationViewCore.create({'",'RC shared view marker')
+          t=must_replace(t,"'TocRendererCore.render('","'function renderToc(){return presentationView?.renderToc()}'",'RC TOC delegation marker')
+          p.write_text(t,encoding='utf-8')
+
+          p=root/'ARCHITECTURE_AUDIT.md'; t=p.read_text(encoding='utf-8')
+          t=t.replace('业务层未发现双实现 / 多实现。','业务层未发现双实现 / 多实现。演示视图层也已由 `PresentationView` 统一。',1)
+          t += '''\n\n## V9.6.6 PresentationView 收口\n\n编辑器内演示与 Portable 演示现在共同使用 `PresentationView`：\n\n- 页面刷新、TOC 渲染、TOC 展开/收起、舞台缩放统一。\n- 舞台边距统一为 20px。\n- TOC 缩进统一为 8 + depth × 15，展开符号统一为 `＋ / −`。\n- 键盘、滚轮、触摸输入统一由 PresentationView 调用 Shared Input。\n- Host 只保留退出目的地、全屏目标、Portable 顶部壳等环境差异。\n'''
+          p.write_text(t,encoding='utf-8')
+
+          p=root/'docs/architecture-v9.6.md'; t=p.read_text(encoding='utf-8')
+          t += '''\n\n## V9.6.6：PresentationView 统一\n\nV9.6.6 把演示视图层也收口到 Shared Runtime。编辑器内演示和 Portable 演示都创建 `PresentationView`，共享：\n\n- Slide 刷新和当前页状态\n- TOC 渲染、折叠、跳转、显示/隐藏\n- 1600×900 舞台缩放参数\n- 键盘、滚轮、触摸输入绑定\n- 当前页高亮与目录滚动\n\nHost 层只保留环境差异，例如退出后回编辑器还是只退出浏览器全屏。\n'''
+          p.write_text(t,encoding='utf-8')
+
+          (root/'V9.6.6_RC_NOTES.md').write_text('''# MindDeck V9.6.6 RC\n\n这一版继续收口 V9.6 架构：新增共享 `PresentationView`，让编辑器内演示和导出后的演示不只共用业务 Core，也共用演示视图刷新与输入流程。\n\n## 统一项\n\n- 页面渲染刷新流程\n- TOC Renderer 参数和折叠/跳转流程\n- 1600×900 舞台 fit（统一 padding=20）\n- TOC 显示/隐藏和左右位置\n- 键盘、滚轮、手机滑动输入\n- 当前页高亮与目录滚动\n\n## 仍保留的 Host 差异\n\n- 编辑器 Esc：退出演示并返回编辑界面\n- 独立演示 Esc：只退出浏览器全屏\n- 融合 HTML：可以在导图 / 演示间切换\n- Portable 顶部工具壳和本地存储 Adapter\n''',encoding='utf-8')
+
+          for rel in ['README.md','examples/README.md','site/README.md']:
+              p=root/rel; t=p.read_text(encoding='utf-8').replace('V9.6.5 RC','V9.6.6 RC'); p.write_text(t,encoding='utf-8')
+          p=root/'README.md'; t=p.read_text(encoding='utf-8')
+          old='现在 Tree、Project、Layout、Presentation、TOC、Map Renderer、Slide / Element Renderer、Animation、Viewport、Input、Fullscreen、Diagnostics、Recovery 等业务规则都已经收口到共享 Runtime。'
+          new=old+'V9.6.6 又把演示视图层收进 `PresentationView`：编辑器内演示和导出演示共用同一套页面刷新、TOC、舞台缩放、键盘、滚轮和触摸流程。'
+          t=t.replace(old,new,1); p.write_text(t,encoding='utf-8')
+          p=root/'site/index.html'; t=p.read_text(encoding='utf-8').replace('布局、播放顺序、TOC、页面渲染等规则不再维护第二份实现。','布局、播放顺序、TOC、页面渲染和 PresentationView 演示视图流程都不再维护第二份实现。',1); p.write_text(t,encoding='utf-8')
+          p=root/'site/demo.html'; t=p.read_text(encoding='utf-8')
+          t=t.replace('V9.6 完成业务框架统一，编辑与导出不再维护第二套业务规则。','V9.6.6 连演示视图层也完成统一，编辑器内演示与导出演示共用 PresentationView。',1)
+          t=t.replace("['Shared Render','Map / TOC / Slide']","['PresentationView','TOC / Stage / Input']",1); p.write_text(t,encoding='utf-8')
+          PY
+
+          node scripts/build-runtime.mjs
+          npm run release:check
+
+      - name: Commit V9.6.6
+        shell: bash
+        run: |
+          git config user.name 'MindDeck'
+          git config user.email 'minddeck@local'
+          git add index.html package.json src/runtime/shared-core.js tests/shared-runtime.test.mjs \
+            scripts/verify-architecture.mjs scripts/verify-interaction-contracts.mjs scripts/verify-rc-contracts.mjs \
+            ARCHITECTURE_AUDIT.md docs/architecture-v9.6.md V9.6.6_RC_NOTES.md README.md examples/README.md \
+            site/README.md site/index.html site/demo.html
+          git rm .github/workflows/apply-v966-presentation-view.yml
+          git commit -m 'refactor: unify presentation view runtime'
+          git push
