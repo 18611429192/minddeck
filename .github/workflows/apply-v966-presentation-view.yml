@@ -19,6 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # V9.6.6 retry trigger: run the already-registered workflow.
       - name: Apply PresentationView refactor
         shell: bash
         run: |
