@@ -1,0 +1,59 @@
+name: Apply V9.6.6 PresentationView Refactor Fixed
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply corrected PresentationView refactor
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re, textwrap
+
+          workflow = Path('.github/workflows/apply-v966-presentation-view.yml').read_text(encoding='utf-8')
+          m = re.search(r"(?ms)^          python <<'PY'\n(.*?)^          PY\s*$", workflow)
+          if not m:
+              raise SystemExit('cannot extract original V9.6.6 apply script')
+
+          code = textwrap.dedent(m.group(1))
+          lines = code.splitlines()
+          replaced = False
+          for i, line in enumerate(lines):
+              if line.strip().startswith('index,n=re.subn(r"    if\\(presentation\\)\\{'):
+                  lines[i] = '''index,n=re.subn(r'(window\\.addEventListener\\("keydown",e=>\\{\\n[\\s\\S]*?)    if\\(presentation\\)\\{[\\s\\S]*?    \\}\\n\\n    if\\(!textEditing && e\\.key==="\\?"\\)',r'\\1    if(presentation){presentationView?.handleKey(e);return}\\n\\n    if(!textEditing && e.key==="?")',index,count=1)'''
+                  replaced = True
+                  break
+          if not replaced:
+              raise SystemExit('unsafe keyboard adapter regex not found')
+
+          code = '\n'.join(lines) + '\n'
+          exec(compile(code, 'apply-v966-fixed.py', 'exec'), {})
+          PY
+
+          node scripts/build-runtime.mjs
+          npm run release:check
+
+      - name: Commit V9.6.6
+        shell: bash
+        run: |
+          git config user.name 'MindDeck'
+          git config user.email 'minddeck@local'
+          git add index.html package.json src/runtime/shared-core.js tests/shared-runtime.test.mjs \
+            scripts/verify-architecture.mjs scripts/verify-interaction-contracts.mjs scripts/verify-rc-contracts.mjs \
+            ARCHITECTURE_AUDIT.md docs/architecture-v9.6.md V9.6.6_RC_NOTES.md README.md examples/README.md \
+            site/README.md site/index.html site/demo.html
+          git rm .github/workflows/apply-v966-presentation-view.yml
+          git rm .github/workflows/apply-v966-presentation-view-fixed.yml
+          git commit -m 'refactor: unify presentation view runtime'
+          git push
