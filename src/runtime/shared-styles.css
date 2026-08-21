@@ -1,0 +1,14 @@
+/* Shared presentation animation styles: editor preview, app presentation and Portable HTML use this exact source. */
+.anim-none{animation:none}
+.anim-fade{animation:fadeIn var(--dur,.5s) ease both}
+.anim-soft{animation:softReveal var(--dur,.65s) cubic-bezier(.2,.8,.2,1) both}
+.anim-up{animation:slideUp var(--dur,.5s) cubic-bezier(.2,.8,.2,1) both}
+.anim-left{animation:slideLeft var(--dur,.5s) cubic-bezier(.2,.8,.2,1) both}
+.anim-right{animation:slideRight var(--dur,.5s) cubic-bezier(.2,.8,.2,1) both}
+.anim-zoom{animation:zoomIn var(--dur,.46s) cubic-bezier(.2,.8,.2,1) both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes softReveal{from{opacity:0;filter:blur(7px);transform:scale(.985)}to{opacity:1;filter:blur(0);transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}

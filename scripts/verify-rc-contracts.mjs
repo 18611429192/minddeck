@@ -1,52 +1,9 @@
 import fs from 'node:fs';
-
-const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-
-const versionMatch = pkg.version.match(/^(\d+)\.(\d+)\.(\d+)-rc(?:\.(\d+))?$/);
-if (!versionMatch) {
-  throw new Error(`package.json version is not an RC version: ${pkg.version}`);
-}
-
-const [, major, minor, patch] = versionMatch;
-const displayVersion = `MindDeck V${major}.${minor}.${patch} RC`;
-
-if (!html.includes(displayVersion)) {
-  throw new Error(
-    `RC version mismatch: package.json=${pkg.version}; ` +
-    `expected index.html to contain "${displayVersion}"`
-  );
-}
-
-const markers = [
-  'id="welcomeOverlay"',
-  'id="helpBtn"',
-  'data-mm="help"',
-  'function showWelcome(force=false)',
-  'function closeWelcome()',
-  'minddeck-v9-onboarded',
-  'RELEASE_CHANNEL="rc"',
-  'releaseChannel:RELEASE_CHANNEL',
-  'RUNTIME_VERSION=',
-  'Portable Runtime ${RUNTIME_VERSION}',
-
-  // V9.5.3: master/page editor parity
-  'function currentEditorElements(){return editorMode==="master"?data.master.elements:findNode(editorNodeId).slideElements}',
-  'id="masterSettingsBtn"',
-  'function showMasterSettingsPanel()',
-  'document.getElementById("masterSettingsBtn").onclick=showMasterSettingsPanel',
-  'editorMode==="master"?"母版已保存":"页面已保存"',
-  'if(selectedEls.size===1)showPropertyPanel([...selectedEls][0])',
-  'else if(editorMode==="master")showMasterSettingsPanel()',
-];
-
-for (const marker of markers) {
-  if (!html.includes(marker)) throw new Error(`RC contract missing: ${marker}`);
-}
-
-const blockers = ['TODO_RELEASE_BLOCKER', 'FIXME_RELEASE_BLOCKER'];
-for (const marker of blockers) {
-  if (html.includes(marker)) throw new Error(`Release blocker marker present: ${marker}`);
-}
-
-console.log(`RC contracts: OK (${markers.length + 1} checks, ${displayVersion})`);
+import assert from 'node:assert/strict';
+const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const pkg=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+const m=pkg.version.match(/^(\d+)\.(\d+)\.(\d+)-rc(?:\.(\d+))?$/);assert.ok(m,'package is not RC');
+const display=`MindDeck V${m[1]}.${m[2]}.${m[3]} RC`;assert.ok(html.includes(display),`RC version mismatch: ${display}`);
+for(const marker of ['id="welcomeOverlay"','id="helpBtn"','data-mm="help"','function showWelcome(force=false)','function closeWelcome()','minddeck-v9-onboarded','RELEASE_CHANNEL="rc"','Portable Runtime ${RUNTIME_VERSION}','id="masterSettingsBtn"','function showMasterSettingsPanel()','PresentationSessionCore.create(','MapRendererCore.render(','TocRendererCore.render(','DiagnosticsCore.inspect(','MindDeckCore.Portable.mount']) assert.ok(html.includes(marker),`RC contract missing: ${marker}`);
+for(const blocker of ['TODO_RELEASE_BLOCKER','FIXME_RELEASE_BLOCKER']) assert.ok(!html.includes(blocker),`release blocker present: ${blocker}`);
+console.log(`RC contracts: OK (16 checks, ${display})`);

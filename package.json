@@ -1,13 +1,15 @@
 {
   "name": "minddeck",
-  "version": "9.5.3-rc.1",
+  "version": "9.6.5-rc.1",
   "private": true,
   "type": "module",
   "description": "Mind map structured, freeform slide presentation tool",
   "scripts": {
+    "build:runtime": "node scripts/build-runtime.mjs",
     "test": "node scripts/release-check.mjs",
     "check": "node scripts/release-check.mjs",
     "release:check": "node scripts/release-check.mjs",
+    "audit:architecture": "node scripts/verify-architecture.mjs",
     "serve": "python -m http.server 8080"
   }
 }
