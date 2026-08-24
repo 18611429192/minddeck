@@ -17,4 +17,4 @@ jobs:
       - name: Dispatch V9.7 modularization workflow
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run apply-v970-modularization.yml --ref main
+        run: gh workflow run apply-v970-modularization.yml -R 18611429192/minddeck --ref main
