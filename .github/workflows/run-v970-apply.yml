@@ -49,9 +49,9 @@ jobs:
         run: |
           git config user.name 'MindDeck'
           git config user.email 'minddeck@local'
-          git rm -f .github/workflows/apply-v970-modularization.yml
-          git rm -f .github/workflows/run-v970-apply.yml
-          git rm -f .github/workflows/dispatch-v970-on-pr.yml
+          # The Actions token cannot modify workflow files. Keep Pages/workflow files unchanged here;
+          # they are updated/removed separately through the connected GitHub app.
+          git checkout HEAD -- .github/workflows/pages.yml
           git add .
           git commit -m 'refactor: modularize V9.7 source with standalone HTML build'
           git push
