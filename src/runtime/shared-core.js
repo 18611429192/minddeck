@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const VERSION='9.6.6';
+  const VERSION='9.7.0';
   const LAYOUTS=['balanced','right','left','down','radial'];
   const THEMES=['light','dark','business','minimal'];
   const THEME_LABELS=Object.freeze({light:'明亮',dark:'深色',business:'商务',minimal:'极简'});

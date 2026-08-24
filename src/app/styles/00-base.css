@@ -1,0 +1,46 @@
+:root{
+  --app-bg:#f5f7fb;--panel:#fff;--text:#1f2329;--muted:#6f7785;--line:#bac2cf;
+  --accent:#315efb;--accent-soft:#edf2ff;--shadow:0 14px 40px rgba(25,32,47,.14)
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:var(--app-bg);color:var(--text)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+#app{width:100%;height:100%;display:flex;flex-direction:column}
+.topbar{
+  min-height:60px;height:auto;display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(255,255,255,.98);
+  border-bottom:1px solid #e3e7ee;z-index:90;flex-wrap:wrap;row-gap:6px
+}
+.brand{font-weight:800;white-space:nowrap;margin-right:4px}
+.brand small{display:block;font-size:10px;color:#939aa7;font-weight:400;margin-top:2px}
+.btn{border:1px solid #dce2ea;background:#fff;color:#313846;padding:8px 11px;border-radius:10px;white-space:nowrap}
+.btn:hover{background:#f8f9fb;border-color:#bbc4d2}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:#b42318}
+.btn.icon{padding:7px 9px;min-width:36px}
+.spacer{flex:1}
+.zoom-status{font-size:12px;color:var(--muted);min-width:52px;text-align:right}
+.mode-switch{
+  display:flex;align-items:center;padding:3px;background:#eef1f5;border:1px solid #dfe3ea;border-radius:11px;gap:2px
+}
+.mode-switch .mode-btn{border:0;background:transparent;padding:6px 10px;border-radius:8px;font-size:12px;color:#687181;cursor:pointer;white-space:nowrap}
+.mode-switch .mode-btn.active{background:#fff;color:#1f2937;font-weight:800;box-shadow:0 1px 5px rgba(20,28,40,.10)}
+.mindmap-mode .order-badge{display:none}
+.mindmap-mode .presentation-only{display:none!important}
+.mindmap-mode #nodePanel{display:none!important}
+.node .title[contenteditable="true"],
+.node .desc[contenteditable="true"]{
+  outline:2px solid var(--accent);outline-offset:3px;border-radius:5px;background:#fff;
+  user-select:text;-webkit-user-select:text;cursor:text
+}
+.node .desc.inline-empty{
+  display:block;color:#a2a9b4;font-style:italic;-webkit-line-clamp:unset
+}
+.mindmap-shortcuts{
+  display:none;margin-top:12px;padding:10px 11px;border-radius:11px;background:#f7f9fc;border:1px solid #e4e8ef;
+  color:#687181;font-size:11px;line-height:1.75
+}
+.mindmap-mode .mindmap-shortcuts{display:block}
+.mindmap-mode #presentationNodeHint{display:none}
+.workspace{position:relative;flex:1;min-height:0}
+.workspace:fullscreen,.workspace:-webkit-full-screen{width:100vw;height:100vh;background:#111}

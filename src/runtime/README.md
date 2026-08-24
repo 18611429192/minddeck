@@ -1,12 +1,5 @@
-# Runtime extraction status
+# Shared Runtime
 
-V9.0 的正式可运行版本目前仍然保存在根目录 `index.html` 中，确保功能完整和可直接发布。
+MindDeck V9.7 继续以 `shared-core.js` 作为唯一业务 Runtime 实现源。Tree、Project、Layout、Presentation、TOC、Map/Slide/Element Renderer、Input、Fullscreen、Diagnostics、Recovery、Portable 等算法都从这里提供。
 
-从 V9.1 开始，以下逻辑会逐步改为从 `src/core` 直接构建：
-
-- 树遍历与可见节点
-- 思维导图布局与曲线
-- 演示顺序与折叠后的动态重算
-- 项目格式规范化
-
-目标是让编辑器、纯思维导图导出、独立演示导出、融合导出共用同一份代码，而不是复制实现。
+应用 Host 已移动到 `src/app/modules/`；最终构建由 `scripts/build-single-html.mjs` 把 Shared Runtime 与应用模块一起内联进单个 `index.html`。

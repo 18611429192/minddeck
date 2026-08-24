@@ -60,3 +60,25 @@ MindDeck release check: ALL OK
 - TOC 缩进统一为 8 + depth × 15，展开符号统一为 `＋ / −`。
 - 键盘、滚轮、触摸输入统一由 PresentationView 调用 Shared Input。
 - Host 只保留退出目的地、全屏目标、Portable 顶部壳等环境差异。
+
+
+## V9.7 工程模块化
+
+V9.7 在不改变业务 Runtime 的前提下，把根目录巨型 `index.html` 从“源码 + 产物混在一起”改为“模块源码 → 单 HTML 产物”：
+
+- `src/app/shell.html`：静态页面壳。
+- `src/app/modules/*`：按 Bootstrap / Map / Slide Editor / Presentation / Portable Export / Bindings 分层。
+- `src/app/styles/*`：按 UI 职责拆分。
+- `src/runtime/shared-core.js`：仍然是唯一业务实现源。
+- `scripts/build-single-html.mjs`：唯一发布组装器。
+
+新的发布门禁：
+
+```text
+V9.7 modular source/build parity: OK
+Standalone single-HTML contract: OK
+Architecture audit: OK
+MindDeck release check: ALL OK
+```
+
+因此“源码模块化”不等于“发布多文件化”；用户拿到的仍然可以只有一个 HTML。

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { Core } from '../src/core/runtime.js';
 
-assert.equal(Core.VERSION,'9.6.6');
+assert.equal(Core.VERSION,'9.7.0');
 for(const name of ['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture']) assert.ok(Core[name],`missing core ${name}`);
 
 assert.equal(Core.Stage.fitRect(1600,900,1600,900,0).scale,1);

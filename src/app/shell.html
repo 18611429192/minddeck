@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MindDeck V9.7.0 RC - 发布候选版</title>
+<style id="minddeck-app-styles">
+__MINDDECK_APP_STYLES__
+</style>
+<!-- MINDDECK_SHARED_STYLES_START -->
+<style id="minddeck-shared-styles">
+__MINDDECK_SHARED_STYLES__
+</style>
+<!-- MINDDECK_SHARED_STYLES_END -->
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark">M</span>
+      <span class="brand-copy">MindDeck V9.7.0 RC<small>发布候选 · 统一架构 · Runtime 9.6.6</small></span>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" id="presentationModeBtn">演示编辑</button>
+      <button class="mode-btn" id="mindmapModeBtn">思维导图</button>
+    </div>
+
+    <div class="toolbar-group desktop-map-tools">
+      <button class="btn" id="fitBtn">全局</button>
+      <select id="mapLayoutSelect" class="layout-select" title="思维导图布局">
+        <option value="balanced">左右展开</option>
+        <option value="right">向右展开</option>
+        <option value="left">向左展开</option>
+        <option value="down">向下树状</option>
+        <option value="radial">自由放射</option>
+      </select>
+      <button class="btn" id="resetLayoutBtn" title="按当前展开/折叠状态和布局重新排列">重排</button>
+      <button class="btn presentation-only" id="orderBtn">顺序</button>
+      <button class="btn presentation-only" id="masterBtn">母版</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="toolbar-group desktop-project-tools">
+      <button class="btn" id="exportBtn">保存项目</button>
+      <button class="btn" id="importBtn">打开</button>
+      <button class="btn" id="exportViewerBtn">导出演示</button>
+      <button class="btn" id="healthCheckBtn" title="检查项目结构、导出和演示运行时">自检</button>
+      <button class="btn icon" id="helpBtn" title="使用说明">?</button>
+      <button class="btn icon" id="appearanceBtn" title="MindDeck 外观主题">◐</button>
+      <button class="btn icon presentation-only" id="exportSettingsBtn" title="高级导出设置">⚙</button>
+    </div>
+
+    <button class="btn primary presentation-only desktop-present-btn" id="presentBtn">开始演示</button>
+    <input class="file-input" id="importFile" type="file" accept=".json,.minddeck,application/json,application/zip">
+    <div class="save-status saved" id="saveStatus" title="浏览器自动保存状态"><span></span><b>已保存</b></div>
+    <div class="zoom-status" id="zoomStatus">100%</div>
+  </div>
+
+  <button id="panelRestoreHandle" title="展开侧边栏">‹</button>
+<div class="workspace" id="workspace">
+    <div id="viewport">
+      <div id="world">
+        <svg id="edges" viewBox="-6000 -6000 12000 12000"></svg>
+        <div id="nodes"></div>
+      </div>
+    </div>
+
+    <div class="map-panel" id="nodePanel">
+      <div class="panel-head"><div><h3>节点</h3><div class="panel-sub">编辑节点信息和页面内容</div></div><button class="panel-close" data-close-panel="nodePanel">×</button></div>
+      <div class="field"><label>标题</label><input id="nodeTitle"></div>
+      <div class="field"><label>节点说明</label><textarea id="nodeText"></textarea></div>
+      <div class="actions">
+        <button class="btn primary presentation-only" id="editSlideBtn">编辑这个页面</button>
+        <button class="btn" id="saveNodeBtn">保存节点</button>
+        <button class="btn" id="addChildBtn">添加子节点</button>
+        <button class="btn danger" id="deleteNodeBtn">删除节点</button>
+      </div>
+      <div class="hint" id="presentationNodeHint">页面内容不再在这里编辑。点“编辑这个页面”进入 16:9 自由画布，图片、文字、形状都可直接拖拽。</div>
+      <div class="mindmap-shortcuts">
+        <b>思维导图快捷键</b><br>
+        Tab：新建子节点　Enter：新建同级节点<br>
+        Shift+Tab / ←：回到父节点　→：进入第一个子节点<br>
+        ↑ / ↓：切换同级节点　Space：展开 / 折叠<br>
+        F2：改标题　Delete：删除节点
+      </div>
+    </div>
+
+    <div class="map-panel" id="exportSettingsPanel">
+      <div class="panel-head"><div><h3>高级导出设置</h3><div class="panel-sub">统一运行时 9.6.6 · Release Candidate</div></div><button class="panel-close" data-close-panel="exportSettingsPanel">×</button></div>
+      <div class="hint" style="margin-top:0">
+        默认不需要修改。阈值只决定是否额外生成 <b>.minddeck</b> 项目资源包；
+        HTML 始终包含完整演示内容，可以单独发给别人播放。
+      </div>
+
+      <div class="field">
+        <label>HTML 导出方式</label>
+        <select id="exportFusionMode">
+          <option value="separate">跟随当前模式</option>
+          <option value="fusion">融合导出：HTML 内可切换思维导图 / 演示</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>项目包生成策略</label>
+        <select id="exportPackageMode">
+          <option value="auto">自动判断</option>
+          <option value="always">始终同时生成 .minddeck</option>
+          <option value="htmlOnly">只生成 HTML</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>单张图片阈值（MB）</label>
+        <input id="exportImageLimit" type="number" min="0" max="1000" step="0.1">
+      </div>
+      <div class="field">
+        <label>单个视频阈值（MB）</label>
+        <input id="exportVideoLimit" type="number" min="0" max="10000" step="0.1">
+      </div>
+      <div class="field">
+        <label>所有内嵌资源总阈值（MB）</label>
+        <input id="exportTotalLimit" type="number" min="0" max="10000" step="0.5">
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="resetExportSettingsBtn">恢复默认</button>
+        <button class="btn primary" id="saveExportSettingsBtn">保存设置</button>
+      </div>
+      <div class="hint">
+        默认导出方式：跟随当前模式。可开启“融合导出”。<br>默认值：图片 1 MB、视频 3 MB、总资源 15 MB。<br>
+        外部视频 URL 不计入本地资源大小。<br>
+        .minddeck 内部结构：project.json + manifest.json + assets/。
+      </div>
+    </div>
+
+    <div class="map-panel" id="themePanel">
+      <div class="panel-head"><div><h3>外观主题</h3><div class="panel-sub">只改变工作界面和导图，不修改页面设计</div></div><button class="panel-close" data-close-panel="themePanel">×</button></div>
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-card" data-theme-choice="light"><span class="theme-preview light"><i></i><i></i><i></i></span><b>明亮</b><small>默认，适合日常编辑</small></button>
+        <button class="theme-card" data-theme-choice="dark"><span class="theme-preview dark"><i></i><i></i><i></i></span><b>深色</b><small>低光环境、长时间编辑</small></button>
+        <button class="theme-card" data-theme-choice="business"><span class="theme-preview business"><i></i><i></i><i></i></span><b>商务</b><small>蓝灰、克制、正式</small></button>
+        <button class="theme-card" data-theme-choice="minimal"><span class="theme-preview minimal"><i></i><i></i><i></i></span><b>极简</b><small>更少阴影和装饰</small></button>
+      </div>
+      <div class="hint">主题会保存在项目中，导出的纯思维导图和融合 HTML 会继承导图外观；PPT 页面仍完全由母版和页面元素决定。</div>
+    </div>
+
+    <div class="map-panel" id="healthPanel">
+      <div class="panel-head"><div><h3>项目自检</h3><div class="panel-sub">发布和正式演示前建议运行一次</div></div><button class="panel-close" data-close-panel="healthPanel">×</button></div>
+      <div class="health-summary" id="healthSummary">
+        <div class="health-score" id="healthScore">—</div>
+        <div><b id="healthTitle">尚未检查</b><div class="health-meta" id="healthMeta">检查项目结构、导出、媒体和演示运行时</div></div>
+      </div>
+      <div id="healthList"></div>
+      <div class="actions health-actions">
+        <button class="btn primary" id="runHealthCheckBtn">重新检查</button>
+        <button class="btn" id="copyHealthReportBtn">复制报告</button>
+        <button class="btn" id="restoreBackupBtn">恢复备份</button>
+      </div>
+      <div class="hint">红色项目会阻止正式导出；黄色项目可以继续使用，但建议处理后再做正式汇报。</div>
+    </div>
+
+    <div class="map-panel" id="orderPanel">
+      <div class="panel-head"><div><h3>演示顺序</h3><div class="panel-sub">只调整播放次序，不改变导图布局</div></div><button class="panel-close" data-close-panel="orderPanel">×</button></div>
+      <div class="hint" style="margin-top:0">只列出当前展开可见的节点。折叠后，后代节点自动退出播放。</div>
+      <div id="orderList"></div>
+      <div class="actions">
+        <button class="btn" id="defaultOrderBtn">恢复默认</button>
+        <button class="btn primary" id="saveOrderBtn">保存顺序</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <b>导图编辑</b><br>
+      拖节点 = 调整空间布局<br>
+      ± = 展开 / 折叠分支<br>
+      播放顺序与空间位置互不影响
+    </div>
+
+    <div id="mobileNodeContext">
+      <div class="mobile-node-info">
+        <div class="mobile-node-kicker">当前节点</div>
+        <div class="mobile-node-title" id="mobileNodeTitle">未选择节点</div>
+      </div>
+      <button class="mobile-context-btn primary presentation-only" id="mobileEditPageBtn">编辑页面</button>
+      <button class="mobile-context-btn" id="mobileNodeDetailBtn">详情</button>
+      <button class="mobile-context-btn" id="mobileNodeChildBtn">＋子节点</button>
+      <button class="mobile-context-close" id="mobileNodeContextClose">×</button>
+    </div>
+
+    <div id="mobileMainSheet">
+      <div class="mobile-main-sheet-head">
+        <b id="mobileMainSheetTitle">更多操作</b>
+        <button class="panel-close" id="mobileMainSheetClose">×</button>
+      </div>
+      <div id="mobileMainSheetContent"></div>
+    </div>
+
+    <div id="mobileMainBar">
+      <button class="mobile-main-tool" id="mobileMainFit"><span>⌗</span><small>全局</small></button>
+      <button class="mobile-main-tool" id="mobileMainAdd"><span>＋</span><small>新增</small></button>
+      <button class="mobile-main-tool presentation-only" id="mobileMainPage"><span>▣</span><small>页面</small></button>
+      <button class="mobile-main-tool" id="mobileMainMore"><span>•••</span><small>更多</small></button>
+      <button class="mobile-main-tool presentation-only emphasis" id="mobileMainPresent"><span>▶</span><small>演示</small></button>
+    </div>
+
+    <!-- freeform editor -->
+    <div id="editorShell">
+      <div class="editor-topbar">
+        <button class="btn" id="backToMapBtn">← 返回导图</button>
+        <div class="editor-title" id="editorTitle"></div>
+        <span class="editor-mode-pill" id="editorModePill">页面</span>
+        <div class="toolbar-sep"></div>
+
+        <div class="element-toolbar">
+          <button class="btn" id="addTextBtn">+ 文字</button>
+          <button class="btn" id="addImageBtn">+ 图片</button>
+          <button class="btn" id="addVideoBtn">+ 视频</button>
+          <button class="btn" id="addVideoUrlBtn">+ 视频 URL</button>
+          <button class="btn" id="addRectBtn">+ 矩形</button>
+          <button class="btn" id="addCircleBtn">+ 圆形</button>
+          <input class="file-input" id="editorImageFile" type="file" accept="image/*">
+          <input class="file-input" id="editorVideoFile" type="file" accept="video/mp4,video/webm,video/ogg">
+        </div>
+
+        <div class="toolbar-sep"></div>
+        <div class="align-btns" style="width:455px;grid-template-columns:repeat(10,1fr)">
+          <button class="btn icon" data-align="left" title="按基准元素左边缘对齐">左</button>
+          <button class="btn icon" data-align="hcenter" title="按基准元素水平中心对齐">横中</button>
+          <button class="btn icon" data-align="right" title="按基准元素右边缘对齐">右</button>
+          <button class="btn icon" data-align="top" title="按基准元素顶部对齐">上</button>
+          <button class="btn icon" data-align="vcenter" title="按基准元素垂直中心对齐">纵中</button>
+          <button class="btn icon" data-align="bottom" title="按基准元素底部对齐">下</button>
+          <button class="btn icon" data-align="sameWidth" title="和基准元素等宽">等宽</button>
+          <button class="btn icon" data-align="sameHeight" title="和基准元素等高">等高</button>
+          <button class="btn icon" data-align="distributeH" title="水平等距分布">横距</button>
+          <button class="btn icon" data-align="distributeV" title="垂直等距分布">纵距</button>
+        </div>
+
+        <div class="toolbar-sep"></div>
+        <button class="btn" id="duplicateElBtn">复制</button>
+        <button class="btn" id="layerUpBtn">上移一层</button>
+        <button class="btn" id="layerDownBtn">下移一层</button>
+        <button class="btn" id="frontBtn">置于顶层</button>
+        <button class="btn" id="backBtn">置于底层</button>
+        <button class="btn danger" id="deleteElBtn">删除</button>
+        <div class="spacer"></div>
+        <button class="btn" id="masterSettingsBtn" style="display:none">母版设置</button>
+        <button class="btn" id="toggleMasterModeBtn">切到母版</button>
+        <button class="btn primary" id="saveEditorBtn">保存</button>
+      </div>
+
+      <div class="editor-body">
+        <div class="editor-stage-wrap" id="editorStageWrap">
+          <div id="editorStage">
+            <div class="master-bg" id="editorBg"></div>
+          </div>
+        </div>
+
+        <div id="propPanel">
+          <button class="btn icon mobile-prop-close" id="mobilePropClose" style="position:absolute;right:10px;top:9px">×</button>
+          <button class="btn icon" id="desktopPropCollapse" title="收起属性栏" style="position:absolute;right:44px;top:9px">›</button>
+          <h3 id="propTitle">元素属性</h3>
+          <div id="propContent"></div>
+        </div>
+
+
+        <div id="mobileActionSheet">
+          <div class="mobile-sheet-title"><span id="mobileSheetTitle">工具</span><button class="btn icon" id="mobileSheetClose">×</button></div>
+          <div id="mobileSheetContent"></div>
+        </div>
+
+        <button id="editorPropRestoreHandle" title="展开属性栏">‹</button>
+        <div id="mobileEditorBar">
+          <button class="mtool" id="mobileInsertBtn"><span class="ico">＋</span><span>插入</span></button>
+          <button class="mtool" id="mobileMultiBtn"><span class="ico">▣</span><span>多选</span></button>
+          <button class="mtool" id="mobileAlignBtn"><span class="ico">≡</span><span>对齐</span></button>
+          <button class="mtool" id="mobileLayerBtn"><span class="ico">▱</span><span>图层</span></button>
+          <button class="mtool" id="mobilePropBtn"><span class="ico">⚙</span><span>属性</span></button>
+          <button class="mtool" id="mobileViewBtn"><span class="ico">⌗</span><span id="mobileZoomLabel">适应</span></button>
+        </div>
+
+        <div class="master-panel-empty" id="masterEmptyPanel">
+          <h3>母版背景</h3>
+          <div class="field"><label>背景颜色</label><input type="color" id="masterBgColor"></div>
+          <div class="field"><label>背景图片</label><input type="file" id="masterBgFile" accept="image/*"></div>
+          <div class="field">
+            <label>背景适配</label>
+            <select id="masterBgFit"><option value="cover">铺满</option><option value="contain">完整显示</option></select>
+          </div>
+          <div class="field">
+            <label>目录显示</label>
+            <select id="masterTocVisibility">
+              <option value="auto">自动（桌面显示，手机隐藏）</option>
+              <option value="show">始终显示</option>
+              <option value="hide">始终隐藏</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>目录位置</label>
+            <select id="masterTocSide"><option value="left">左侧</option><option value="right">右侧</option></select>
+          </div>
+          <div class="hint">母版中的文字、图片、形状会固定显示在每一张演示页上。点击画布元素可单独编辑。</div>
+        </div>
+
+        <div class="canvas-hint">拖动元素移动 · 四角缩放 · Ctrl/⌘ 或 Shift + 点击多选 · 双击文字直接编辑 · 工具栏会随窗口自动换行</div>
+      </div>
+    </div>
+
+    <!-- presentation -->
+    <div id="presentShell">
+      <div class="present-layout" id="presentLayout">
+        <aside class="toc" id="toc">
+          <div class="toc-title"><span>演示目录</span><span id="tocCount"></span></div>
+          <div class="toc-tree" id="tocTree"></div>
+        </aside>
+        <div class="present-stage-wrap" id="presentStageWrap">
+          <div id="presentStage"></div>
+        </div>
+        <button class="present-toc-toggle" id="presentTocToggle" title="显示/隐藏目录">☰</button>
+      </div>
+    </div>
+
+    <div id="welcomeOverlay" aria-hidden="true">
+      <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.7.0 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
+        <div class="welcome-steps">
+          <div class="welcome-step"><span>1</span><div><b>先整理结构</b><p>在思维导图里建立主题、分支和层级。折叠节点时，布局和演示序列都会跟着变化。</p></div></div>
+          <div class="welcome-step"><span>2</span><div><b>再设计页面</b><p>演示编辑模式下，选中节点后进入 16:9 页面。文字、图片、视频和形状都可以自由排版。</p></div></div>
+          <div class="welcome-step"><span>3</span><div><b>最后现场演示</b><p>演示时目录可以随时开关，也可以临时展开或收起分支，播放路径会实时重算。</p></div></div>
+        </div>
+        <div class="welcome-foot"><label><input type="checkbox" id="welcomeDontShow" checked> 下次不再自动显示</label><div class="spacer"></div><button class="btn" id="welcomeMindmap">先看导图</button><button class="btn primary" id="welcomeStart">开始使用</button></div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<!-- MINDDECK_SHARED_RUNTIME_START -->
+<script id="minddeck-shared-runtime">
+__MINDDECK_SHARED_RUNTIME__
+</script>
+<!-- MINDDECK_SHARED_RUNTIME_END -->
+
+<script id="minddeck-app-bundle">
+__MINDDECK_APP_BUNDLE__
+</script>
+</body>
+</html>

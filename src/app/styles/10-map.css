@@ -1,0 +1,55 @@
+/* mind map */
+#viewport{
+  position:absolute;inset:0;overflow:hidden;cursor:grab;
+  background:radial-gradient(circle at 1px 1px,#d9dde6 1px,transparent 1px);background-size:24px 24px
+}
+#viewport.panning{cursor:grabbing}
+#world{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0}
+#edges{position:absolute;left:-6000px;top:-6000px;width:12000px;height:12000px;overflow:visible;pointer-events:none}
+#nodes{position:absolute;left:0;top:0}
+.edge{fill:none;stroke:var(--line);stroke-width:2.2;opacity:.8}
+.node{
+  position:absolute;transform:translate(-50%,-50%);width:220px;min-height:86px;padding:12px 14px;background:#fff;
+  border:1px solid #dce2ea;border-radius:16px;box-shadow:0 8px 24px rgba(36,44,65,.10);user-select:none;
+  transition:border-color .2s,box-shadow .2s,transform .15s
+}
+.node.center{width:260px;min-height:112px;border:2px solid #1f2329}
+.node:hover{box-shadow:0 12px 30px rgba(36,44,65,.14)}
+.node.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,94,251,.12),0 12px 28px rgba(49,94,251,.15)}
+.node.dragging{z-index:30;transform:translate(-50%,-50%) scale(1.035);box-shadow:0 22px 50px rgba(35,45,75,.22)}
+.node .title{font-size:15px;font-weight:800;line-height:1.35;padding-right:28px}
+.node.center .title{font-size:20px}
+.node .desc{font-size:12px;color:var(--muted);line-height:1.55;margin-top:7px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.node .meta{font-size:10px;color:#9097a4;margin-top:7px}
+.fold{
+  position:absolute;right:8px;top:8px;width:25px;height:25px;border-radius:50%;border:1px solid #d7dde7;
+  background:#f8f9fb;display:flex;align-items:center;justify-content:center;color:#525b6a
+}
+.order-badge{
+  position:absolute;left:-10px;top:-10px;min-width:24px;height:24px;padding:0 6px;border-radius:999px;
+  background:#20242d;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center
+}
+.center .order-badge{background:var(--accent)}
+.map-panel{
+  position:absolute;right:14px;top:14px;bottom:14px;width:350px;background:rgba(255,255,255,.985);border:1px solid #dfe4ec;
+  border-radius:18px;box-shadow:var(--shadow);z-index:55;padding:16px;overflow:auto;display:none
+}
+.map-panel.open{display:block}
+.map-panel h3{margin:2px 0 14px;font-size:16px}
+.field{margin:12px 0}
+.field label{display:block;font-size:12px;color:#6f7785;margin-bottom:6px}
+.field input,.field textarea,.field select{
+  width:100%;border:1px solid #dce1e9;border-radius:10px;padding:10px 11px;background:#fff;outline:none;color:#313846
+}
+.field textarea{min-height:86px;resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.actions .btn{flex:1}
+.hint{font-size:11px;line-height:1.65;color:#8b93a1;margin-top:13px}
+.order-row{display:grid;grid-template-columns:30px 1fr 62px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eef1f5}
+.order-row .level{font-size:11px;color:#9aa1ad;text-align:center}
+.order-row .name{font-size:12px;line-height:1.35}
+.order-row input{width:62px;border:1px solid #dce1e9;border-radius:8px;padding:7px 6px;text-align:center}
+.legend{
+  position:absolute;left:16px;bottom:16px;z-index:35;background:rgba(255,255,255,.95);border:1px solid #e0e4eb;border-radius:14px;
+  padding:10px 12px;box-shadow:0 8px 22px rgba(31,35,41,.08);font-size:11px;color:#667080;line-height:1.65
+}

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MindDeck V9.6.6 RC - 发布候选版</title>
-<style>
+<title>MindDeck V9.7.0 RC - 发布候选版</title>
+<style id="minddeck-app-styles">
 :root{
   --app-bg:#f5f7fb;--panel:#fff;--text:#1f2329;--muted:#6f7785;--line:#bac2cf;
   --accent:#315efb;--accent-soft:#edf2ff;--shadow:0 14px 40px rgba(25,32,47,.14)
@@ -218,6 +218,7 @@ button{cursor:pointer}
   display:none;align-items:center;justify-content:center;padding:0
 }
 .present-layout.toc-right + .present-toc-toggle{left:auto;right:10px}
+
 @media(max-width:900px),(pointer:coarse){
   .present-toc-toggle{display:flex}
 }
@@ -759,7 +760,6 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 @media(max-width:700px),(pointer:coarse){
   #masterSettingsBtn{display:none!important}
 }
-
 </style>
 <!-- MINDDECK_SHARED_STYLES_START -->
 <style id="minddeck-shared-styles">
@@ -785,7 +785,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
   <div class="topbar">
     <div class="brand">
       <span class="brand-mark">M</span>
-      <span class="brand-copy">MindDeck V9.6.6 RC<small>发布候选 · 统一架构 · Runtime 9.6.6</small></span>
+      <span class="brand-copy">MindDeck V9.7.0 RC<small>发布候选 · 统一架构 · Runtime 9.6.6</small></span>
     </div>
 
     <div class="mode-switch">
@@ -1091,7 +1091,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 
     <div id="welcomeOverlay" aria-hidden="true">
       <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.6.6 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
+        <div class="welcome-head"><div><span class="welcome-kicker">MindDeck V9.7.0 RC</span><h2 id="welcomeTitle">先看清整件事，再讲清每一页。</h2></div><button class="welcome-close" id="welcomeClose" aria-label="关闭">×</button></div>
         <div class="welcome-steps">
           <div class="welcome-step"><span>1</span><div><b>先整理结构</b><p>在思维导图里建立主题、分支和层级。折叠节点时，布局和演示序列都会跟着变化。</p></div></div>
           <div class="welcome-step"><span>2</span><div><b>再设计页面</b><p>演示编辑模式下，选中节点后进入 16:9 页面。文字、图片、视频和形状都可以自由排版。</p></div></div>
@@ -1109,7 +1109,7 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 (function(global){
   'use strict';
 
-  const VERSION='9.6.6';
+  const VERSION='9.7.0';
   const LAYOUTS=['balanced','right','left','down','radial'];
   const THEMES=['light','dark','business','minimal'];
   const THEME_LABELS=Object.freeze({light:'明亮',dark:'深色',business:'商务',minimal:'极简'});
@@ -2076,9 +2076,9 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
 </script>
 <!-- MINDDECK_SHARED_RUNTIME_END -->
 
-<script>
+<script id="minddeck-app-bundle">
 (() => {
-  const W=1600,H=900,APP_VERSION="9.6.6 RC",RUNTIME_VERSION="9.6.6",RELEASE_CHANNEL="rc";
+  const W=1600,H=900,APP_VERSION="9.7.0 RC",RUNTIME_VERSION="9.7.0",RELEASE_CHANNEL="rc";
   const Core=globalThis.MindDeckCore;
   if(!Core||Core.VERSION!==RUNTIME_VERSION)throw new Error(`MindDeck shared runtime mismatch: ${Core?.VERSION||"missing"} / ${RUNTIME_VERSION}`);
   const {Ids:IdsCore,Tree:TreeCore,Theme:ThemeCore,Project:ProjectCore,Layout:LayoutCore,Presentation:PresentationCore,PresentationSession:PresentationSessionCore,Commands:CommandsCore,Stage:StageCore,MapViewport:MapViewportCore,Element:ElementCore,Slide:SlideCore,Fullscreen:FullscreenCore,Input:InputCore,Recovery:RecoveryCore,Diagnostics:DiagnosticsCore,InlineEditor:InlineEditorCore,MapRenderer:MapRendererCore,TocRenderer:TocRendererCore,PresentationView:PresentationViewCore,ExportData:ExportDataCore,Portable:PortableCore}=Core;
@@ -2688,6 +2688,8 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     return !!a && a.closest?.(".node") && a.isContentEditable;
   }
 
+
+
   // map
   function orderMap(){const m=new Map();effectiveOrder().forEach((id,i)=>m.set(id,i+1));return m}
   function renderMap(){
@@ -2834,6 +2836,8 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     const list=document.getElementById("orderList"),order=effectiveOrder(),rank=new Map(order.map((id,i)=>[id,i+1]));list.innerHTML="";
     visibleWalk(data,(n,p,depth)=>{if(n.id===data.id)return;const row=document.createElement("div");row.className="order-row";row.innerHTML=`<div class="level">${depth+1}级</div><div class="name">${esc(n.title)}</div><input type="number" value="${rank.get(n.id)||""}" data-order-id="${n.id}">`;list.appendChild(row)})
   }
+
+
 
   // freeform editor
   function currentEditorElements(){return editorMode==="master"?data.master.elements:findNode(editorNodeId).slideElements}
@@ -3530,6 +3534,8 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
     updateMobileEditorButtons();
   }
 
+
+
   // presentation host: rendering, TOC, viewport and input are shared by PresentationViewCore.
   function createMainPresentationView(){
     presentationSession=PresentationSessionCore.create(data,selectedNodeId,0);presentationSession.resetToc();
@@ -3569,6 +3575,8 @@ body.presentation-mode #panelRestoreHandle{display:none!important}
   function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
 
   function buildPortableData(kind){return ExportDataCore.project(data,kind)}
+
+
 
   function buildPortableHtml(kind){
     const project=buildPortableData(kind);
@@ -3746,6 +3754,8 @@ __SCRIPT_END__</body></html>`;
   function runAppCommand(name){
     const fn=APP_COMMANDS[name];if(!fn){console.warn("Unknown MindDeck command",name);return false}fn();return true;
   }
+
+
 
   // bindings map
   document.querySelectorAll("[data-close-panel]").forEach(b=>b.onclick=()=>{

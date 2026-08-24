@@ -2,7 +2,7 @@
 
 **MindDeck 是一个把思维导图和演示页面放在一起的浏览器工具。**
 
-> 当前版本：**V9.6.6 RC**  
+> 当前版本：**V9.7.0 RC**  
 > 先看清整件事，再讲清每一页。
 
 普通 PPT 很适合一页一页讲，但很多内容本身不是一条直线，而是一棵树。
@@ -63,7 +63,7 @@ MindDeck 把一份演示拆成三层：
 
 不需要注册。
 
-仓库里的 `examples/demo.json` 是一份完整的产品方案 Showcase，可以直接导入 MindDeck 继续编辑。当前 Demo 按 **V9.6.6 RC** 验证，包含母版、章节配色、不同页面布局、轻量动画和三级分支。
+仓库里的 `examples/demo.json` 是一份完整的产品方案 Showcase，可以直接导入 MindDeck 继续编辑。当前 Demo 按 **V9.7.0 RC** 验证，包含母版、章节配色、不同页面布局、轻量动画和三级分支。
 
 建议体验时专门试一下“安全”分支：进入演示后把它收起，观察权限 / 数据 / 审计从后续序列里消失，再重新展开。
 
@@ -142,9 +142,36 @@ MindDeck release check: ALL OK
 
 详细结果见 [`ARCHITECTURE_AUDIT.md`](ARCHITECTURE_AUDIT.md)。
 
+## V9.7：源码模块化，发布仍是单 HTML
+
+V9.7 不改变 MindDeck 的发布优势：**最终产物仍然只有一个 `index.html`，不依赖旁边的 JS/CSS 文件，离线双击即可运行。**
+
+变化发生在源码层：
+
+```text
+src/app/
+├── shell.html
+├── app.manifest.json
+├── modules/
+│   ├── 00-bootstrap.js
+│   ├── 10-map.js
+│   ├── 20-slide-editor.js
+│   ├── 30-presentation.js
+│   ├── 40-portable-export.js
+│   └── 90-bindings-init.js
+└── styles/
+    ├── 00-base.css
+    ├── 10-map.css
+    ├── 20-slide-editor.css
+    ├── 30-presentation-shell.css
+    └── 90-responsive.css
+```
+
+构建时 `scripts/build-single-html.mjs` 会把上述源码、`src/runtime/shared-core.js` 和共享样式重新内联成根目录 `index.html`。CI 会同时检查“模块源码 = 生成内容”和“单 HTML 无外部 JS/CSS 依赖”，防止以后重新退化为复制实现或多文件才能运行。
+
 ## 本地运行
 
-完整编辑器继续保留为单文件：
+发布产物继续保留为单文件；源码已经模块化：
 
 ```text
 index.html
@@ -172,13 +199,13 @@ Pages 部署由 `.github/workflows/pages.yml` 完成：
 
 `app.html` 每次部署都从仓库根目录 `index.html` 生成。
 
-从 V9.6.5 开始，Pages 首页和 Demo 的显示版本也会从 `package.json` 自动注入，不再手工维护三套版本号。
+Pages 首页和 Demo 的显示版本从 `package.json` 自动注入；V9.7 部署前还会先执行 `npm run build`，确保 `app.html` 永远来自模块源码生成的单文件产物。
 
 ## 项目阶段
 
-目前仍处于 **Release Candidate** 阶段，当前基线是 **V9.6.6 RC**。
+目前仍处于 **Release Candidate** 阶段，当前基线是 **V9.7.0 RC**。
 
-V9.6 已完成业务框架统一。接下来优先完善演示能力、正式汇报可靠性、手机 / 桌面体验和真实项目中的使用问题，而不是重新复制 Runtime。
+V9.6 已完成业务框架统一；V9.7 进一步把巨型 `index.html` 的源码职责拆开，同时保持最终单 HTML 发布。接下来可以在不复制 Runtime 的前提下继续完善演示、编辑和移动端能力。
 
 ## 适合什么场景
 

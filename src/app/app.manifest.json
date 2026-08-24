@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "buildMode": "ordered-fragments",
+  "description": "V9.7 source modules are concatenated in order into one browser closure; release artifact remains one standalone HTML.",
+  "scripts": [
+    "modules/00-bootstrap.js",
+    "modules/10-map.js",
+    "modules/20-slide-editor.js",
+    "modules/30-presentation.js",
+    "modules/40-portable-export.js",
+    "modules/90-bindings-init.js"
+  ],
+  "styles": [
+    "styles/00-base.css",
+    "styles/10-map.css",
+    "styles/20-slide-editor.css",
+    "styles/30-presentation-shell.css",
+    "styles/90-responsive.css"
+  ]
+}

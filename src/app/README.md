@@ -1,5 +1,11 @@
-# MindDeck V9.7 application layer
+# MindDeck V9.7 application source
 
-This directory contains the modular application-layer source for the editor shell. The release build still emits a standalone `index.html`: source modules are concatenated/embedded at build time so the published artifact has no runtime dependency on external JS/CSS files.
+V9.7 separates **source organization** from **release shape**.
 
-V9.7 keeps `src/runtime/shared-core.js` as the single business/runtime implementation and moves host concerns into explicit modules under `src/app`.
+- `shell.html` owns static HTML structure and build slots.
+- `app.manifest.json` defines ordered JS/CSS source fragments.
+- `modules/` contains editor/map/presentation/export host logic.
+- `styles/` contains UI styles split by responsibility.
+- `../runtime/shared-core.js` remains the single business/runtime implementation.
+
+The fragments deliberately compile into one browser closure so the refactor does not change runtime behavior. `npm run build` embeds all app CSS, shared CSS, shared runtime and app modules back into the repository-root `index.html`. The release artifact has **no external JS/CSS dependency** and can still be opened directly as one file.

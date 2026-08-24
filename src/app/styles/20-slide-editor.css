@@ -1,0 +1,73 @@
+/* freeform editor */
+#editorShell{
+  position:fixed;inset:0;z-index:150;background:#eef1f5;display:none;flex-direction:column
+}
+#editorShell.open{display:flex}
+.editor-topbar{
+  min-height:58px;height:auto;background:#fff;border-bottom:1px solid #e1e5ec;display:flex;align-items:center;
+  gap:7px;padding:7px 12px;flex:none;flex-wrap:wrap;row-gap:6px;overflow:visible
+}
+.editor-title{font-size:13px;font-weight:800;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.editor-mode-pill{font-size:11px;padding:5px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:800}
+.toolbar-sep{width:1px;height:28px;background:#e6e9ee;margin:0 2px}
+.editor-body{position:relative;flex:1;min-height:0;overflow:hidden}
+.editor-stage-wrap{position:absolute;inset:0 0 0 0;display:flex;align-items:center;justify-content:center;padding:26px 34px;background:#dfe3e9;min-width:0;min-height:0}
+#editorStage{
+  position:relative;width:1600px;height:900px;min-width:1600px;min-height:900px;flex:0 0 auto;
+  transform-origin:center center;background:#fff;box-shadow:0 20px 70px rgba(24,31,47,.20);overflow:hidden
+}
+.master-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;pointer-events:none}
+.canvas-el{
+  position:absolute;user-select:none;cursor:move;transform-origin:center center
+}
+.canvas-el.selected{outline:3px solid var(--accent);outline-offset:2px}
+.canvas-el.multi-selected{outline:3px solid rgba(49,94,251,.7);outline-offset:2px}
+.canvas-el.selection-anchor{outline:4px solid var(--accent);outline-offset:3px}
+.canvas-el.selection-anchor::after{
+  content:"基准";position:absolute;left:0;top:-25px;padding:3px 6px;border-radius:6px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;pointer-events:none
+}
+.canvas-el .resize-handle{
+  display:none;position:absolute;width:16px;height:16px;border-radius:50%;background:var(--accent);
+  border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.25);z-index:20
+}
+.canvas-el .resize-handle.nw{left:-8px;top:-8px;cursor:nwse-resize}
+.canvas-el .resize-handle.ne{right:-8px;top:-8px;cursor:nesw-resize}
+.canvas-el .resize-handle.sw{left:-8px;bottom:-8px;cursor:nesw-resize}
+.canvas-el .resize-handle.se{right:-8px;bottom:-8px;cursor:nwse-resize}
+.canvas-el.selected .resize-handle{display:block}
+.el-text{display:flex;align-items:flex-start;justify-content:flex-start;white-space:pre-wrap;overflow:visible;padding:4px}
+.el-text .text-content{
+  width:100%;height:100%;min-width:1px;min-height:1em;white-space:pre-wrap;overflow:hidden;outline:none;cursor:inherit
+}
+.el-text .text-content:empty::before{
+  content:"双击输入文字";color:#a6aeba;opacity:.85;font-weight:400;pointer-events:none
+}
+.el-text .text-content[contenteditable="true"]{
+  cursor:text;user-select:text;-webkit-user-select:text;background:rgba(255,255,255,.55)
+}
+.el-image img{width:100%;height:100%;display:block;pointer-events:none}
+.el-video video{width:100%;height:100%;display:block;pointer-events:none;background:#111}
+.el-shape{border-style:solid}
+.el-master-badge{
+  position:absolute;left:4px;top:4px;font-size:9px;padding:2px 5px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none
+}
+#propPanel{
+  position:absolute;right:14px;top:14px;bottom:14px;width:315px;background:#fff;border:1px solid #dfe4ec;border-radius:16px;
+  box-shadow:var(--shadow);z-index:30;padding:14px;overflow:auto;display:none
+}
+#propPanel.open{display:block}
+#propPanel h3{margin:2px 0 12px;font-size:15px}
+.prop-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.small-note{font-size:10px;color:#8f97a4;line-height:1.5}
+.master-panel-empty{
+  position:absolute;right:14px;top:14px;width:315px;background:#fff;border:1px solid #dfe4ec;border-radius:16px;
+  box-shadow:var(--shadow);z-index:29;padding:14px;display:none
+}
+.master-panel-empty.open{display:block}
+.align-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.align-btns .btn{padding:7px 5px;font-size:11px}
+.element-toolbar{display:flex;gap:6px;align-items:center}
+.file-input{display:none}
+.canvas-hint{
+  position:absolute;left:18px;bottom:18px;z-index:12;background:rgba(20,24,33,.84);color:#fff;font-size:11px;padding:8px 10px;border-radius:9px
+}
