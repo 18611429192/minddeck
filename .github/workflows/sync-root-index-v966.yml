@@ -1,0 +1,66 @@
+name: Sync root index to V9.6.6
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'V9.6.6_RC_NOTES.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync visible version strings in root index
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          replacements = {
+            'MindDeck V9.5.3 RC<small>发布候选 · 功能冻结 · Runtime 9.5</small>':
+              'MindDeck V9.6.6 RC<small>发布候选 · 统一架构 · Runtime 9.6.6</small>',
+            '统一运行时 9.5 · Release Candidate':
+              '统一运行时 9.6.6 · Release Candidate',
+            '<span class="welcome-kicker">MindDeck V9.5.3 RC</span>':
+              '<span class="welcome-kicker">MindDeck V9.6.6 RC</span>',
+          }
+
+          for old, new in replacements.items():
+            if old not in text:
+              raise SystemExit(f'missing expected version marker: {old}')
+            text = text.replace(old, new)
+
+          # Old-version occurrences are allowed only in historical CSS comments.
+          visible_old = [
+            'MindDeck V9.5.3 RC',
+            'Runtime 9.5</small>',
+            '统一运行时 9.5 · Release Candidate',
+          ]
+          for marker in visible_old:
+            if marker in text:
+              raise SystemExit(f'stale visible version marker remains: {marker}')
+
+          p.write_text(text, encoding='utf-8')
+          PY
+
+          npm run release:check
+
+      - name: Commit root index sync
+        shell: bash
+        run: |
+          git config user.name 'MindDeck'
+          git config user.email 'minddeck@local'
+          git add index.html
+          git rm .github/workflows/sync-root-index-v966.yml
+          git commit -m 'fix: sync root index version to V9.6.6'
+          git push
