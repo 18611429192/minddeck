@@ -1,0 +1,20 @@
+name: Dispatch V9.7 Apply
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch V9.7 modularization workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run apply-v970-modularization.yml --ref main
