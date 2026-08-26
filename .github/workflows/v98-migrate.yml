@@ -35,10 +35,21 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          for p in Path('src/runtime/modules').glob('*.js'):
+              s=p.read_text()
+              p.write_text(s.replace('global.','globalThis.'))
+
           for p in Path('tests').rglob('*.mjs'):
               s=p.read_text()
               s=s.replace("'9.7.0'", "'9.8.0'").replace('"9.7.0"', '"9.8.0"')
               p.write_text(s)
+
+          p=Path('tests/e2e/minddeck.spec.mjs')
+          s=p.read_text()
+          old="test('folding a showcase branch changes the presentation sequence',async({page})=>{await page.goto('/?showcase=1');await expect(page.locator('#tocTree')).toContainText('权限');const security=page.locator('.toc-item').filter({hasText:'安全'}).first();await security.locator('.fold-mini').click();await expect(page.locator('#tocTree')).not.toContainText('权限')});"
+          new="test('folding a showcase branch changes the presentation sequence',async({page})=>{await page.goto('/?showcase=1');await expect(page.locator('#tocTree')).toContainText('权限');const fold=page.locator('.toc-item').filter({hasText:'安全'}).first().locator('.fold-mini');if(!(await fold.isVisible()))await page.locator('#presentTocToggle').click();await fold.click();await expect(page.locator('#tocTree')).not.toContainText('权限')});"
+          if old not in s: raise SystemExit('folding e2e test not found')
+          p.write_text(s.replace(old,new))
 
           for filename in ['scripts/verify-index.mjs','scripts/verify-single-html.mjs']:
               p=Path(filename)
@@ -69,7 +80,7 @@ jobs:
               "const moduleDir=new URL('../src/runtime/modules/',import.meta.url);",
               "const modules=fs.readdirSync(moduleDir).filter(x=>x.endsWith('.js'));",
               "assert.ok(modules.length>=20,'shared runtime was not split into ES modules');",
-              "for(const file of modules){const code=fs.readFileSync(new URL(file,moduleDir),'utf8');assert.ok(code.includes('export const '),'runtime module lacks ESM export: '+file)}",
+              "for(const file of modules){const code=fs.readFileSync(new URL(file,moduleDir),'utf8');assert.ok(code.includes('export const '),'runtime module lacks ESM export: '+file);assert.ok(!code.includes('global.'),'legacy IIFE global reference remains: '+file)}",
               "assert.ok(runtimeIndex.includes(\"from './modules/\"),'runtime index does not import modules');",
               "assert.ok(runtimeIndex.includes('globalThis.MindDeckCore=MindDeckCore'),'runtime index does not expose browser core');",
               "for(const marker of ['const slides=','function visible(','function renderToc(','function step(','toggleSecurity']) assert.ok(!demo.includes(marker),'Pages demo reintroduced a second presentation implementation: '+marker);",
