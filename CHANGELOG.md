@@ -1,5 +1,14 @@
 # Changelog
 
+## V9.8.0-rc.1 — 架构收口
+
+- GitHub Pages Demo 不再维护独立的 slides / TOC / 折叠 / 翻页实现，改为进入正式应用 Showcase 模式并加载 `examples/demo.json`。
+- Showcase 复用正式 `PresentationView`，同时禁用项目持久化，避免 Demo 覆盖用户本地项目。
+- `package.json` 成为构建版本来源；生成的 App / Runtime 版本标识由构建脚本统一注入。
+- 新增 Demo/Runtime 架构门禁，阻止 Pages Demo 再次出现第二套演示逻辑。
+- 新增 MIT License、CONTRIBUTING、SECURITY、Issue/PR 模板，并整理 V9.8 架构文档。
+- 历史 RC 与发布施工文档归档到 `docs/releases/archive/`，减少仓库根目录噪音。
+
 ## V9.5.0-rc.1 — Release Candidate
 
 - 功能冻结，开始只修阻断性问题。
