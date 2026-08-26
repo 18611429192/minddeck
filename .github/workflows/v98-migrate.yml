@@ -45,6 +45,13 @@ jobs:
           new="const scripts = [...html.matchAll(/<script([^>]*)>([\\s\\S]*?)<\\/script>/g)].filter(m => !/type=[\\\"']text\\/plain[\\\"']/i.test(m[1])).map(m => m[2]);"
           if old not in s: raise SystemExit('verify-index script matcher not found')
           p.write_text(s.replace(old,new))
+
+          p=Path('scripts/verify-modular-build.mjs')
+          s=p.read_text()
+          old="const appBundle=manifest.scripts.map(read).join('\\n\\n');"
+          new="const pkg=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')); const version=pkg.version.split('-')[0],isRc=/-rc(?:\\.|$)/.test(pkg.version),display='V'+version+(isRc?' RC':''); let appBundle=manifest.scripts.map(read).join('\\n\\n'); appBundle=appBundle.replaceAll('__MINDDECK_APP_VERSION__',display).replaceAll('__MINDDECK_RUNTIME_VERSION__',version).replaceAll('__MINDDECK_RELEASE_CHANNEL__',isRc?'rc':'stable');"
+          if old not in s: raise SystemExit('verify-modular appBundle line not found')
+          p.write_text(s.replace(old,new))
           PY
       - name: Install dependencies and create lockfile
         run: npm install
