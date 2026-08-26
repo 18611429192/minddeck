@@ -1,9 +1,9 @@
 {
   "name": "minddeck",
-  "version": "9.7.0-rc.1",
+  "version": "9.8.0-rc.1",
   "private": true,
   "type": "module",
-  "description": "Mind map structured, freeform slide presentation tool",
+  "description": "Mind map structured presentation editor with freeform 16:9 slides and portable single-HTML export",
   "scripts": {
     "build": "node scripts/build-single-html.mjs",
     "build:single": "node scripts/build-single-html.mjs",
