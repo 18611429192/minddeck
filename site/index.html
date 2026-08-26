@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="MindDeck：用思维导图组织演示结构，每个节点都是一张真正的 16:9 页面。">
+<meta property="og:title" content="MindDeck · 先看清整件事，再讲清每一页">
+<meta property="og:description" content="思维导图结构 + 自由 16:9 页面 + 可折叠现场演示。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://18611429192.github.io/minddeck/">
+<meta property="og:image" content="https://18611429192.github.io/minddeck/assets/minddeck-demo.gif">
+<meta name="twitter:card" content="summary_large_image">
 <title>MindDeck · 先看清整件事，再讲清每一页</title>
 <style>
 :root{--ink:#20283a;--muted:#6f7a8d;--line:#dfe5ed;--paper:#f4f7fb;--white:#fff;--navy:#1f2a44;--blue:#4f6ef7;--teal:#20a89a;--orange:#f28c5b;--purple:#8b63d9;--gold:#e9b949}
@@ -28,7 +34,7 @@ footer{padding:34px 0 44px;color:#8791a1;font-size:13px;display:flex;justify-con
 </section>
 </div>
 
-<section class="section white" id="why"><div class="wrap"><h2>不是“把思维导图转成 PPT”</h2><p class="intro">思维导图一直是演示的结构，不是制作完页面以后丢掉的草稿。页面只是挂在节点上的表达方式。</p><div class="cards"><div class="card"><b>结构</b><p>层级、分支、关系和展开状态一直保留。</p></div><div class="card"><b>页面</b><p>每个节点都是 1600 × 900 的自由页面，可放文字、图片、视频、形状、母版和动画。</p></div><div class="card"><b>演示</b><p>收起一个分支，它的子页面立即离开后续播放序列；重新展开，又可以继续深入。</p></div></div><div class="runtime"><strong>V9.6 已完成统一业务框架。</strong><p>编辑器、导出思维导图、独立演示和融合 HTML 共用同一套 Shared Runtime。布局、播放顺序、TOC、页面渲染和 PresentationView 演示视图流程都不再维护第二份实现。<br><code>Architecture audit: OK</code></p></div></div></section>
+<section class="section white" id="why"><div class="wrap"><h2>不是“把思维导图转成 PPT”</h2><p class="intro">思维导图一直是演示的结构，不是制作完页面以后丢掉的草稿。页面只是挂在节点上的表达方式。</p><div class="cards"><div class="card"><b>结构</b><p>层级、分支、关系和展开状态一直保留。</p></div><div class="card"><b>页面</b><p>每个节点都是 1600 × 900 的自由页面，可放文字、图片、视频、形状、母版和动画。</p></div><div class="card"><b>演示</b><p>收起一个分支，它的子页面立即离开后续播放序列；重新展开，又可以继续深入。</p></div></div><div class="runtime"><strong>V9.8 正在完成最后一轮架构收口。</strong><p>编辑器、Portable 导出与 Pages Showcase 都以同一套 Shared Runtime / PresentationView 为业务来源；Demo 已不再维护第二套 slides、TOC、折叠和翻页逻辑。<br><code>Architecture audit: no duplicate Demo runtime</code></p></div></div></section>
 
 <section class="section"><div class="wrap demo"><div><h2>现场追问时，再展开细节</h2><p class="intro">“安全”下面有权限、数据、审计三个页面。没人追问就收起来；有人追问再展开，不需要准备另一份 PPT。</p><div class="actions"><a class="btn primary" href="demo.html">打开交互 Demo</a><a class="btn" href="app.html">自己做一份</a></div></div><div class="treebox"><div class="pills"><span class="pill security">安全</span><span class="pill">权限</span><span class="pill">数据</span><span class="pill">审计</span></div><div class="seq">展开：安全 → 权限 → 数据 → 审计 → 运维 → 方案<br>收起：安全 → 运维 → 方案</div></div></div></section>
 
