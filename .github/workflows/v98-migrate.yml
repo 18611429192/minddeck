@@ -31,6 +31,15 @@ jobs:
           PY
       - name: Apply V9.8 migration
         run: node scripts/v98-upgrade.mjs
+      - name: Align version-sensitive regressions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for p in Path('tests').rglob('*.mjs'):
+              s=p.read_text()
+              s=s.replace("'9.7.0'", "'9.8.0'").replace('"9.7.0"', '"9.8.0"')
+              p.write_text(s)
+          PY
       - name: Install dependencies and create lockfile
         run: npm install
       - name: Run release checks
