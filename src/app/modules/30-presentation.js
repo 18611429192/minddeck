@@ -12,10 +12,11 @@
     });
     presentationView.bindInput();return presentationView;
   }
-  async function enterPresentation(){
+  async function enterPresentation(options={}){
     presentation=true;createMainPresentationView();
     document.querySelectorAll(".map-panel.open").forEach(p=>p.classList.remove("open"));document.getElementById("healthPanel")?.classList.remove("open");document.getElementById("welcomeOverlay")?.classList.remove("open");document.getElementById("mobileNodeContext")?.classList.remove("open");closeMobileMainSheet();document.body.classList.add("presentation-mode");nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
     document.getElementById("presentShell").classList.add("open");presentationView.render();
+    if(options.fullscreen===false)return;
     if(!(await FullscreenCore.enter(workspace)))toast("浏览器未允许全屏，已进入窗口演示；按 Esc 退出");
   }
   async function exitPresentation(fromFs=false){

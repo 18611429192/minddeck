@@ -10,6 +10,7 @@ const commands=[
   ['node',['scripts/verify-modular-build.mjs']],
   ['node',['scripts/verify-single-html.mjs']],
   ['node',['scripts/verify-architecture.mjs']],
+  ['node',['scripts/verify-demo-runtime.mjs']],
   ['node',['scripts/verify-portable-contracts.mjs']],
   ['node',['scripts/verify-interaction-contracts.mjs']],
   ['node',['scripts/verify-theme-contracts.mjs']],

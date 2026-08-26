@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "buildMode": "ordered-fragments",
-  "description": "V9.7 source modules are concatenated in order into one browser closure; release artifact remains one standalone HTML.",
+  "buildMode": "application-closure",
+  "description": "UI responsibility slices share one browser application closure; business rules remain in the Shared Runtime.",
   "scripts": [
     "modules/00-bootstrap.js",
     "modules/10-map.js",
     "modules/20-slide-editor.js",
     "modules/30-presentation.js",
     "modules/40-portable-export.js",
+    "modules/95-showcase.js",
     "modules/90-bindings-init.js"
   ],
   "styles": [
