@@ -4,5 +4,7 @@ node_modules/
 dist/
 playwright-report/
 test-results/
+/index.html
+/src/runtime/shared-core.js
 *.log
 *.tmp

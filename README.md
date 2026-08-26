@@ -20,7 +20,7 @@
 
 ## 两分钟开始
 
-直接打开 [在线编辑器](https://18611429192.github.io/minddeck/app.html)。源码仓库保留单 HTML 构建能力，本地执行 `npm run build` 后会生成最新的根目录 `index.html`，可以离线双击运行。
+直接打开 [在线编辑器](https://18611429192.github.io/minddeck/app.html)。源码仓库只跟踪真正的源码，不提交容易过期的构建快照；本地执行 `npm run build` 会生成最新的 `src/runtime/shared-core.js` 和根目录 `index.html`，后者可以离线双击运行。
 
 ```bash
 npm install
@@ -47,12 +47,13 @@ npm run e2e
 
 V9.6 解决“编辑与导出两套业务逻辑”；V9.7 把应用源码从巨型 HTML 拆出来；V9.8 继续把**业务源码、Demo、Portable、构建和样式职责真正收口**。
 
-- Shared Runtime 已从人工维护的 `shared-core.js` 拆为标准 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 现在只是构建产物。
+- Shared Runtime 已从人工维护的 `shared-core.js` 拆为标准 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 现在只在构建时生成，不再提交到 Git。
 - Runtime 模块使用显式 `import/export`，构建时再合成为浏览器 IIFE，因此发布物仍然可以是一个离线 HTML。
 - Pages Demo 不再维护独立 slides / TOC / 翻页 / 折叠实现，而是加载 `examples/demo.json` 后进入正式 `PresentationView`。
 - Showcase 不写入用户项目存储，避免查看 Demo 覆盖本地项目。
 - Portable HTML / CSS 外壳已从导出 JS 中抽离，业务行为仍只由 `MindDeckCore.Portable.mount()` 提供。
 - `package.json` 是版本单一来源；构建会先生成同版本 Runtime，再生成最终 HTML。
+- 根目录 `index.html` 也不再提交生成快照，Pages 和本地构建始终从当前源码重新生成。
 - 原本持续膨胀的响应式 CSS 已拆为响应式、工作区和组件/主题三层文件。
 - Playwright 浏览器回归已加入，可手动覆盖桌面 / 手机、Showcase、母版和 Portable。
 - License、贡献规范、Issue / PR 模板与历史发布文档已经整理。
@@ -71,8 +72,7 @@ src/
 │  │  ├─ slide.js
 │  │  ├─ view.js
 │  │  └─ portable.js
-│  ├─ index.js
-│  └─ shared-core.js      # generated
+│  └─ index.js
 ├─ app/
 │  ├─ modules/            # editor application closure responsibilities
 │  └─ styles/
@@ -83,6 +83,15 @@ tests/                    # Node + Playwright 回归
 site/                     # GitHub Pages 首页和入口
 docs/                     # 架构、发布与说明文档
 ```
+
+构建后临时生成：
+
+```text
+src/runtime/shared-core.js
+index.html
+```
+
+它们均已 Git-ignore，避免仓库里出现“源码是 V9.8、生成快照还是 V9.7”的漂移。
 
 ## 架构原则
 
