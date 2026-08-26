@@ -1,5 +1,20 @@
 # Changelog
 
+## V9.8.0-rc.1 — 架构收口
+
+- Shared Runtime 从人工维护的 `shared-core.js` 拆成真正的 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 降级为构建生成物。
+- 新增 `scripts/build-runtime.mjs`，从 ESM 源码确定性合成浏览器 Runtime；最终发布物继续保持单 HTML、无外部 JS/CSS 运行依赖。
+- GitHub Pages Demo 不再维护独立的 slides / TOC / 折叠 / 翻页实现，改为进入正式应用 Showcase 模式并加载 `examples/demo.json`。
+- Showcase 复用正式 `PresentationView`，同时禁用项目持久化，避免 Demo 覆盖用户本地项目。
+- Portable HTML / CSS 外壳从导出 JS 抽离到 `src/portable/`，行为继续统一由 `MindDeckCore.Portable.mount()` 提供。
+- `package.json` 成为版本单一来源；构建先生成同版本 Runtime，再生成最终 standalone HTML，禁止 App / Runtime 版本漂移。
+- 架构门禁升级：检查真实 ESM import/export、model 层 DOM 边界、Demo/Portable 禁止第二套业务实现、生成 Runtime 与最终 HTML 完全一致。
+- Shared Runtime 测试同时验证 ESM 源图和生成后的浏览器 Runtime。
+- 新增手动 Playwright 浏览器回归，覆盖 Showcase、折叠后的播放序列、Portable 生成、母版和移动端固定 1600×900 舞台；不新增临时自动 Workflow。
+- 原 `90-responsive.css` 的工作区、主题、自检、恢复、欢迎页、演示 chrome 等职责拆到 `91-workspace.css` / `92-components.css`。
+- 新增 MIT License、CONTRIBUTING、SECURITY、Issue/PR 模板，并重写 V9.8 架构审计和文档入口。
+- 历史 RC 与发布施工文档归档到 `docs/releases/archive/`，减少仓库根目录噪音。
+
 ## V9.5.0-rc.1 — Release Candidate
 
 - 功能冻结，开始只修阻断性问题。

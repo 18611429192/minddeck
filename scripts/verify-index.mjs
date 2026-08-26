@@ -9,7 +9,9 @@ const display = `MindDeck V${m[1]} RC`;
 if (!html.includes(display)) throw new Error(`index version mismatch: expected ${display}`);
 if (!html.includes('<!DOCTYPE html') || !html.includes('</html>')) throw new Error('index structure incomplete');
 
-const scripts = [...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+  .filter(m => !/type=["']text\/plain["']/i.test(m[1]))
+  .map(m => m[2]);
 if (scripts.length < 2) throw new Error('expected shared runtime and app scripts');
 scripts.forEach((code, i) => new vm.Script(code, { filename: `index-script-${i+1}.js` }));
-console.log(`index.html JavaScript syntax: OK (${scripts.length} scripts)`);
+console.log(`index.html JavaScript syntax: OK (${scripts.length} executable scripts)`);

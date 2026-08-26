@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 const commands=[
+  ['node',['scripts/build-runtime.mjs']],
   ['node',['scripts/build-single-html.mjs']],
   ['node',['tests/core.test.mjs']],
   ['node',['tests/shared-runtime.test.mjs']],
@@ -10,6 +11,7 @@ const commands=[
   ['node',['scripts/verify-modular-build.mjs']],
   ['node',['scripts/verify-single-html.mjs']],
   ['node',['scripts/verify-architecture.mjs']],
+  ['node',['scripts/verify-demo-runtime.mjs']],
   ['node',['scripts/verify-portable-contracts.mjs']],
   ['node',['scripts/verify-interaction-contracts.mjs']],
   ['node',['scripts/verify-theme-contracts.mjs']],

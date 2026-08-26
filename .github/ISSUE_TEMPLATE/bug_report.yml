@@ -1,0 +1,31 @@
+name: Bug report
+description: 报告 MindDeck 功能、演示或导出不一致问题
+title: "[Bug] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题描述
+      description: 请描述实际行为和期望行为
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题区域
+      options:
+        - 思维导图
+        - 页面编辑
+        - 母版
+        - 演示
+        - Portable 导出
+        - 移动端
+        - GitHub Pages
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器 / 系统

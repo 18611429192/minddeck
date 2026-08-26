@@ -1,236 +1,111 @@
 # MindDeck
 
-**MindDeck 是一个把思维导图和演示页面放在一起的浏览器工具。**
+**用思维导图保留整个演示结构，让每个节点又是一张真正可设计的 16:9 页面。**
 
-> 当前版本：**V9.7.0 RC**  
-> 先看清整件事，再讲清每一页。
+> 当前开发版本：**V9.8.0 RC** · 单 HTML · 本地优先 · Unified Runtime
 
-普通 PPT 很适合一页一页讲，但很多内容本身不是一条直线，而是一棵树。
-
-产品方案、技术架构、培训课程、项目汇报都经常这样：你既需要看见完整结构，又希望某个节点能像 PPT 一样认真排版；真正演示时，还会根据现场问题决定某个分支要不要继续展开。
-
-MindDeck 就是为这种情况做的。
-
-**[在线体验](https://18611429192.github.io/minddeck/app.html) · [先看 Demo](https://18611429192.github.io/minddeck/demo.html) · [项目首页](https://18611429192.github.io/minddeck/)**
+[在线体验](https://18611429192.github.io/minddeck/app.html) · [交互 Demo](https://18611429192.github.io/minddeck/demo.html) · [项目首页](https://18611429192.github.io/minddeck/)
 
 ![MindDeck 动态演示](docs/assets/minddeck-demo.gif)
 
-上面的 Demo 里，“安全”下面还有权限、数据、审计三个细节页。演示时把“安全”收起来，这三个页面会直接离开后续播放序列；重新展开，又会回来。
+普通 PPT 很适合按页讲，但产品方案、技术架构、培训和评审本身往往是一棵树。MindDeck 保留这棵树：你可以从全局结构进入任意分支，每个节点又能拥有一张真正的 16:9 页面；演示时折叠一个分支，它的细节页会自动离开后续播放序列。
 
-这也是 MindDeck 最想解决的问题：**结构不丢，现场又不必被固定页序绑住。**
+## 核心能力
 
-## 它是怎么工作的
+- **思维导图**：左右、单侧、向下、放射布局；曲线连线；拖动；展开 / 折叠；按当前可见节点重排。
+- **自由页面**：每个节点一张 1600 × 900 页面，支持文字、图片、视频、形状、母版、多选、对齐、图层和轻量动画。
+- **现场演示**：目录跳转、目录显隐、键盘 / 滚轮 / 触摸翻页，展开状态实时决定播放序列。
+- **Portable 导出**：JSON、`.minddeck`、独立思维导图 HTML、独立演示 HTML、融合 HTML。
+- **本地优先**：无需注册、无需后端；项目默认保存在浏览器本地。
 
-MindDeck 把一份演示拆成三层：
+## 两分钟开始
 
-- **思维导图**负责整个内容的结构。
-- **每个节点**都是一张真正的 16:9 页面。
-- **演示模式**根据当前展开 / 折叠状态决定实际播放顺序。
-
-所以演示不一定永远是：
-
-```text
-1 → 2 → 3 → 4 → 5
-```
-
-也可以是：
-
-```text
-产品方案
-├─ 为什么做
-├─ 用户问题
-│  ├─ 效率
-│  └─ 安全
-│     ├─ 权限
-│     ├─ 数据
-│     └─ 审计
-├─ 方案
-├─ 实施
-└─ 结果
-```
-
-如果现场没人追问安全细节，就把“安全”收起来；如果有人临时问到数据保护，再把它展开继续讲。
-
-不需要另一份 PPT，也不需要提前准备一堆隐藏备用页。
-
-## 先试一下
-
-最省事的方式是直接打开：
-
-- **项目首页**：<https://18611429192.github.io/minddeck/>
-- **在线 Demo**：<https://18611429192.github.io/minddeck/demo.html>
-- **在线编辑器**：<https://18611429192.github.io/minddeck/app.html>
-
-不需要注册。
-
-仓库里的 `examples/demo.json` 是一份完整的产品方案 Showcase，可以直接导入 MindDeck 继续编辑。当前 Demo 按 **V9.7.0 RC** 验证，包含母版、章节配色、不同页面布局、轻量动画和三级分支。
-
-建议体验时专门试一下“安全”分支：进入演示后把它收起，观察权限 / 数据 / 审计从后续序列里消失，再重新展开。
-
-## 现在能做什么
-
-### 思维导图
-
-支持左右展开、向左、向右、向下和自由放射布局，也支持曲线连接、节点拖动、展开 / 折叠、按当前可见节点重排和节点原位编辑。
-
-折叠节点不会继续占重排空间。
-
-### 页面编辑
-
-每个节点都有一张独立的 `1600 × 900` 页面。
-
-目前可以添加文字、图片、视频、形状和母版固定元素，也支持轻量动画、多选、对齐和图层调整。
-
-母版和普通页面使用同一套页面编辑体验；母版元素会出现在所有页面上。
-
-### 演示
-
-当前展开的节点才会进入播放序列。
-
-演示过程中可以展开 / 折叠目录节点、隐藏 / 打开目录、跳转任意节点。键盘、鼠标滚轮和手机滑动都可以翻页。
-
-页面始终保持真正的 **16:9**，不同分辨率只做等比缩放。
-
-### 导出
-
-目前支持：
-
-- JSON 项目
-- `.minddeck` 项目包
-- 独立思维导图 HTML
-- 独立演示 HTML
-- 思维导图 + 演示融合 HTML
-
-导出的 HTML 会保留对应运行能力，不只是静态截图。
-
-## V9.6：统一 Runtime 已完成
-
-V9.6 做的重点不是继续堆功能，而是解决一个长期问题：
-
-> 编辑器修好了，但导出还是旧行为。
-
-现在 Tree、Project、Layout、Presentation、TOC、Map Renderer、Slide / Element Renderer、Animation、Viewport、Input、Fullscreen、Diagnostics、Recovery 等业务规则都已经收口到共享 Runtime。V9.6.6 又把演示视图层收进 `PresentationView`：编辑器内演示和导出演示共用同一套页面刷新、TOC、舞台缩放、键盘、滚轮和触摸流程。
-
-```text
-src/runtime/
-├── shared-core.js
-└── shared-styles.css
-```
-
-编辑器、独立导图 HTML、独立演示 HTML、融合 HTML 都从同一份业务源码工作。导出的 HTML 仍然可以是单文件，但不再人工维护第二套算法。
-
-仓库带有架构审计：
+直接打开 [在线编辑器](https://18611429192.github.io/minddeck/app.html)。源码仓库保留单 HTML 构建能力，本地执行 `npm run build` 后会生成最新的根目录 `index.html`，可以离线双击运行。
 
 ```bash
-npm run audit:architecture
+npm install
+npm run build
+npm run serve
 ```
 
-它会检查 Portable Runtime 是否重新出现第二套布局、播放序列、导图渲染、TOC 等业务实现。
+然后打开 `http://localhost:8080`。
 
-完整发布检查：
+完整 Node / 架构检查：
 
 ```bash
 npm run release:check
 ```
 
-当前基线要求：
-
-```text
-Architecture audit: OK
-MindDeck release check: ALL OK
-```
-
-详细结果见 [`ARCHITECTURE_AUDIT.md`](ARCHITECTURE_AUDIT.md)。
-
-## V9.7：源码模块化，发布仍是单 HTML
-
-V9.7 不改变 MindDeck 的发布优势：**最终产物仍然只有一个 `index.html`，不依赖旁边的 JS/CSS 文件，离线双击即可运行。**
-
-变化发生在源码层：
-
-```text
-src/app/
-├── shell.html
-├── app.manifest.json
-├── modules/
-│   ├── 00-bootstrap.js
-│   ├── 10-map.js
-│   ├── 20-slide-editor.js
-│   ├── 30-presentation.js
-│   ├── 40-portable-export.js
-│   └── 90-bindings-init.js
-└── styles/
-    ├── 00-base.css
-    ├── 10-map.css
-    ├── 20-slide-editor.css
-    ├── 30-presentation-shell.css
-    └── 90-responsive.css
-```
-
-构建时 `scripts/build-single-html.mjs` 会把上述源码、`src/runtime/shared-core.js` 和共享样式重新内联成根目录 `index.html`。CI 会同时检查“模块源码 = 生成内容”和“单 HTML 无外部 JS/CSS 依赖”，防止以后重新退化为复制实现或多文件才能运行。
-
-## 本地运行
-
-发布产物继续保留为单文件；源码已经模块化：
-
-```text
-index.html
-```
-
-可以直接用浏览器打开，也可以在项目目录启动：
+真实浏览器回归（手动运行，不绑定额外自动 Workflow）：
 
 ```bash
-npm run serve
+npx playwright install chromium
+npm run e2e
 ```
 
-然后访问 `http://localhost:8080`。
+## V9.8 完成了什么
 
-需要 Node.js 18+ 执行测试和构建脚本。
+V9.6 解决“编辑与导出两套业务逻辑”；V9.7 把应用源码从巨型 HTML 拆出来；V9.8 继续把**业务源码、Demo、Portable、构建和样式职责真正收口**。
 
-## GitHub Pages
+- Shared Runtime 已从人工维护的 `shared-core.js` 拆为标准 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 现在只是构建产物。
+- Runtime 模块使用显式 `import/export`，构建时再合成为浏览器 IIFE，因此发布物仍然可以是一个离线 HTML。
+- Pages Demo 不再维护独立 slides / TOC / 翻页 / 折叠实现，而是加载 `examples/demo.json` 后进入正式 `PresentationView`。
+- Showcase 不写入用户项目存储，避免查看 Demo 覆盖本地项目。
+- Portable HTML / CSS 外壳已从导出 JS 中抽离，业务行为仍只由 `MindDeckCore.Portable.mount()` 提供。
+- `package.json` 是版本单一来源；构建会先生成同版本 Runtime，再生成最终 HTML。
+- 原本持续膨胀的响应式 CSS 已拆为响应式、工作区和组件/主题三层文件。
+- Playwright 浏览器回归已加入，可手动覆盖桌面 / 手机、Showcase、母版和 Portable。
+- License、贡献规范、Issue / PR 模板与历史发布文档已经整理。
 
-Pages 部署由 `.github/workflows/pages.yml` 完成：
+详见 [V9.8 Architecture](docs/architecture-v9.8.md) 和 [Architecture Audit](ARCHITECTURE_AUDIT.md)。
+
+## 源码结构
 
 ```text
-/           产品首页
-/demo.html  可直接操作的 Showcase
-/app.html   当前 main 的完整编辑器
+src/
+├─ runtime/
+│  ├─ modules/
+│  │  ├─ env.js
+│  │  ├─ model.js
+│  │  ├─ platform.js
+│  │  ├─ slide.js
+│  │  ├─ view.js
+│  │  └─ portable.js
+│  ├─ index.js
+│  └─ shared-core.js      # generated
+├─ app/
+│  ├─ modules/            # editor application closure responsibilities
+│  └─ styles/
+└─ portable/              # portable shell / styles
+
+examples/                 # Showcase 项目数据
+tests/                    # Node + Playwright 回归
+site/                     # GitHub Pages 首页和入口
+docs/                     # 架构、发布与说明文档
 ```
 
-`app.html` 每次部署都从仓库根目录 `index.html` 生成。
+## 架构原则
 
-Pages 首页和 Demo 的显示版本从 `package.json` 自动注入；V9.7 部署前还会先执行 `npm run build`，确保 `app.html` 永远来自模块源码生成的单文件产物。
+**业务只实现一次。** Tree、Layout、Presentation、TOC、Map/Slide Renderer 等规则必须来自 Shared Runtime。编辑器、Portable 和 Pages Showcase 可以有不同 UI 外壳，但不能各自实现一套业务算法。
 
-## 项目阶段
+`src/app/modules/` 仍然共享一个编辑器 application closure，这是有意保留的 UI 状态边界；它们是职责切片，不是第二套业务 Runtime。
 
-目前仍处于 **Release Candidate** 阶段，当前基线是 **V9.7.0 RC**。
+## 浏览器支持
 
-V9.6 已完成业务框架统一；V9.7 进一步把巨型 `index.html` 的源码职责拆开，同时保持最终单 HTML 发布。接下来可以在不复制 Runtime 的前提下继续完善演示、编辑和移动端能力。
+主要面向当前版本 Chrome / Edge / Safari / Firefox。移动端支持触摸浏览和页面编辑；不同浏览器的全屏、媒体自动播放和本地存储配额可能存在差异。
 
-## 适合什么场景
+## 当前限制
 
-目前比较适合：
+- MindDeck 不是 PowerPoint 的完整替代品；复杂图表、Office 原生格式和高级时间轴动画不是当前重点。
+- 大量 Base64 图片 / 视频会显著增大项目和单 HTML 文件。
+- 浏览器 localStorage 容量有限，重要项目建议同时保存 `.minddeck` 或 JSON 备份。
 
-- 技术方案 / 系统架构
-- 产品方案
-- 培训课程
-- 项目汇报
-- 答辩 / 评审
-- 需要根据现场问题随时展开细节的演示
+## 贡献与反馈
 
-它不是为了替代 PowerPoint 的所有能力。
+最有价值的问题是：**哪一步让你不敢在正式会议里用？编辑、演示和导出有没有行为不一致？**
 
-更想解决的是：
+贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全说明见 [SECURITY.md](SECURITY.md)。
 
-**当你要讲的东西本身有结构时，既保留这棵结构，又把每一个节点讲清楚。**
+## License
 
-## 反馈
-
-如果你真的拿它做了一次汇报，最有价值的反馈是：
-
-- 哪一步让你觉得麻烦？
-- 哪个操作不符合直觉？
-- 哪个地方让你不敢在正式会议里用？
-- 导出以后有没有和编辑时不一致？
-
-这类问题会优先处理。
+MIT License。
