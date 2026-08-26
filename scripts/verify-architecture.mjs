@@ -9,15 +9,25 @@ const exporter=read('src/app/modules/40-portable-export.js');
 const portableShell=read('src/portable/shell.html');
 const pkg=JSON.parse(read('package.json'));
 const version=pkg.version.split('-')[0];
-const expectedRuntime=runtimeSource.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
 
 const runtimeMatch=html.match(/<!-- MINDDECK_SHARED_RUNTIME_START -->\s*<script id="minddeck-shared-runtime">\s*([\s\S]*?)\s*<\/script>\s*<!-- MINDDECK_SHARED_RUNTIME_END -->/);
 const stylesMatch=html.match(/<!-- MINDDECK_SHARED_STYLES_START -->\s*<style id="minddeck-shared-styles">\s*([\s\S]*?)\s*<\/style>\s*<!-- MINDDECK_SHARED_STYLES_END -->/);
 assert.ok(runtimeMatch,'embedded shared runtime missing');
 assert.ok(stylesMatch,'embedded shared styles missing');
-assert.equal(runtimeMatch[1].trimEnd(),expectedRuntime,'index embedded runtime drifted from versioned Shared Runtime source');
+assert.equal(runtimeMatch[1].trimEnd(),runtimeSource,'index embedded runtime drifted from generated Shared Runtime');
 assert.equal(stylesMatch[1].trimEnd(),styles,'index embedded styles drifted from src/runtime/shared-styles.css');
+assert.ok(runtimeSource.includes(`const VERSION=${JSON.stringify(version)};`),'generated runtime version drifted from package.json');
 assert.ok(html.includes('type="text/plain" id="minddeck-portable-shell"'),'Portable shell is not embedded in the standalone app');
+
+const runtimeModules=['env.js','model.js','platform.js','slide.js','view.js','portable.js'];
+for(const file of runtimeModules){
+  const code=read('src/runtime/modules/'+file);
+  assert.match(code,/\bexport\s+(?:const|function|class)\b/,`runtime module has no ESM export: ${file}`);
+}
+for(const file of runtimeModules.slice(1))assert.match(read('src/runtime/modules/'+file),/^import\s/m,`runtime module has no explicit dependency imports: ${file}`);
+const modelSource=read('src/runtime/modules/model.js');
+assert.ok(!/\b(?:document|window)\b/.test(modelSource),'model layer must not depend on browser DOM APIs');
+assert.ok(!runtimeSource.includes('export const '),'generated browser runtime still contains ESM syntax');
 
 const mainScripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
   .filter(m=>!/type=["']text\/plain["']/i.test(m[1]))
@@ -65,6 +75,6 @@ const adapters=['src/core/ids.js','src/core/tree.js','src/core/layout.js','src/c
 for(const path of adapters){const code=read(path);assert.ok(code.includes("from './runtime.js'"),`${path} is not a shared-core adapter`);assert.ok(!/\bfunction\s+[A-Za-z_$]/.test(code),`${path} contains a second function implementation`)}
 
 const singleSources=['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'];
-for(const name of singleSources)assert.ok(runtimeSource.includes(`const ${name}=`)||runtimeSource.includes(`const ${name} =`),`shared source missing ${name}`);
+for(const name of singleSources)assert.ok(runtimeSource.includes(`const ${name}=`)||runtimeSource.includes(`const ${name} =`),`generated runtime missing ${name}`);
 
-console.log(`Architecture audit: OK (${required.length} integration gates, unified Demo + Portable shell, no duplicate business runtime)`);
+console.log(`Architecture audit: OK (${runtimeModules.length} ESM source modules, ${required.length} integration gates, unified Demo + Portable shell)`);
