@@ -16,6 +16,8 @@
     "styles/10-map.css",
     "styles/20-slide-editor.css",
     "styles/30-presentation-shell.css",
-    "styles/90-responsive.css"
+    "styles/90-responsive.css",
+    "styles/91-workspace.css",
+    "styles/92-components.css"
   ]
 }
