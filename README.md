@@ -20,9 +20,7 @@
 
 ## 两分钟开始
 
-直接打开 [在线编辑器](https://18611429192.github.io/minddeck/app.html)，或下载仓库根目录的 `index.html` 离线双击运行。
-
-本地开发：
+直接打开 [在线编辑器](https://18611429192.github.io/minddeck/app.html)。源码仓库保留单 HTML 构建能力，本地执行 `npm run build` 后会生成最新的根目录 `index.html`，可以离线双击运行。
 
 ```bash
 npm install
@@ -32,35 +30,65 @@ npm run serve
 
 然后打开 `http://localhost:8080`。
 
-纯 Node / 架构检查：
+完整 Node / 架构检查：
 
 ```bash
 npm run release:check
 ```
 
-真实浏览器回归（手动运行，不绑定自动 Workflow）：
+真实浏览器回归（手动运行，不绑定额外自动 Workflow）：
 
 ```bash
 npx playwright install chromium
 npm run e2e
 ```
 
-## V9.8 正在解决什么
+## V9.8 完成了什么
 
-V9.6 解决了“编辑与导出两套业务逻辑”；V9.7 把大部分源码从单个 HTML 中拆出来；V9.8 的目标是继续消灭剩余的旁路实现，并让架构边界可检查。
+V9.6 解决“编辑与导出两套业务逻辑”；V9.7 把应用源码从巨型 HTML 拆出来；V9.8 继续把**业务源码、Demo、Portable、构建和样式职责真正收口**。
 
-当前已经完成：
-
-- Pages Demo 不再维护独立的 slides / TOC / 翻页 / 折叠实现，而是加载 `examples/demo.json` 后进入正式 PresentationView；
-- Showcase 不写入浏览器项目存储，避免查看 Demo 覆盖用户数据；
-- Portable HTML / CSS 外壳从导出 JS 中抽离，业务行为继续交给 Shared Runtime；
-- `package.json` 成为构建版本来源，生成页面的 App / Runtime 标识统一注入；
-- Playwright 浏览器回归已加入仓库，可手动覆盖桌面 / 手机、Showcase、母版和 Portable 生成；
-- GitHub 文档、License、Issue / PR 模板与历史发布文档已整理。
-
-最终发布优势不会改变：**根目录 `index.html` 仍然是完整单文件，离线可运行。**
+- Shared Runtime 已从人工维护的 `shared-core.js` 拆为标准 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 现在只是构建产物。
+- Runtime 模块使用显式 `import/export`，构建时再合成为浏览器 IIFE，因此发布物仍然可以是一个离线 HTML。
+- Pages Demo 不再维护独立 slides / TOC / 翻页 / 折叠实现，而是加载 `examples/demo.json` 后进入正式 `PresentationView`。
+- Showcase 不写入用户项目存储，避免查看 Demo 覆盖本地项目。
+- Portable HTML / CSS 外壳已从导出 JS 中抽离，业务行为仍只由 `MindDeckCore.Portable.mount()` 提供。
+- `package.json` 是版本单一来源；构建会先生成同版本 Runtime，再生成最终 HTML。
+- 原本持续膨胀的响应式 CSS 已拆为响应式、工作区和组件/主题三层文件。
+- Playwright 浏览器回归已加入，可手动覆盖桌面 / 手机、Showcase、母版和 Portable。
+- License、贡献规范、Issue / PR 模板与历史发布文档已经整理。
 
 详见 [V9.8 Architecture](docs/architecture-v9.8.md) 和 [Architecture Audit](ARCHITECTURE_AUDIT.md)。
+
+## 源码结构
+
+```text
+src/
+├─ runtime/
+│  ├─ modules/
+│  │  ├─ env.js
+│  │  ├─ model.js
+│  │  ├─ platform.js
+│  │  ├─ slide.js
+│  │  ├─ view.js
+│  │  └─ portable.js
+│  ├─ index.js
+│  └─ shared-core.js      # generated
+├─ app/
+│  ├─ modules/            # editor application closure responsibilities
+│  └─ styles/
+└─ portable/              # portable shell / styles
+
+examples/                 # Showcase 项目数据
+tests/                    # Node + Playwright 回归
+site/                     # GitHub Pages 首页和入口
+docs/                     # 架构、发布与说明文档
+```
+
+## 架构原则
+
+**业务只实现一次。** Tree、Layout、Presentation、TOC、Map/Slide Renderer 等规则必须来自 Shared Runtime。编辑器、Portable 和 Pages Showcase 可以有不同 UI 外壳，但不能各自实现一套业务算法。
+
+`src/app/modules/` 仍然共享一个编辑器 application closure，这是有意保留的 UI 状态边界；它们是职责切片，不是第二套业务 Runtime。
 
 ## 浏览器支持
 
@@ -71,18 +99,6 @@ V9.6 解决了“编辑与导出两套业务逻辑”；V9.7 把大部分源码�
 - MindDeck 不是 PowerPoint 的完整替代品；复杂图表、Office 原生格式和高级时间轴动画不是当前重点。
 - 大量 Base64 图片 / 视频会显著增大项目和单 HTML 文件。
 - 浏览器 localStorage 容量有限，重要项目建议同时保存 `.minddeck` 或 JSON 备份。
-
-## 项目结构
-
-```text
-src/runtime/          Shared Runtime 与业务规则
-src/app/              编辑器 UI 与应用状态
-src/portable/         Portable HTML / CSS 外壳
-examples/             Demo / Showcase 项目数据
-tests/                Node + Playwright 回归
-site/                 GitHub Pages 首页和入口
-docs/                 架构、发布与说明文档
-```
 
 ## 贡献与反馈
 
