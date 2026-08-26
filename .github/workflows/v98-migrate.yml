@@ -58,6 +58,13 @@ jobs:
           new="const pkg=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')); const version=pkg.version.split('-')[0],isRc=/-rc(?:\\.|$)/.test(pkg.version),display='V'+version+(isRc?' RC':''); let appBundle=manifest.scripts.map(read).join('\\n\\n'); appBundle=appBundle.replaceAll('__MINDDECK_APP_VERSION__',display).replaceAll('__MINDDECK_RUNTIME_VERSION__',version).replaceAll('__MINDDECK_RELEASE_CHANNEL__',isRc?'rc':'stable');"
           if old not in s: raise SystemExit('verify-modular appBundle line not found')
           p.write_text(s.replace(old,new))
+
+          p=Path('scripts/verify-architecture.mjs')
+          s=p.read_text()
+          bad="assert.match(runtimeIndex,/import { .* } from './modules//,'runtime index does not import modules');"
+          good="assert.ok(runtimeIndex.includes(\"from './modules/\"),'runtime index does not import modules');"
+          if bad not in s: raise SystemExit('architecture module check not found')
+          p.write_text(s.replace(bad,good))
           PY
       - name: Install dependencies and create lockfile
         run: npm install
