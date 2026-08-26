@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 const commands=[
+  ['node',['scripts/build-runtime.mjs']],
   ['node',['scripts/build-single-html.mjs']],
   ['node',['tests/core.test.mjs']],
   ['node',['tests/shared-runtime.test.mjs']],
