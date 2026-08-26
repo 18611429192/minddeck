@@ -2,14 +2,17 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const runtime = fs.readFileSync(new URL('../src/runtime/shared-core.js', import.meta.url), 'utf8').trimEnd();
+const runtimeSource = fs.readFileSync(new URL('../src/runtime/shared-core.js', import.meta.url), 'utf8').trimEnd();
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+const version = pkg.version.split('-')[0];
+const expectedRuntime = runtimeSource.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
 const styles = fs.readFileSync(new URL('../src/runtime/shared-styles.css', import.meta.url), 'utf8').trimEnd();
 
 const runtimeMatch = html.match(/<!-- MINDDECK_SHARED_RUNTIME_START -->\s*<script id="minddeck-shared-runtime">\s*([\s\S]*?)\s*<\/script>\s*<!-- MINDDECK_SHARED_RUNTIME_END -->/);
 const stylesMatch = html.match(/<!-- MINDDECK_SHARED_STYLES_START -->\s*<style id="minddeck-shared-styles">\s*([\s\S]*?)\s*<\/style>\s*<!-- MINDDECK_SHARED_STYLES_END -->/);
 assert.ok(runtimeMatch, 'embedded shared runtime missing');
 assert.ok(stylesMatch, 'embedded shared styles missing');
-assert.equal(runtimeMatch[1].trimEnd(), runtime, 'index embedded runtime drifted from src/runtime/shared-core.js');
+assert.equal(runtimeMatch[1].trimEnd(), expectedRuntime, 'index embedded runtime drifted from versioned Shared Runtime source');
 assert.equal(stylesMatch[1].trimEnd(), styles, 'index embedded styles drifted from src/runtime/shared-styles.css');
 
 const mainScripts = [...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
@@ -29,9 +32,10 @@ const required = [
   ['node defaults use shared slide model', 'SlideCore.defaultElementsForNode(n,{uid:()=>IdsCore.create("e_",8)})'],
   ['layer ranges use shared constants', 'const {MASTER_Z_MIN,MASTER_Z_MAX,SLIDE_Z_MIN,SLIDE_Z_MAX}=Core.RANGES;'],
   ['portable shell mounts shared runtime', 'globalThis.MindDeckCore.Portable.mount({data,kind:KIND'],
+  ['showcase uses app presentation host', 'enterPresentation({fullscreen:false})'],
 ];
 for (const [name, marker] of required) assert.ok(app.includes(marker), `${name} missing`);
-assert.ok(runtime.includes('const presentationView=PresentationView.create({'), 'portable presentation does not use shared PresentationView');
+assert.ok(runtimeSource.includes('const presentationView=PresentationView.create({'), 'portable presentation does not use shared PresentationView');
 
 const forbiddenAppBusiness = [
   /function\s+subtreeWeight\s*\(/,
@@ -41,8 +45,8 @@ const forbiddenAppBusiness = [
   /function\s+presentationOrder\s*\(/,
   /function\s+resolvePresentationIndex\s*\(/,
   /function\s+renderPresentElement\s*\(/,
-  /let\s+presentationWheelLocked\b/ ,
-  /let\s+presentTouchStart\b/ ,
+  /let\s+presentationWheelLocked\b/,
+  /let\s+presentTouchStart\b/,
   /function\s+baseText\s*\(/,
   /function\s+baseShape\s*\(/,
   /function\s+extractMindmapData\s*\(/,
@@ -64,6 +68,10 @@ for (const re of [
   /\bhLayout\b/, /\bdLayout\b/, /\brKids\b/, /\bpOrder\b/,
 ]) assert.ok(!re.test(portableBody), `portable duplicated implementation reintroduced: ${re}`);
 
+const demo=fs.readFileSync(new URL('../site/demo.html',import.meta.url),'utf8');
+for(const marker of ['const slides=','function visible(','function renderToc(','function step(','toggleSecurity']) assert.ok(!demo.includes(marker),'Pages Demo reintroduced a second implementation: '+marker);
+assert.ok(demo.includes('app.html?showcase=1'),'Pages Demo must enter the real application showcase');
+
 const adapters = [
   'src/core/ids.js','src/core/tree.js','src/core/layout.js','src/core/presentation.js','src/core/project.js',
   'src/core/commands.js','src/core/recovery.js','src/core/diagnostics.js'
@@ -79,6 +87,6 @@ const singleSources = [
   'Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor',
   'MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'
 ];
-for (const name of singleSources) assert.ok(runtime.includes(`const ${name}=`) || runtime.includes(`const ${name} =`), `shared source missing ${name}`);
+for (const name of singleSources) assert.ok(runtimeSource.includes(`const ${name}=`) || runtimeSource.includes(`const ${name} =`), `shared source missing ${name}`);
 
-console.log(`Architecture audit: OK (${required.length} integration gates, no duplicate business runtime)`);
+console.log(`Architecture audit: OK (${required.length} integration gates, unified Pages Demo, no duplicate business runtime)`);
