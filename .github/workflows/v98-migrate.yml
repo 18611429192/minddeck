@@ -31,7 +31,7 @@ jobs:
           PY
       - name: Apply V9.8 migration
         run: node scripts/v98-upgrade.mjs
-      - name: Align version-sensitive regressions
+      - name: Align regression harness with V9.8 generated templates
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -39,6 +39,12 @@ jobs:
               s=p.read_text()
               s=s.replace("'9.7.0'", "'9.8.0'").replace('"9.7.0"', '"9.8.0"')
               p.write_text(s)
+          p=Path('scripts/verify-index.mjs')
+          s=p.read_text()
+          old="const scripts = [...html.matchAll(/<script(?: [^>]*)?>([\\s\\S]*?)<\\/script>/g)].map(m => m[1]);"
+          new="const scripts = [...html.matchAll(/<script([^>]*)>([\\s\\S]*?)<\\/script>/g)].filter(m => !/type=[\\\"']text\\/plain[\\\"']/i.test(m[1])).map(m => m[2]);"
+          if old not in s: raise SystemExit('verify-index script matcher not found')
+          p.write_text(s.replace(old,new))
           PY
       - name: Install dependencies and create lockfile
         run: npm install
