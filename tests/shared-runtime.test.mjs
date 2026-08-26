@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
+import { createMindDeckCore } from '../src/runtime/index.js';
 import { Core } from '../src/core/runtime.js';
 
-assert.equal(Core.VERSION,'9.7.0');
-for(const name of ['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture']) assert.ok(Core[name],`missing core ${name}`);
+assert.equal(Core.VERSION,'9.8.0');
+const SourceCore=createMindDeckCore('source-test');
+assert.equal(SourceCore.VERSION,'source-test');
+for(const name of ['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture']){
+  assert.ok(Core[name],`missing generated core ${name}`);
+  assert.ok(SourceCore[name],`missing ESM source core ${name}`);
+}
 
 assert.equal(Core.Stage.fitRect(1600,900,1600,900,0).scale,1);
 assert.equal(Core.Input.presentationKeyAction({key:'ArrowDown'}),'next');
@@ -23,4 +29,4 @@ Core.Project.normalize(p);
 const exported=Core.ExportData.project(p,'mindmap');
 assert.equal(exported.master,undefined);assert.equal(exported.presentationOrder,undefined);
 assert.deepEqual(Object.keys(Core.Architecture.singleSources).sort(),['animation','commands','ids','diagnostics','fullscreen','input','layout','mapRender','portable','presentation','presentationView','project','recovery','slideRender','theme','tocRender','tree','viewport'].sort());
-console.log('MindDeck shared runtime tests: OK');
+console.log('MindDeck shared runtime ESM + generated runtime tests: OK');
