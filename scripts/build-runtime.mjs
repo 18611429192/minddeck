@@ -25,6 +25,6 @@ function stripEsm(code,file){
 }
 
 const body=modules.map(file=>`// ---- ${file} ----\n${stripEsm(read(file),file)}`).join('\n\n');
-const out=`/* GENERATED FILE. Edit src/runtime/modules/* and src/runtime/index.js, then run npm run build:runtime. */\n(function(global){\n'use strict';\n${body}\n\nconst VERSION=${JSON.stringify(version)};\nglobal.MindDeckCore=createMindDeckCore(VERSION);\n})(typeof globalThis!=='undefined'?globalThis:window);\n`;
+const out=`/* GENERATED FILE. Edit src/runtime/modules/* and src/runtime/index.js, then run npm run build:runtime. */\n(function(){\n'use strict';\n${body}\n\nconst VERSION=${JSON.stringify(version)};\nglobal.MindDeckCore=createMindDeckCore(VERSION);\n})();\n`;
 fs.writeFileSync(path.join(root,'src/runtime/shared-core.js'),out);
 console.log(`MindDeck Shared Runtime ${version} built from ${modules.length} ES module sources`);
