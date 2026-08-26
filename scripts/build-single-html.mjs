@@ -20,6 +20,9 @@ appBundle=appBundle
 const sharedStyles=read('src/runtime/shared-styles.css');
 let sharedRuntime=read('src/runtime/shared-core.js');
 sharedRuntime=sharedRuntime.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
+const portableShell=read('src/portable/shell.html')
+  .replace('__PORTABLE_CSS__',read('src/portable/portable.css'))
+  .replace('__PORTABLE_SHARED_STYLES__',sharedStyles);
 
 const slots={
   '__MINDDECK_APP_STYLES__':appStyles,
@@ -30,6 +33,9 @@ const slots={
 let out=shell
   .replaceAll('MindDeck V9.7.0 RC',`MindDeck ${display}`)
   .replaceAll('Runtime 9.6.6',`Runtime ${version}`);
+const runtimeMarker='<!-- MINDDECK_SHARED_RUNTIME_START -->';
+if(!out.includes(runtimeMarker))throw new Error('shared runtime marker missing');
+out=out.replace(runtimeMarker,`<script type="text/plain" id="minddeck-portable-shell">\n${portableShell}\n</script>\n\n${runtimeMarker}`);
 for(const [slot,value] of Object.entries(slots)){
   const count=out.split(slot).length-1;
   if(count!==1)throw new Error('build slot '+slot+' expected once, got '+count);
