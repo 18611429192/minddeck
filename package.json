@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Mind map structured presentation editor with freeform 16:9 slides and portable single-HTML export",
   "scripts": {
-    "build": "node scripts/build-single-html.mjs",
-    "build:single": "node scripts/build-single-html.mjs",
+    "build": "node scripts/build-runtime.mjs && node scripts/build-single-html.mjs",
     "build:runtime": "node scripts/build-runtime.mjs",
+    "build:single": "node scripts/build-runtime.mjs && node scripts/build-single-html.mjs",
     "test": "node scripts/release-check.mjs",
     "check": "node scripts/release-check.mjs",
     "release:check": "node scripts/release-check.mjs",
