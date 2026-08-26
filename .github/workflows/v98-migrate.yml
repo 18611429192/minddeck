@@ -20,6 +20,15 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package.json
+      - name: Repair migration-script quoting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v98-upgrade.mjs')
+          s=p.read_text()
+          s=s.replace("assert.ok(!portable.includes('const doc=String.raw`<!DOCTYPE html>'),'portable HTML shell was copied back into JS');", "assert.ok(!portable.includes('const doc=String.raw'+String.fromCharCode(96)+'<!DOCTYPE html>'),'portable HTML shell was copied back into JS');")
+          p.write_text(s)
+          PY
       - name: Apply V9.8 migration
         run: node scripts/v98-upgrade.mjs
       - name: Install dependencies and create lockfile
