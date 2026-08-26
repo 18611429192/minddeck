@@ -59,12 +59,26 @@ jobs:
           if old not in s: raise SystemExit('verify-modular appBundle line not found')
           p.write_text(s.replace(old,new))
 
-          p=Path('scripts/verify-architecture.mjs')
-          s=p.read_text()
-          bad="assert.match(runtimeIndex,/import { .* } from './modules//,'runtime index does not import modules');"
-          good="assert.ok(runtimeIndex.includes(\"from './modules/\"),'runtime index does not import modules');"
-          if bad not in s: raise SystemExit('architecture module check not found')
-          p.write_text(s.replace(bad,good))
+          Path('scripts/verify-architecture.mjs').write_text('''import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const runtimeIndex=read('src/runtime/index.js');
+const demo=read('site/demo.html');
+const portable=read('src/app/modules/40-portable-export.js');
+const moduleDir=new URL('../src/runtime/modules/',import.meta.url);
+const modules=fs.readdirSync(moduleDir).filter(x=>x.endsWith('.js'));
+assert.ok(modules.length>=20,'shared runtime was not split into ES modules');
+for(const file of modules){const code=fs.readFileSync(new URL(file,moduleDir),'utf8');assert.ok(code.includes('export const '),'runtime module lacks ESM export: '+file)}
+assert.ok(runtimeIndex.includes("from './modules/"),'runtime index does not import modules');
+assert.ok(runtimeIndex.includes('globalThis.MindDeckCore=MindDeckCore'),'runtime index does not expose browser core');
+for(const marker of ['const slides=','function visible(','function renderToc(','function step(','toggleSecurity']) assert.ok(!demo.includes(marker),'Pages demo reintroduced a second presentation implementation: '+marker);
+assert.ok(demo.includes('app.html?showcase=1'),'Pages demo does not route through the real app/runtime');
+assert.ok(portable.includes('minddeck-portable-shell'),'portable exporter does not consume shared shell source');
+assert.ok(!portable.includes('const doc=String.raw'+String.fromCharCode(96)+'<!DOCTYPE html>'),'portable HTML shell was copied back into JS');
+const adapters=['src/core/ids.js','src/core/tree.js','src/core/layout.js','src/core/presentation.js','src/core/project.js','src/core/commands.js','src/core/recovery.js','src/core/diagnostics.js'];
+for(const file of adapters){const code=read(file);assert.ok(code.includes("from './runtime.js'"),file+' is not a shared runtime adapter')}
+console.log('Architecture audit: OK (ES module runtime, unified Demo, shared Portable shell)');
+''')
           PY
       - name: Install dependencies and create lockfile
         run: npm install
