@@ -25,29 +25,38 @@
 本地开发：
 
 ```bash
+npm install
 npm run build
 npm run serve
 ```
 
 然后打开 `http://localhost:8080`。
 
-完整检查：
+纯 Node / 架构检查：
 
 ```bash
 npm run release:check
+```
+
+真实浏览器回归（手动运行，不绑定自动 Workflow）：
+
+```bash
+npx playwright install chromium
+npm run e2e
 ```
 
 ## V9.8 正在解决什么
 
 V9.6 解决了“编辑与导出两套业务逻辑”；V9.7 把大部分源码从单个 HTML 中拆出来；V9.8 的目标是继续消灭剩余的旁路实现，并让架构边界可检查。
 
-重点包括：
+当前已经完成：
 
-- Pages Demo 不再维护独立的 slides / TOC / 翻页 / 折叠实现；
-- Shared Runtime 继续拆分，避免 `shared-core.js` 变成新的巨型文件；
-- Portable HTML / CSS 壳与业务 Runtime 分离；
-- 引入真实浏览器级回归，覆盖母版、移动端、演示和导出；
-- `package.json` 逐步成为版本号唯一来源。
+- Pages Demo 不再维护独立的 slides / TOC / 翻页 / 折叠实现，而是加载 `examples/demo.json` 后进入正式 PresentationView；
+- Showcase 不写入浏览器项目存储，避免查看 Demo 覆盖用户数据；
+- Portable HTML / CSS 外壳从导出 JS 中抽离，业务行为继续交给 Shared Runtime；
+- `package.json` 成为构建版本来源，生成页面的 App / Runtime 标识统一注入；
+- Playwright 浏览器回归已加入仓库，可手动覆盖桌面 / 手机、Showcase、母版和 Portable 生成；
+- GitHub 文档、License、Issue / PR 模板与历史发布文档已整理。
 
 最终发布优势不会改变：**根目录 `index.html` 仍然是完整单文件，离线可运行。**
 
@@ -68,8 +77,9 @@ V9.6 解决了“编辑与导出两套业务逻辑”；V9.7 把大部分源码�
 ```text
 src/runtime/          Shared Runtime 与业务规则
 src/app/              编辑器 UI 与应用状态
+src/portable/         Portable HTML / CSS 外壳
 examples/             Demo / Showcase 项目数据
-tests/                回归测试
+tests/                Node + Playwright 回归
 site/                 GitHub Pages 首页和入口
 docs/                 架构、发布与说明文档
 ```

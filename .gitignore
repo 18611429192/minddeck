@@ -2,5 +2,7 @@
 Thumbs.db
 node_modules/
 dist/
+playwright-report/
+test-results/
 *.log
 *.tmp

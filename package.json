@@ -12,6 +12,11 @@
     "check": "node scripts/release-check.mjs",
     "release:check": "node scripts/release-check.mjs",
     "audit:architecture": "node scripts/verify-architecture.mjs",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
     "serve": "python -m http.server 8080"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
   }
 }
