@@ -18,8 +18,10 @@ appBundle=appBundle
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
   .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`);
 const sharedStyles=read('src/runtime/shared-styles.css');
-let sharedRuntime=read('src/runtime/shared-core.js');
-sharedRuntime=sharedRuntime.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
+const sharedRuntime=read('src/runtime/shared-core.js');
+if(!sharedRuntime.includes(`const VERSION=${JSON.stringify(version)};`)){
+  throw new Error(`Shared Runtime is stale for ${version}; run npm run build:runtime first`);
+}
 const portableShell=read('src/portable/shell.html')
   .replace('__PORTABLE_CSS__',read('src/portable/portable.css'))
   .replace('__PORTABLE_SHARED_STYLES__',sharedStyles);
