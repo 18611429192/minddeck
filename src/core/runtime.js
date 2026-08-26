@@ -1,4 +1,4 @@
-import '../runtime/shared-core.js';
+import { createMindDeckCore } from '../runtime/index.js';
 
-export const Core = globalThis.MindDeckCore;
-if (!Core) throw new Error('MindDeck shared core failed to initialize');
+// Core adapters consume the ESM source graph directly. The browser IIFE runtime is a build artifact.
+export const Core=createMindDeckCore('source');
