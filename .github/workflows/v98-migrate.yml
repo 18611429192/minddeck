@@ -1,0 +1,39 @@
+name: One-shot V9.8 migration
+
+on:
+  push:
+    branches: [refactor/v9.8-complete]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/v9.8-complete
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package.json
+      - name: Apply V9.8 migration
+        run: node scripts/v98-upgrade.mjs
+      - name: Install dependencies and create lockfile
+        run: npm install
+      - name: Run release checks
+        run: npm run release:check
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Run browser regressions
+        run: npm run e2e
+      - name: Commit migration result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: complete V9.8 architecture and repository cleanup"
+          git push origin HEAD:refactor/v9.8-complete
