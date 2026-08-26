@@ -81,6 +81,32 @@ jobs:
               "console.log('Architecture audit: OK (ES module runtime, unified Demo, shared Portable shell)');"
           ]
           Path('scripts/verify-architecture.mjs').write_text('\n'.join(audit_lines)+'\n')
+
+          portable_lines=[
+              "import fs from 'node:fs';",
+              "import assert from 'node:assert/strict';",
+              "const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');",
+              "const contracts=[",
+              "['portable shell embed','id=\"minddeck-portable-shell\"'],",
+              "['portable runtime placeholder','Portable Runtime __PORTABLE_RUNTIME_VERSION__'],",
+              "['shared runtime source','minddeck-shared-runtime'],",
+              "['single portable mount','MindDeckCore.Portable.mount({data,kind:KIND'],",
+              "['map reflow control','id=\"reflowBtn\"'],",
+              "['expand all control','id=\"expandBtn\"'],",
+              "['collapse all control','id=\"collapseBtn\"'],",
+              "['layout selector','id=\"layoutSel\"'],",
+              "['theme selector','id=\"themeSel\"'],",
+              "['TOC toggle','id=\"tocToggle\"'],",
+              "['fullscreen control','id=\"fullBtn\"'],",
+              "['mindmap builder','function buildStandaloneMindmapHtml()'],",
+              "['presentation builder','function buildStandaloneViewerHtml()'],",
+              "['fusion builder','function buildStandaloneFusionHtml()'],",
+              "['export data core','function buildPortableData(kind){return ExportDataCore.project(data,kind)}']",
+              "];",
+              "for(const [name,marker] of contracts) assert.ok(html.includes(marker),'Portable contract missing: '+name);",
+              "console.log('Portable export contracts: OK ('+contracts.length+' checks)');"
+          ]
+          Path('scripts/verify-portable-contracts.mjs').write_text('\n'.join(portable_lines)+'\n')
           PY
       - name: Install dependencies and create lockfile
         run: npm install
