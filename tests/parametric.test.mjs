@@ -14,10 +14,20 @@ const timeline={title:'Timeline',items:items(4)};
 const statement={title:'Statement',summary:'One clear point',takeaway:'Do the important thing',items:[{label:'Proof'}]};
 const conclusion={title:'Conclusion',summary:'Finish strongly',items:items(3)};
 const contentByFamily={statement,cards:cards(4),compare,process,metrics,timeline,image:media,conclusion};
+const legacyTemplateIds=[
+  'cover-focus-01','cover-grid-01','section-index-01','section-band-01','statement-panel-01','statement-split-01','cards-grid-01','cards-list-01',
+  'compare-split-01','compare-table-01','process-line-01','process-steps-01','metrics-cards-01','metrics-hero-01','trend-bars-01','trend-steps-01',
+  'timeline-line-01','timeline-vertical-01','quote-center-01','quote-side-01','image-left-01','image-right-01','conclusion-actions-01','conclusion-summary-01'
+];
 
-assert.equal(C.templates.length,24,'V9.9 template IDs must remain 24');
+assert.equal(C.templates.length,72,'Step 5 professional library must expose 72 templates');
+for(const id of legacyTemplateIds)assert.ok(C.TemplateRegistry.has(id),`legacy template must remain: ${id}`);
 const parameterized=C.templates.filter(template=>template.parametricFamily);
-assert.equal(parameterized.length,16,'Step 2 should migrate 16 existing template IDs');
+const legacyParameterized=legacyTemplateIds.map(id=>C.TemplateRegistry.get(id)).filter(template=>template.parametricFamily);
+assert.equal(legacyParameterized.length,16,'Step 2 parameterized baseline must remain intact');
+assert.equal(parameterized.length,58,'Step 5 should expose 58 parameterized templates');
+assert.equal(C.Library.parametricTemplates,58);
+assert.ok(Math.abs(C.Library.parametricRatio-58/72)<1e-12);
 assert.deepEqual([...new Set(parameterized.map(template=>template.parametricFamily))].sort(),['cards','compare','conclusion','image','metrics','process','statement','timeline']);
 for(const template of parameterized){assert.ok(template.paramSchema&&typeof template.paramSchema==='object',`${template.id} paramSchema required`);assert.equal(C.Parametrics.validateSchema(template.paramSchema).ok,true,`${template.id} param schema invalid`);assert.doesNotThrow(()=>JSON.stringify(template.paramSchema),`${template.id} param schema must be pure data`)}
 
@@ -51,9 +61,16 @@ const image35=C.compileSlide({content:media,template:'image-left-01',params:{med
 const imageGeometry=result=>{const image=result.elements.find(element=>element.type==='image');return {x:image.x,y:image.y,w:image.w,h:image.h}};
 assert.deepEqual(imageGeometry(image35),snapshot.image35);assert.deepEqual(imageGeometry(image65),snapshot.image65);assert.ok(imageGeometry(image65).w>imageGeometry(image35).w);
 
-for(const template of parameterized){const content=contentByFamily[template.parametricFamily],direct=C.compileSlide({content,template:template.id,theme:'aurora',density:'standard'}),candidate=C.compileSlide({content,template:{templateId:template.id,params:C.normalizeTemplateParams(template,{}, {content,density:'standard'}).params},theme:'aurora',density:'standard'});assert.deepEqual(candidate.elements,direct.elements,`${template.id} legacy templateId form must match Template + Params defaults`);assert.deepEqual(C.compileSlide({content,template:{templateId:template.id,params:candidate.params},theme:'aurora'}).elements,C.compileSlide({content,template:{templateId:template.id,params:candidate.params},theme:'aurora'}).elements,`${template.id} parametric compile must be deterministic`)}
+for(const template of parameterized){
+  const content=contentByFamily[template.parametricFamily],direct=C.compileSlide({content,template:template.id,theme:'aurora',density:'standard'}),
+    candidate=C.compileSlide({content,template:{templateId:template.id,params:C.normalizeTemplateParams(template,{}, {content,density:'standard'}).params},theme:'aurora',density:'standard'});
+  assert.deepEqual(candidate.elements,direct.elements,`${template.id} Template + Params defaults must remain compatible`);
+  assert.deepEqual(C.compileSlide({content,template:{templateId:template.id,params:candidate.params},theme:'aurora'}).elements,C.compileSlide({content,template:{templateId:template.id,params:candidate.params},theme:'aurora'}).elements,`${template.id} parametric compile must be deterministic`)
+}
 
-const slides=[{id:'a',role:'cards',content:cards(3)},{id:'b',role:'metrics',content:metrics},{id:'c',role:'process',content:process}],matrix=slides.map(slide=>C.recommendTemplates({role:slide.role,content:slide.content,limit:6})),allocationA=C.allocateTemplates(slides,matrix,{seed:'step2'}),allocationB=C.allocateTemplates(slides,matrix,{seed:'step2'});
+const slides=[{id:'a',role:'cards',content:cards(3)},{id:'b',role:'metrics',content:metrics},{id:'c',role:'process',content:process}],
+  matrix=slides.map(slide=>C.recommendTemplates({role:slide.role,content:slide.content,limit:6})),
+  allocationA=C.allocateTemplates(slides,matrix,{seed:'step5'}),allocationB=C.allocateTemplates(slides,matrix,{seed:'step5'});
 assert.deepEqual(allocationA,allocationB);assert.ok(allocationA.every(item=>item.params&&typeof item.params==='object'),'Allocator must carry matcher params without owning layout decisions');
 assert.equal(snapshot.baseline,'V10-step2-parametric');
-console.log('MindDeck V10 Step 2 parametric SlideTemplate regression: OK (16 templates / 8 families)');
+console.log('MindDeck V10 Step 5 parametric regression: OK (58 / 72 templates parameterized)');

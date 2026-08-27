@@ -2,8 +2,10 @@ import { DECK_THEMES, ComposerThemeMap, composerThemeOf } from './themes.js';
 export { DECK_THEMES, ComposerThemeMap, composerThemeOf };
 
 export const PAGE_ROLES=Object.freeze([
-  ['cover','封面'],['section','章节'],['statement','观点'],['cards','卡片'],['compare','对比'],['process','流程'],
-  ['metrics','指标'],['trend','趋势'],['timeline','时间轴'],['quote','引用'],['image','图文'],['conclusion','结论']
+  ['cover','封面'],['agenda','议程'],['section','章节'],['statement','观点'],['cards','卡片'],['compare','对比'],
+  ['problem','问题'],['solution','方案'],['process','流程'],['timeline','时间轴'],['metrics','指标'],['trend','趋势'],
+  ['table','表格'],['matrix','矩阵'],['image','图文'],['quote','引用'],['case','案例'],['roadmap','路线图'],
+  ['architecture','架构'],['conclusion','结论']
 ].map(([id,label])=>Object.freeze({id,label})));
 
 export const ComposerRoleSet=new Set(PAGE_ROLES.map(role=>role.id));

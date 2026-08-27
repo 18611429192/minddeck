@@ -12,7 +12,30 @@ export function normalizeSlideContent(input={}){
 }
 export function contentFacts(content){const value=normalizeSlideContent(content),allItemText=value.items.map(item=>[item.value,item.label,item.detail].filter(Boolean).join(' '));return {titleChars:value.title.length,subtitleChars:value.subtitle.length,summaryChars:value.summary.length,takeawayChars:value.takeaway.length,itemCount:value.items.length,numericItemCount:allItemText.filter(text=>composerNumericPart(text)).length,mediaCount:value.media.length,totalTextChars:value.title.length+value.subtitle.length+value.summary.length+value.takeaway.length+allItemText.reduce((sum,text)=>sum+text.length,0)}}
 export function contentFromNode(node={}){const points=Array.isArray(node.points)?node.points:[],children=Array.isArray(node.children)?node.children:[];return normalizeSlideContent({title:node.title,subtitle:node.subtitle,summary:node.text,takeaway:node.takeaway,items:[...points.map(point=>({label:point})),...children.map(child=>({label:child.title,detail:child.text}))],media:Array.isArray(node.media)?node.media:[]})}
-export function inferSlideRole(content,hint=null,context={}){if(hint&&ComposerRoleSet.has(hint))return hint;if(context.root)return 'cover';const value=normalizeSlideContent(content),title=value.title.toLowerCase(),facts=contentFacts(value);if(/总结|结论|建议|下一步|行动|收尾|summary|conclusion|next step/.test(title))return 'conclusion';if(/对比|比较|区别|差异|versus|\bvs\b/.test(title))return 'compare';if(/流程|步骤|过程|路径|方法|机制|怎么做|process|workflow|steps/.test(title))return 'process';if(/时间|阶段|里程碑|规划|路线图|历程|timeline|roadmap|milestone/.test(title))return 'timeline';if(/趋势|增长|变化|走势|演进|trend|growth/.test(title))return 'trend';if(/指标|数据|成绩|结果|规模|数字|metrics|kpi|data/.test(title)||facts.numericItemCount>=Math.min(2,Math.max(1,facts.itemCount)))return 'metrics';if(/引用|原话|一句话|quote/.test(title)||/^“|^"/.test(value.summary))return 'quote';if(/图片|图示|案例|现场|产品|截图|image|visual|case/.test(title)||facts.mediaCount>0)return 'image';if(context.depth===1&&facts.itemCount>0&&!value.summary&&facts.itemCount<=4)return 'section';if(facts.itemCount>=3)return 'cards';return 'statement'}
+export function inferSlideRole(content,hint=null,context={}){
+  if(hint&&ComposerRoleSet.has(hint))return hint;
+  if(context.root)return 'cover';
+  const value=normalizeSlideContent(content),title=value.title.toLowerCase(),facts=contentFacts(value);
+  if(/总结|结论|建议|下一步|行动|收尾|summary|conclusion|next step/.test(title))return 'conclusion';
+  if(/议程|目录|内容提要|agenda|contents|table of contents/.test(title))return 'agenda';
+  if(/swot|pest|porter|五力|矩阵|象限|matrix|quadrant/.test(title))return 'matrix';
+  if(/架构|系统设计|技术方案图|模块关系|architecture|system design|technical architecture/.test(title))return 'architecture';
+  if(/路线图|路线规划|roadmap/.test(title))return 'roadmap';
+  if(/案例|客户故事|实践复盘|case study|customer story|success story/.test(title))return 'case';
+  if(/问题|痛点|挑战|瓶颈|根因|现状不足|problem|pain point|challenge|root cause/.test(title))return 'problem';
+  if(/解决方案|方案设计|解法|应对策略|solution|approach/.test(title))return 'solution';
+  if(/表格|明细|清单|台账|数据表|table|detail list/.test(title))return 'table';
+  if(/对比|比较|区别|差异|versus|\bvs\b/.test(title))return 'compare';
+  if(/流程|步骤|过程|路径|方法|机制|怎么做|process|workflow|steps/.test(title))return 'process';
+  if(/时间|阶段|里程碑|规划|历程|timeline|milestone/.test(title))return 'timeline';
+  if(/趋势|增长|变化|走势|演进|trend|growth/.test(title))return 'trend';
+  if(/指标|数据|成绩|结果|规模|数字|metrics|kpi|data/.test(title)||facts.numericItemCount>=Math.min(2,Math.max(1,facts.itemCount)))return 'metrics';
+  if(/引用|原话|一句话|quote|testimonial/.test(title)||/^“|^"/.test(value.summary))return 'quote';
+  if(/图片|图示|现场|产品|截图|image|visual/.test(title)||facts.mediaCount>0)return 'image';
+  if(context.depth===1&&facts.itemCount>0&&!value.summary&&facts.itemCount<=4)return 'section';
+  if(facts.itemCount>=3)return 'cards';
+  return 'statement';
+}
 export function validateDeckSpec(input){const errors=[],warnings=[],push=(path,code,message)=>errors.push({path,code,message});if(!input||typeof input!=='object'||Array.isArray(input)){push('$','SPEC_TYPE','DeckSpec must be an object');return {ok:false,errors,warnings}}if(input.schemaVersion!==undefined&&input.schemaVersion!==1)push('schemaVersion','SCHEMA_VERSION','Only DeckSpec v1 is supported');if(!composerClean(input.title))push('title','TITLE_REQUIRED','title is required');if(!composerClean(input.goal))push('goal','GOAL_REQUIRED','goal is required');if(!Array.isArray(input.slides)||!input.slides.length)push('slides','SLIDES_REQUIRED','slides must contain at least one slide');const ids=new Set();for(const [index,slide] of (Array.isArray(input.slides)?input.slides:[]).entries()){const path=`slides[${index}]`;if(!slide||typeof slide!=='object'||Array.isArray(slide)){push(path,'SLIDE_TYPE','slide must be an object');continue}const id=composerClean(slide.id);if(id){if(ids.has(id))push(`${path}.id`,'DUPLICATE_SLIDE_ID',`duplicate slide id: ${id}`);ids.add(id)}if(slide.role!==undefined&&!ComposerRoleSet.has(slide.role))push(`${path}.role`,'INVALID_ROLE',`unknown role: ${slide.role}`);if(!slide.content||typeof slide.content!=='object'||Array.isArray(slide.content))push(`${path}.content`,'CONTENT_REQUIRED','content object is required')}return {ok:errors.length===0,errors,warnings}}
 export function normalizeDeckSpec(input={},options={}){const source=input&&typeof input==='object'&&!Array.isArray(input)?input:{},slides=Array.isArray(source.slides)?source.slides:[];return {schemaVersion:1,title:composerClean(source.title)||composerClean(options.title)||'未命名演示',goal:composerClean(source.goal)||composerClean(options.goal)||'清晰表达核心内容',audience:composerClean(source.audience),theme:composerClean(source.theme)||composerClean(options.theme)||'aurora',randomSeed:composerClean(source.randomSeed)||composerClean(options.seed)||composerHashString(source.title||'minddeck'),slides:slides.map((slide,index)=>{const src=slide&&typeof slide==='object'&&!Array.isArray(slide)?slide:{},content=normalizeSlideContent({...src.content,title:src.content?.title||src.title}),id=composerClean(src.id)||`slide-${index+1}-${composerHashString(content.title||index)}`;return {id,title:content.title,role:ComposerRoleSet.has(src.role)?src.role:inferSlideRole(content,null,{depth:1,index}),content}})}}
 export const SlideRoles=Object.freeze(PAGE_ROLES.map(role=>role.id));
