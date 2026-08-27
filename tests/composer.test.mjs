@@ -165,4 +165,26 @@ const validSpec={schemaVersion:1,title:'DeckSpec 示例',goal:'验证完整编�
   project.presentationOrder=[project.id,'missing-node'];q=Quality.validateProject(project);assert.ok(q.errors.some(item=>item.code==='PRESENTATION_ORDER_ORPHAN'));
 }
 
+{
+  const largeSource=['# 55 页回归','> 大项目自动门禁',...Array.from({length:55},(_,i)=>`\n## 章节 ${i+1}\n- 要点 A\n- 要点 B\n- 要点 C`)].join('\n');
+  const large=composeDeck(largeSource,{theme:'aurora',seed:'large-55'}),nodes=[];Tree.walkAll(large,node=>nodes.push(node));
+  assert.ok(nodes.length>=56);assert.equal(large.presentationOrder.length,nodes.length);assert.equal(Quality.validateProject(large).ok,true);
+}
+
+{
+  const mediaSpec={schemaVersion:1,title:'媒体项目',goal:'验证图片与视频',theme:'ocean',randomSeed:'media',slides:[
+    {id:'img',role:'image',content:{title:'图片页',summary:'图片内容',media:[{type:'image',src:mediaData}]}},
+    {id:'vid',role:'image',content:{title:'视频页',summary:'视频内容',media:[{type:'video',src:'data:video/mp4;base64,AAAA'}]}},
+    {id:'end',role:'conclusion',content:{title:'结论',summary:'媒体链路正常',items:[{label:'完成'}]}}
+  ]};
+  const mediaProject=compileDeck(mediaSpec).project,all=[];Tree.walkAll(mediaProject,node=>all.push(...(node.slideElements||[])));
+  assert.ok(all.some(element=>element.type==='image'));assert.ok(all.some(element=>element.type==='video'));assert.equal(Quality.validateProject(mediaProject).ok,true);
+}
+
+{
+  const legacy=Project.createNode({id:'legacy-root',title:'旧项目',text:'无 Composer metadata'});legacy.deckTheme='aurora';legacy.children=[Project.createNode({id:'legacy-child',title:'旧页面',text:'继续工作'})];legacy.presentationOrder=['legacy-root','legacy-child'];
+  Project.normalize(legacy,{schemaVersion:1});assert.equal(legacy.composer,undefined);assert.equal(legacy.children[0].composer,undefined);assert.deepEqual(Presentation.order(legacy),['legacy-root','legacy-child']);
+  const legacyRoundtrip=JSON.parse(JSON.stringify(legacy));Project.normalize(legacyRoundtrip,{schemaVersion:1});assert.deepEqual(Presentation.order(legacyRoundtrip),['legacy-root','legacy-child']);
+}
+
 console.log('MindDeck V9.9 final Composer regression tests: OK');
