@@ -27,6 +27,6 @@
   function initDeckSpecImporter(){
     if(!ComposerV99||document.getElementById('v99DeckSpecBtn'))return;
     const host=document.querySelector('.desktop-project-tools');
-    if(host){const button=document.createElement('button');button.id='v99DeckSpecBtn';button.className='btn';button.textContent='DeckSpec';button.title='导入 DeckSpec v1 JSON 并生成项目';button.onclick=openDeckSpecImporter;const smart=document.getElementById('v99SmartComposeBtn');smart?.after(button)??host.prepend(button)}
+    if(host){const button=document.createElement('button');button.id='v99DeckSpecBtn';button.className='btn';button.textContent='DeckSpec';button.title='导入 DeckSpec v1 JSON 并生成项目';button.onclick=openDeckSpecImporter;const smart=document.getElementById('v99SmartComposeBtn');if(smart)smart.after(button);else host.prepend(button)}
   }
   setTimeout(initDeckSpecImporter,0);
