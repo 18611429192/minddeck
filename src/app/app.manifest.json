@@ -6,6 +6,7 @@
     "modules/00-bootstrap.js",
     "modules/10-map.js",
     "modules/20-slide-editor.js",
+    "modules/25-smart-compose.js",
     "modules/30-presentation.js",
     "modules/40-portable-export.js",
     "modules/95-showcase.js",

@@ -7,9 +7,9 @@ const SourceCore=createMindDeckCore('source-test');
 assert.equal(SourceCore.VERSION,'source-test');
 await import('../src/runtime/shared-core.js?generated-runtime-test');
 const GeneratedCore=globalThis.MindDeckCore;
-assert.equal(GeneratedCore.VERSION,'9.8.0');
+assert.equal(GeneratedCore.VERSION,'9.9.0');
 
-const names=['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'];
+const names=['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Composer','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'];
 for(const name of names){
   assert.ok(Core[name],`missing source adapter core ${name}`);
   assert.ok(SourceCore[name],`missing ESM source core ${name}`);
@@ -30,6 +30,8 @@ for(const runtime of [Core,GeneratedCore]){
   assert.equal(runtime.Recovery.historyLimitForBytes(1000),80);
   assert.equal(runtime.Recovery.historyLimitForBytes(3*1024*1024),20);
   assert.equal(runtime.Recovery.historyLimitForBytes(10*1024*1024),6);
+  assert.ok(runtime.Composer.themes.length>=12);
+  assert.ok(runtime.Composer.roles.length>=12);
 }
 
 const p={id:'root',title:'R',children:[],collapsed:false,pos:{x:0,y:0},slideElements:[],mapLayout:'balanced',uiTheme:'light',presentationOrder:[],master:{bgColor:'#fff',bgImage:null,bgFit:'cover',tocSide:'left',tocVisibility:'auto',defaultAnimation:'soft',elements:[]}};
