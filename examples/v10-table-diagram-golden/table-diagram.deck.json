@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "title": "Table + Diagram Golden",
+  "goal": "验证表格与商务图示进入 MindDeck Project、Composer 与唯一 Runtime",
+  "audience": "MindDeck V10",
+  "theme": "cobalt",
+  "randomSeed": "v10-step4-table-diagram",
+  "slides": [
+    {
+      "id": "compare-table",
+      "role": "compare",
+      "content": {
+        "title": "方案能力对照",
+        "summary": "用原生 Table 表达结构化对比",
+        "table": {
+          "columns": [
+            {"id": "cap", "label": "能力", "width": 2, "align": "left"},
+            {"id": "now", "label": "当前", "width": 1, "align": "center"},
+            {"id": "target", "label": "目标", "width": 1, "align": "center"}
+          ],
+          "header": {"visible": true, "height": 56, "cells": ["能力", "当前", "目标"]},
+          "rows": [
+            {"height": 72, "cells": ["原生元素", "Chart", "Chart / Table / Diagram"]},
+            {"height": 72, "cells": ["共享 Runtime", "是", "是"]},
+            {"height": 72, "cells": ["Portable", "是", "是"]}
+          ]
+        }
+      }
+    },
+    {
+      "id": "swot-diagram",
+      "role": "cards",
+      "content": {
+        "title": "产品 SWOT",
+        "summary": "语义模型仍然复用 Diagram Element",
+        "diagram": {
+          "subtype": "swot",
+          "data": {
+            "items": [
+              {"label": "优势", "detail": "统一 Runtime"},
+              {"label": "劣势", "detail": "模板仍需扩充"},
+              {"label": "机会", "detail": "AI 可绑定结构化内容"},
+              {"label": "威胁", "detail": "复杂文档兼容"}
+            ]
+          },
+          "layout": {"columns": 2, "gap": 24}
+        }
+      }
+    },
+    {
+      "id": "roadmap-diagram",
+      "role": "timeline",
+      "content": {
+        "title": "V10 路线图",
+        "summary": "Roadmap 作为 Diagram subtype",
+        "diagram": {
+          "subtype": "roadmap",
+          "data": {
+            "centerLabel": "V10",
+            "items": [
+              {"label": "Theme"},
+              {"label": "Template"},
+              {"label": "Chart"},
+              {"label": "Table + Diagram"},
+              {"label": "AI / PPTX"}
+            ]
+          },
+          "layout": {"direction": "horizontal", "gap": 20}
+        }
+      }
+    }
+  ]
+}

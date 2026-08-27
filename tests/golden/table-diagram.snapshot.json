@@ -1,0 +1,12 @@
+{
+  "baseline": "V10-step4-table-diagram",
+  "expected": {
+    "schemaVersion": 1,
+    "theme": "cobalt",
+    "slides": [
+      {"id": "compare-table", "role": "compare", "tableCount": 1, "diagramCount": 0, "subtype": null},
+      {"id": "swot-diagram", "role": "cards", "tableCount": 0, "diagramCount": 1, "subtype": "swot"},
+      {"id": "roadmap-diagram", "role": "timeline", "tableCount": 0, "diagramCount": 1, "subtype": "roadmap"}
+    ]
+  }
+}

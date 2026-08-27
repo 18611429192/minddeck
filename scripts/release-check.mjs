@@ -6,6 +6,7 @@ const commands=[
   ['node',['tests/composer.test.mjs']],
   ['node',['tests/parametric.test.mjs']],
   ['node',['tests/chart.test.mjs']],
+  ['node',['tests/table-diagram.test.mjs']],
   ['node',['tests/golden/golden.test.mjs']],
   ['node',['tests/shared-runtime.test.mjs']],
   ['node',['tests/diagnostics.test.mjs']],
