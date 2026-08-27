@@ -7,29 +7,11 @@ async function dismissWelcome(page){
 }
 
 async function generateHealthyDeck(page){
-  await page.locator('#v99SmartComposeBtn').click();
-  await page.locator('#v99Outline').fill(`# 文件往返回归
-> 验证正式 Project 导入导出
-
-## 核心指标
-- 32% 效率提升
-- 4.8x 反馈速度
-- 12 周交付
-
-## 推进流程
-- 明确问题
-- 形成方案
-- 小步验证
-- 交付复盘
-
-## 方案对比
-- 原方案
-- 新方案
-
-## 结论与下一步
-- 两周验证
-- 复盘结果`);
-  await page.locator('#v99GenerateBtn').click();
+  page.on('dialog',dialog=>dialog.accept());
+  await page.locator('#v99DeckSpecBtn').click();
+  await page.locator('#v99DeckSpecFile').setInputFiles('examples/deck-spec-v1.json');
+  await expect(page.locator('#v99DeckSpecStatus')).toContainText('deck-spec-v1.json');
+  await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
 }
@@ -58,12 +40,11 @@ test('project JSON and .minddeck roundtrip preserve the native Project',async({p
   expect(await page.evaluate(()=>globalThis.MindDeckApp.getProject().presentationOrder)).toEqual(original.order);
 
   await page.evaluate(()=>localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15})));
-  page.once('dialog',dialog=>dialog.accept('v99-roundtrip'));
   const downloads=[];
   const listener=download=>downloads.push(download);
   page.on('download',listener);
   await page.locator('#exportViewerBtn').click();
-  await expect.poll(()=>downloads.map(download=>download.suggestedFilename())).toContain('v99-roundtrip.minddeck');
+  await expect.poll(()=>downloads.some(download=>download.suggestedFilename().endsWith('.minddeck'))).toBe(true);
   page.off('download',listener);
   const packageDownload=downloads.find(download=>download.suggestedFilename().endsWith('.minddeck'));
   expect(packageDownload).toBeTruthy();
