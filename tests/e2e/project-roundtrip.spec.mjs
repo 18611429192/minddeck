@@ -7,12 +7,17 @@ async function dismissWelcome(page){
 }
 
 async function generateHealthyDeck(page){
-  page.on('dialog',dialog=>dialog.accept());
-  await page.locator('#v99DeckSpecBtn').click();
-  await page.locator('#v99DeckSpecFile').setInputFiles('examples/deck-spec-v1.json');
-  await expect(page.locator('#v99DeckSpecStatus')).toContainText('deck-spec-v1.json');
-  await page.locator('#v99DeckSpecGenerate').click();
-  await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+  const acceptReplacement=dialog=>dialog.accept();
+  page.on('dialog',acceptReplacement);
+  try{
+    await page.locator('#v99DeckSpecBtn').click();
+    await page.locator('#v99DeckSpecFile').setInputFiles('examples/deck-spec-v1.json');
+    await expect(page.locator('#v99DeckSpecStatus')).toContainText('deck-spec-v1.json');
+    await page.locator('#v99DeckSpecGenerate').click();
+    await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+  }finally{
+    page.off('dialog',acceptReplacement);
+  }
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
 }
 
@@ -24,6 +29,7 @@ async function captureMinddeckExport(page){
     HTMLAnchorElement.prototype.click=function(){globalThis.__minddeckCapturedDownloads.push({name:this.download,href:this.href})};
     localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15}));
   });
+  page.once('dialog',dialog=>dialog.accept('v99-roundtrip'));
   await page.locator('#exportViewerBtn').click();
   await page.waitForTimeout(250);
   const names=await page.evaluate(()=>globalThis.__minddeckCapturedDownloads.map(item=>item.name));
