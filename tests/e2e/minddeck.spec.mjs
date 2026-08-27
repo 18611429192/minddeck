@@ -26,13 +26,16 @@ test('DeckSpec v1 file host compiles the checked-in example into the native Proj
   await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
   const result=await page.evaluate(()=>{
-    const project=globalThis.MindDeckApp.getProject();
+    const project=globalThis.MindDeckApp.getProject(),ids=[];
+    globalThis.MindDeckCore.Tree.walkAll(project,node=>ids.push(node.id));
+    const roundtrip=JSON.parse(JSON.stringify(project));globalThis.MindDeckCore.Project.normalize(roundtrip,{schemaVersion:1});
     return {
       title:project.title,
       childCount:project.children.length,
       quality:globalThis.MindDeckCore.Composer.Quality.validateProject(project).ok,
       nativePages:project.children.every(node=>Array.isArray(node.slideElements)&&node.slideElements.length>0),
-      provenance:project.children.every(node=>node.composer?.generatedBy==='Core.Composer')
+      provenance:project.children.every(node=>node.composer?.generatedBy==='Core.Composer'),
+      rootId:project.id,ids,presentationOrder:[...project.presentationOrder],runtimeOrder:globalThis.MindDeckCore.Presentation.order(project),roundtripOrder:[...roundtrip.presentationOrder]
     };
   });
   expect(result.title).toBe('研发价值：从代码交付到解决真实问题');
@@ -40,6 +43,10 @@ test('DeckSpec v1 file host compiles the checked-in example into the native Proj
   expect(result.quality).toBe(true);
   expect(result.nativePages).toBe(true);
   expect(result.provenance).toBe(true);
+  expect(result.presentationOrder[0]).toBe(result.rootId);
+  expect(result.presentationOrder.every(id=>result.ids.includes(id))).toBe(true);
+  expect(result.runtimeOrder).toEqual(result.presentationOrder);
+  expect(result.roundtripOrder).toEqual(result.presentationOrder);
 });
 
 test('Pages showcase enters the real presentation view',async({page})=>{
@@ -47,6 +54,17 @@ test('Pages showcase enters the real presentation view',async({page})=>{
   await expect(page.locator('#presentShell')).toHaveClass(/open/);
   await expect(page.locator('#tocTree')).not.toBeEmpty();
   await expect(page.locator('#presentStage')).not.toBeEmpty();
+});
+
+test('release viewport matrix boots the same runtime',async({page})=>{
+  const viewports=[[1920,1080],[1366,768],[1024,768],[390,844],[844,390],[360,800]];
+  for(const [width,height] of viewports){
+    await page.setViewportSize({width,height});
+    await page.goto('/?showcase=1');
+    await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
+    await expect(page.locator('#presentShell')).toHaveClass(/open/);
+    await expect(page.locator('#presentStage')).not.toBeEmpty();
+  }
 });
 
 test('folding a showcase branch changes the real presentation sequence',async({page})=>{
@@ -75,7 +93,7 @@ test('master editor keeps the fixed 1600x900 virtual stage',async({page})=>{
   await expect(page.locator('#editorStage')).toHaveCSS('height','900px');
 });
 
-test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentation → Portable',async({page},testInfo)=>{
+test('Smart Deck → edit → structural A/B/C → dirty confirm → Presentation → Portable',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop freeform workflow coverage');
   page.on('dialog',dialog=>dialog.accept());
 
@@ -115,7 +133,7 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
   const processId=await page.evaluate(()=>globalThis.MindDeckApp.getProject().children.find(node=>node.title==='推进流程')?.id);
   expect(processId).toBeTruthy();
 
-  await test.step('open the generated page and switch to a different A/B/C template',async()=>{
+  await test.step('open the generated page and prove A/B/C are structurally different',async()=>{
     await page.evaluate(id=>globalThis.MindDeckApp.openEditor('slide',id),processId);
     await expect(page.locator('#editorShell')).toHaveClass(/open/);
     await expect(page.locator('#v99PageDesignerBtn')).toBeVisible();
@@ -125,6 +143,11 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
     await expect(page.locator('.v99-smart-template')).toHaveCount(3);
 
     const candidateIds=await page.locator('.v99-smart-template').evaluateAll(nodes=>nodes.map(node=>node.dataset.template));
+    const signatures=await page.evaluate(({id,candidateIds})=>{
+      const node=globalThis.MindDeckApp.getProject().children.find(item=>item.id===id),composer=globalThis.MindDeckCore.Composer;
+      return candidateIds.map(template=>composer.compileSlide({content:node.composer.content,template,theme:node.deckTheme,density:node.deckDensity}).structuralSignature);
+    },{id:processId,candidateIds});
+    expect(new Set(signatures).size).toBe(signatures.length);
     const nextTemplate=candidateIds.find(id=>id&&id!==beforeTemplate);
     expect(nextTemplate).toBeTruthy();
     await page.locator(`.v99-smart-template[data-template="${nextTemplate}"]`).click();
@@ -140,38 +163,25 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
     },processId)).toBe(false);
   });
 
-  let dirtyElementsJson='';
-  await test.step('make a manual edit and verify provenance becomes dirty',async()=>{
+  await test.step('make a manual edit and verify dirty warning then confirmed template apply',async()=>{
     const editable=page.locator('#editorStage .canvas-el[data-master="0"]').first();
-    await expect(editable).toBeVisible();
-    await editable.click();
-    await page.keyboard.press('Shift+ArrowRight');
-    await expect.poll(()=>page.evaluate(id=>{
-      const node=globalThis.MindDeckApp.getProject().children.find(item=>item.id===id);
-      return globalThis.MindDeckCore.Composer.Provenance.isDirty(node);
-    },processId)).toBe(true);
-    dirtyElementsJson=await page.evaluate(id=>JSON.stringify(globalThis.MindDeckApp.getProject().children.find(node=>node.id===id).slideElements),processId);
+    await expect(editable).toBeVisible();await editable.click();await page.keyboard.press('Shift+ArrowRight');
+    await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckCore.Composer.Provenance.isDirty(globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)),processId)).toBe(true);
+    const current=await page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(item=>item.id===id).composer.selectedTemplateId,processId);
+    await page.locator('#v99PageDesignerBtn').click();await expect(page.locator('#v99DirtyWarning')).toBeVisible();
+    const ids=await page.locator('.v99-smart-template').evaluateAll(nodes=>nodes.map(node=>node.dataset.template));const alternate=ids.find(id=>id&&id!==current);expect(alternate).toBeTruthy();
+    await page.locator(`.v99-smart-template[data-template="${alternate}"]`).click();await page.locator('#v99ApplyTemplate').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+    await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckCore.Composer.Provenance.isDirty(globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)),processId)).toBe(false);
   });
 
-  await test.step('show the dirty warning and protect manual edits during whole-deck retheme',async()=>{
-    await page.locator('#v99PageDesignerBtn').click();
-    await expect(page.locator('#v99DirtyWarning')).toBeVisible();
-    await page.locator('#v99PageTheme').selectOption('forest');
-    await page.locator('#v99RethemeAll').click();
-    await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
-
-    const protectedState=await page.evaluate(id=>{
-      const project=globalThis.MindDeckApp.getProject();
-      const node=project.children.find(item=>item.id===id);
-      return {
-        elementsJson:JSON.stringify(node.slideElements),
-        dirty:globalThis.MindDeckCore.Composer.Provenance.isDirty(node),
-        warnings:project.composerWarnings||[]
-      };
-    },processId);
-    expect(protectedState.elementsJson).toBe(dirtyElementsJson);
-    expect(protectedState.dirty).toBe(true);
-    expect(protectedState.warnings.some(item=>item.code==='COMPOSER_DIRTY'&&item.nodeId===processId)).toBe(true);
+  let dirtyElementsJson='';
+  await test.step('protect a second manual edit during whole-deck retheme',async()=>{
+    const editable=page.locator('#editorStage .canvas-el[data-master="0"]').first();await editable.click();await page.keyboard.press('Shift+ArrowRight');
+    await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckCore.Composer.Provenance.isDirty(globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)),processId)).toBe(true);
+    dirtyElementsJson=await page.evaluate(id=>JSON.stringify(globalThis.MindDeckApp.getProject().children.find(node=>node.id===id).slideElements),processId);
+    await page.locator('#v99PageDesignerBtn').click();await expect(page.locator('#v99DirtyWarning')).toBeVisible();await page.locator('#v99PageTheme').selectOption('forest');await page.locator('#v99RethemeAll').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+    const protectedState=await page.evaluate(id=>{const project=globalThis.MindDeckApp.getProject(),node=project.children.find(item=>item.id===id);return {elementsJson:JSON.stringify(node.slideElements),dirty:globalThis.MindDeckCore.Composer.Provenance.isDirty(node),warnings:project.composerWarnings||[]}},processId);
+    expect(protectedState.elementsJson).toBe(dirtyElementsJson);expect(protectedState.dirty).toBe(true);expect(protectedState.warnings.some(item=>item.code==='COMPOSER_DIRTY'&&item.nodeId===processId)).toBe(true);
   });
 
   await test.step('reuse the same Project in Presentation and Portable',async()=>{
