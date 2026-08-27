@@ -20,9 +20,14 @@ export const Element={
     const el=doc.createElement('div');
     el.className=options.baseClass||'el';
     el.style.left=(Number(element.x)||0)+'px';el.style.top=(Number(element.y)||0)+'px';el.style.width=(Number(element.w)||0)+'px';el.style.height=(Number(element.h)||0)+'px';el.style.zIndex=element.z??1;
+    if(element.opacity!==undefined)el.style.opacity=String(element.opacity);
+    if(element.shadow&&element.shadow!=='none')el.style.boxShadow=element.shadow;
     if(element.type==='text'){
       if(options.textWrapperClass){const tc=doc.createElement('div');tc.className=options.textWrapperClass;tc.textContent=element.text||'';el.appendChild(tc)}else el.textContent=element.text||'';
       el.style.fontSize=(element.fontSize||32)+'px';el.style.fontWeight=element.fontWeight||400;el.style.color=element.color||'#222';el.style.textAlign=element.textAlign||'left';
+      if(element.fontFamily)el.style.fontFamily=element.fontFamily;
+      if(element.letterSpacing!==undefined)el.style.letterSpacing=(Number(element.letterSpacing)||0)+'px';
+      if(element.lineHeight!==undefined)el.style.lineHeight=String(element.lineHeight);
       if(options.editorTextLayout){el.style.alignItems='flex-start';el.style.justifyContent=element.textAlign==='center'?'center':element.textAlign==='right'?'flex-end':'flex-start'}
     }else if(element.type==='image'){
       const img=doc.createElement('img');img.src=element.src||'';img.style.objectFit=element.fit||'contain';el.appendChild(img);
@@ -31,6 +36,10 @@ export const Element={
       if(v.autoplay&&options.playAutoplay!==false){const delay=(Number(element.animation?.delay)||0)*1000+(options.autoplayExtraDelay??80);setTimeout(()=>v.play().catch(()=>{}),Math.max(0,delay))}
     }else if(element.type==='shape'){
       el.style.background=element.fill||'#eee';el.style.borderStyle='solid';el.style.borderColor=element.borderColor||'transparent';el.style.borderWidth=(element.borderWidth||0)+'px';el.style.borderRadius=(element.shape==='circle'?999:(element.radius||0))+'px';
+    }
+    if(element.type==='image'||element.type==='video'){
+      if(element.radius!==undefined){el.style.borderRadius=(Number(element.radius)||0)+'px';el.style.overflow='hidden'}
+      if(element.borderWidth!==undefined){el.style.borderStyle='solid';el.style.borderWidth=(Number(element.borderWidth)||0)+'px';el.style.borderColor=element.borderColor||'transparent'}
     }
     if(options.animate!==false)Animation.apply(el,element,options.defaultAnimation||'soft');
     return el;
