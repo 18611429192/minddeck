@@ -34,7 +34,10 @@ const slots={
 };
 let out=shell
   .replaceAll('MindDeck V9.7.0 RC',`MindDeck ${display}`)
-  .replaceAll('Runtime 9.6.6',`Runtime ${version}`);
+  .replaceAll('Runtime 9.6.6',`Runtime ${version}`)
+  .replaceAll('统一运行时 9.6.6 · Release Candidate',`统一运行时 ${version} · ${isRc?'Release Candidate':'Stable'}`)
+  .replaceAll('发布候选 · 统一架构',`${isRc?'发布候选':'正式版'} · 统一架构`)
+  .replaceAll(' - 发布候选版',isRc?' - 发布候选版':'');
 const runtimeMarker='<!-- MINDDECK_SHARED_RUNTIME_START -->';
 if(!out.includes(runtimeMarker))throw new Error('shared runtime marker missing');
 out=out.replace(runtimeMarker,`<script type="text/plain" id="minddeck-portable-shell">\n${portableShell}\n</script>\n\n${runtimeMarker}`);
