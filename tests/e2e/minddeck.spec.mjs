@@ -14,6 +14,33 @@ test('app exposes one runtime and the public app adapter',async({page})=>{
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.Composer?.templates?.length)).toBe(24);
 });
 
+test('DeckSpec v1 file host compiles the checked-in example into the native Project',async({page})=>{
+  page.on('dialog',dialog=>dialog.accept());
+  await page.goto('/');
+  await dismissWelcome(page);
+  await expect(page.locator('#v99DeckSpecBtn')).toBeVisible();
+  await page.locator('#v99DeckSpecBtn').click();
+  await page.locator('#v99DeckSpecFile').setInputFiles('examples/deck-spec-v1.json');
+  await expect(page.locator('#v99DeckSpecStatus')).toContainText('deck-spec-v1.json');
+  await page.locator('#v99DeckSpecGenerate').click();
+  await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+  const result=await page.evaluate(()=>{
+    const project=globalThis.MindDeckApp.getProject();
+    return {
+      title:project.title,
+      childCount:project.children.length,
+      quality:globalThis.MindDeckCore.Composer.Quality.validateProject(project).ok,
+      nativePages:project.children.every(node=>Array.isArray(node.slideElements)&&node.slideElements.length>0),
+      provenance:project.children.every(node=>node.composer?.generatedBy==='Core.Composer')
+    };
+  });
+  expect(result.title).toBe('研发价值：从代码交付到解决真实问题');
+  expect(result.childCount).toBe(10);
+  expect(result.quality).toBe(true);
+  expect(result.nativePages).toBe(true);
+  expect(result.provenance).toBe(true);
+});
+
 test('Pages showcase enters the real presentation view',async({page})=>{
   await page.goto('/?showcase=1');
   await expect(page.locator('#presentShell')).toHaveClass(/open/);
