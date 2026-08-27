@@ -1,10 +1,2 @@
 import { Core } from './runtime.js';
-
-export const deckThemes=Core.DECK_THEMES;
-export const pageRoles=Core.PAGE_ROLES;
-export const parseOutline=(source)=>Core.Composer.parseOutline(source);
-export const composeDeck=(source,options={})=>Core.Composer.compose(source,options);
-export const inferPageRole=(node,context={})=>Core.Composer.inferRole(node,context);
-export const relayoutPage=(node,options={})=>Core.Composer.relayoutNode(node,options);
-export const rethemeDeck=(project,theme,options={})=>Core.Composer.rethemeProject(project,theme,options);
-export const describeDeck=(project)=>Core.Composer.describe(project);
+export const deckThemes=Core.DECK_THEMES;export const pageRoles=Core.PAGE_ROLES;export const templates=Core.Composer.templates;export const TemplateRegistry=Core.Composer.TemplateRegistry;export const ThemeRegistry=Core.Composer.ThemeRegistry;export const Capacity=Core.Composer.Capacity;export const Provenance=Core.Composer.Provenance;export const Quality=Core.Composer.Quality;export const normalizeDeckSpec=(input,options={})=>Core.Composer.normalizeDeckSpec(input,options);export const validateDeckSpec=input=>Core.Composer.validateDeckSpec(input);export const normalizeSlideContent=content=>Core.Composer.normalizeSlideContent(content);export const parseOutline=source=>Core.Composer.parseOutline(source);export const composeDeck=(source,options={})=>Core.Composer.compose(source,options);export const compileDeck=(spec,options={})=>Core.Composer.compileDeck(spec,options);export const inferPageRole=(node,context={})=>Core.Composer.inferRole(node,context);export const recommendTemplates=(request={})=>Core.Composer.recommendTemplates(request);export const recommendNodeTemplates=(node,options={})=>Core.Composer.recommendNodeTemplates(node,options);export const applyTemplate=(request={})=>Core.Composer.applyTemplate(request);export const relayoutPage=(node,options={})=>Core.Composer.relayoutNode(node,options);export const rethemeDeck=(project,theme,options={})=>Core.Composer.rethemeProject(project,theme,options);export const describeDeck=project=>Core.Composer.describe(project);
