@@ -32,7 +32,12 @@ const slots={
   '__MINDDECK_SHARED_RUNTIME__':sharedRuntime,
   '__MINDDECK_APP_BUNDLE__':appBundle,
 };
-let out=shell
+for(const slot of Object.keys(slots)){
+  const count=shell.split(slot).length-1;
+  if(count!==1)throw new Error('build shell slot '+slot+' expected once, got '+count);
+}
+let out=shell.replace(/__MINDDECK_(?:APP_STYLES|SHARED_STYLES|SHARED_RUNTIME|APP_BUNDLE)__/g,slot=>slots[slot]);
+out=out
   .replaceAll('MindDeck V9.7.0 RC',`MindDeck ${display}`)
   .replaceAll('Runtime 9.6.6',`Runtime ${version}`)
   .replaceAll('统一运行时 9.6.6 · Release Candidate',`统一运行时 ${version} · ${isRc?'Release Candidate':'Stable'}`)
@@ -41,11 +46,5 @@ let out=shell
 const runtimeMarker='<!-- MINDDECK_SHARED_RUNTIME_START -->';
 if(!out.includes(runtimeMarker))throw new Error('shared runtime marker missing');
 out=out.replace(runtimeMarker,`<script type="text/plain" id="minddeck-portable-shell">\n${portableShell}\n</script>\n\n${runtimeMarker}`);
-for(const [slot,value] of Object.entries(slots)){
-  const count=out.split(slot).length-1;
-  if(count!==1)throw new Error('build slot '+slot+' expected once, got '+count);
-  out=out.replace(slot,value);
-}
-if(/__MINDDECK_[A-Z0-9_]+__/.test(out))throw new Error('unresolved MindDeck build slot');
 fs.writeFileSync(path.join(root,'index.html'),out+'\n');
 console.log(`MindDeck ${display} standalone index.html built from package version ${pkg.version}`);

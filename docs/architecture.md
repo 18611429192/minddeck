@@ -1,60 +1,84 @@
-# MindDeck 架构方向
+# MindDeck 当前架构
 
-## 当前状态
+## 核心原则
 
-根目录 `index.html` 是 V9.0 Stable 的完整单文件版本。它是当前发布基线，不能为了工程化重构而牺牲可用性。
+**同一种业务规则只有一个实现源。** 不同运行形态只能保留 Host / Shell 差异。
 
-## 目标架构
+V9.9 当前数据链：
 
 ```text
-                   MindDeck Core
-                       │
-          ┌────────────┼────────────┐
-          │            │            │
-       Tree/Layout   Slide Model   Presentation
-          │            │            │
-          └────────────┼────────────┘
-                       │
-                 Shared Runtime
-                       │
-       ┌───────────────┼────────────────┐
-       │               │                │
-    Editor App      Standalone       Fusion HTML
-                    HTML Runtime
+Outline / DeckSpec / SlideContent
+              ↓
+         Core.Composer
+   normalize / template registry
+   capacity / matcher / allocator
+   compiler / provenance / quality
+              ↓
+       MindDeck Project
+       node.slideElements
+              ↓
+          MindDeckCore
+      ┌───────┼────────┐
+      ↓       ↓        ↓
+    Editor Presentation Portable
 ```
 
-## 为什么要拆
+## 唯一业务源
 
-过去最主要的稳定性问题不是某一个按钮，而是同一逻辑存在多个复制版本：
+- `src/runtime/modules/model.js`：Tree / Project / Map Layout / Presentation order；
+- `src/runtime/modules/slide.js`：Animation / Element / Slide；
+- `src/runtime/modules/view.js`：MapRenderer / TOC / PresentationView；
+- `src/runtime/modules/portable.js`：Portable 行为；
+- `src/runtime/modules/composer/`：V9.9 Composer 内部职责；
+- `src/runtime/modules/composer.js`：唯一公开 Composer façade；
+- `src/runtime/index.js`：组装唯一 `MindDeckCore`。
 
-- 主编辑器有一套
-- 纯导图 HTML 一套
-- 独立演示 HTML 一套
-- 融合 HTML 一套
+浏览器生成物 `src/runtime/shared-core.js` 和根 `index.html` 都由构建脚本生成，不手工维护。
 
-因此一次修改很容易只修到其中一部分。
+## Composer 边界
 
-## V9.0 已抽离
+Composer 是 **Project 数据生产者**，不是第二 Runtime：
 
-`src/core/tree.js`
-- 完整树遍历
-- 可见树遍历
-- 节点/父节点查找
-- 全开/全收
+```text
+SlideContent
+  ↓ Capacity + Matcher
+Candidate[]
+  ↓ Diversity Allocator
+SlideTemplate assignment
+  ↓ Template Compiler
+slideElements[]
+```
 
-`src/core/layout.js`
-- 可见节点权重
-- 5 种布局
-- 曲线连线
+它不得实现 DOM Renderer、Presentation、TOC、Portable 或第二 Project schema。应用层只能调用 `Core.Composer` 公开 API。
 
-`src/core/presentation.js`
-- 基于当前展开状态的播放顺序
-- 折叠后当前位置回退到最近可见祖先
+## 命名边界
 
-`src/core/project.js`
-- schemaVersion
-- 项目数据规范化
+- `Layout` / Map Layout：思维导图节点排列；
+- `SlideTemplate`：16:9 页面结构模板。
 
-## 下一步 V9.1
+两者职责完全不同，后续代码和文档不得再用一个含糊的“layout”同时指代两者。
 
-把根 `index.html` 内相同算法替换为构建时注入的共享 Core，并让三类导出 Runtime 直接复用同一源码。
+## 运行形态
+
+- Editor App：正式编辑器 Host；
+- Pages Showcase：进入正式 App/PresentationView，不维护 Demo 播放器；
+- Portable HTML：外壳可独立，但行为来自 `MindDeckCore.Portable.mount()`；
+- Fusion HTML：仍消费同一 Project 和 Shared Runtime。
+
+## 自动门禁
+
+`npm run release:check` 会构建并运行 Node/架构回归；CI 继续执行 Playwright 浏览器回归。
+
+`verify-architecture.mjs` 重点阻止：
+
+- 第二 Composer / `MindDeckComposer` global；
+- 第二 Renderer / PresentationView / Portable；
+- App UI 复制 Composer matcher/compiler/allocator；
+- Composer 使用 DOM / localStorage；
+- Pages Demo / Portable 复制运行时业务规则。
+
+版本细节见：
+
+- `docs/architecture-v9.8.md`
+- `docs/architecture-v9.9.md`
+- `ARCHITECTURE_AUDIT.md`

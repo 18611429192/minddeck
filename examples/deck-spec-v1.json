@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "title": "研发价值：从代码交付到解决真实问题",
+  "goal": "用一套可编辑演示说明研发如何通过业务理解、现场验证和结果闭环提升价值。",
+  "audience": "研发团队与技术管理者",
+  "theme": "aurora",
+  "randomSeed": "minddeck-v99-example",
+  "slides": [
+    {
+      "id": "s-section",
+      "role": "section",
+      "content": {
+        "title": "第一部分：先找到真正的问题",
+        "summary": "需求文档描述功能，现场帮助我们理解问题。",
+        "items": [
+          {"label": "业务目标"},
+          {"label": "真实流程"},
+          {"label": "关键约束"}
+        ]
+      }
+    },
+    {
+      "id": "s-statement",
+      "role": "statement",
+      "content": {
+        "title": "代码只是实现手段，不是价值本身",
+        "summary": "真正有价值的是把技术能力放到真实业务问题上，并对结果负责。",
+        "takeaway": "先判断什么值得做，再决定怎么写。"
+      }
+    },
+    {
+      "id": "s-cards",
+      "role": "cards",
+      "content": {
+        "title": "理解业务的四个动作",
+        "items": [
+          {"label": "看现场", "detail": "观察真实使用路径"},
+          {"label": "问原因", "detail": "把问题问到具体"},
+          {"label": "做验证", "detail": "用小步方案验证判断"},
+          {"label": "看结果", "detail": "用结果而不是功能数复盘"}
+        ]
+      }
+    },
+    {
+      "id": "s-metrics",
+      "role": "metrics",
+      "content": {
+        "title": "验证后的核心指标",
+        "items": [
+          {"value": "32%", "label": "问题定位效率提升"},
+          {"value": "4.8", "unit": "x", "label": "反馈闭环速度"},
+          {"value": "12", "unit": "周", "label": "完成首轮交付"}
+        ]
+      }
+    },
+    {
+      "id": "s-compare",
+      "role": "compare",
+      "content": {
+        "title": "两种研发方式的差异",
+        "items": [
+          {"label": "只接需求文档", "detail": "信息经过多次转述"},
+          {"label": "结合现场反馈", "detail": "直接理解使用者和流程"},
+          {"label": "容易做出功能", "detail": "但不一定解决关键问题"},
+          {"label": "围绕结果迭代", "detail": "更容易建立真实闭环"}
+        ]
+      }
+    },
+    {
+      "id": "s-process",
+      "role": "process",
+      "content": {
+        "title": "从现场问题到交付结果",
+        "items": [
+          {"label": "明确问题"},
+          {"label": "形成方案"},
+          {"label": "小步验证"},
+          {"label": "交付复盘"}
+        ]
+      }
+    },
+    {
+      "id": "s-trend",
+      "role": "trend",
+      "content": {
+        "title": "反馈效率持续提升",
+        "items": [
+          {"value": "20", "label": "Q1"},
+          {"value": "35", "label": "Q2"},
+          {"value": "52", "label": "Q3"},
+          {"value": "78", "label": "Q4"}
+        ]
+      }
+    },
+    {
+      "id": "s-timeline",
+      "role": "timeline",
+      "content": {
+        "title": "年度推进路线图",
+        "items": [
+          {"label": "1 月：现场调研"},
+          {"label": "3 月：方案验证"},
+          {"label": "6 月：正式上线"},
+          {"label": "9 月：结果复盘"}
+        ]
+      }
+    },
+    {
+      "id": "s-quote",
+      "role": "quote",
+      "content": {
+        "title": "现场的一句话",
+        "summary": "真正的问题，往往不在需求文档里。",
+        "takeaway": "先去看，再判断。"
+      }
+    },
+    {
+      "id": "s-conclusion",
+      "role": "conclusion",
+      "content": {
+        "title": "结论与下一步",
+        "summary": "少做自以为是的创新，多做能解决真实问题的功能。",
+        "items": [
+          {"label": "确认负责人"},
+          {"label": "两周完成验证"},
+          {"label": "按结果复盘"}
+        ]
+      }
+    }
+  ]
+}
