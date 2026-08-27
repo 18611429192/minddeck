@@ -10,6 +10,7 @@ const version=pkg.version.split('-')[0];
 const modules=[
   'src/runtime/modules/env.js',
   'src/runtime/modules/model.js',
+  'src/runtime/modules/composer.js',
   'src/runtime/modules/platform.js',
   'src/runtime/modules/slide.js',
   'src/runtime/modules/view.js',

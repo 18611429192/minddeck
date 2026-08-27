@@ -1,5 +1,18 @@
 # Changelog
 
+## V9.9.0 — Smart Deck 智能组稿
+
+- 新增 Shared Runtime `Composer`：把 Markdown / 缩进式大纲直接组织为 MindDeck 原生项目，而不是生成另一套 HTML 页面。
+- 新增 12 种页面角色：封面、章节、观点、卡片、对比、流程、指标、趋势、时间轴、引用、图文、结论；角色由共享规则推断，也可以在页面设计器里手工切换。
+- 新增 12 套 Deck Theme：晨光、深海蓝、森林、暖焰、紫曜、岩灰、沙金、墨黑、海盐、薄荷、玫瑰、黑白；支持整套换主题与单页换主题。
+- 新增“智能组稿”工作流：粘贴大纲 → 预览页数 / 页面角色 → 选择主题、信息密度和导图布局 → 一次生成整套演示。
+- 新增“页面方案”面板：对当前节点执行角色重排、主题切换、信息密度调整；生成结果继续使用自由 1600×900 `slideElements`，随后可按普通页面继续拖拽编辑。
+- 手机端增加 Smart Deck 快捷入口，使用与桌面相同的 `Composer`，没有移动端第二套生成逻辑。
+- Composer 只输出既有 text / shape 等原生元素，因此编辑器、PresentationView、Portable HTML、融合导出和 Pages Showcase 自动复用现有统一 Runtime。
+- 新增 `src/core/composer.js` 薄适配器、Composer Node 回归和架构门禁；禁止在 App UI 重新实现 parse / role inference / page layout。
+- 发布门禁从“仅 RC”升级为同时验证 RC / Stable，V9.9.0 以 Stable 发布。
+- DashiPPT 融合采用“机制吸收、独立实现”：没有复制其 AGPL-3.0 代码、1020 个版式、素材或主题文件，MindDeck 继续保持 MIT License。
+
 ## V9.8.0-rc.1 — 架构收口
 
 - Shared Runtime 从人工维护的 `shared-core.js` 拆成真正的 ES Modules：`model / platform / slide / view / portable`；`shared-core.js` 降级为构建生成物。
