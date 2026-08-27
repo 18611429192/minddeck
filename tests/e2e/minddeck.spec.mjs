@@ -104,6 +104,7 @@ test('portable mindmap reflow/fold and fusion mode switching execute the shared 
   await page.locator('#reflowBtn').click();
   await expect(page.locator('#mapNodes .node').first()).toBeVisible();
 
+  await page.goto('about:blank');
   await page.setContent(exported.fusion,{waitUntil:'load'});
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
   await expect(page.locator('#mapView')).toHaveClass(/on/);
