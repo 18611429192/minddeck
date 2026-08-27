@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const pkg = JSON.parse(fs.readFileSync(new URL('../package.json'), 'utf8'));
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const m = pkg.version.match(/^(\d+\.\d+\.\d+)(?:-rc(?:\.\d+)?)?$/);
 if (!m) throw new Error('package version is neither stable nor RC semver');
 const isRc = /-rc(?:\.|$)/.test(pkg.version);
