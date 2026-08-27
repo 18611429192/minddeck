@@ -13,10 +13,10 @@
       'document.body.classList.add("kind-"+KIND);\nif(!globalThis.MindDeckCore||globalThis.MindDeckCore.VERSION!==RUNTIME_VERSION)throw new Error("MindDeck Portable Runtime mismatch");\n'+
       'globalThis.MindDeckCore.Portable.mount({data,kind:KIND,width:1600,height:900,document,window});\n</scr'+'ipt>';
     return shellSource
-      .replaceAll('__PORTABLE_TITLE__',title)
-      .replaceAll('__PORTABLE_THEME__',portableTheme)
-      .replaceAll('__PORTABLE_RUNTIME_VERSION__',RUNTIME_VERSION)
-      .replace('__PORTABLE_BOOTSTRAP__',bootstrap);
+      .replaceAll('__PORTABLE_TITLE__',()=>title)
+      .replaceAll('__PORTABLE_THEME__',()=>portableTheme)
+      .replaceAll('__PORTABLE_RUNTIME_VERSION__',()=>RUNTIME_VERSION)
+      .replace('__PORTABLE_BOOTSTRAP__',()=>bootstrap);
   }
 
   function buildStandaloneViewerHtml(){return buildPortableHtml("presentation")}
