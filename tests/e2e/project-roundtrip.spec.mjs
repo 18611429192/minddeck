@@ -25,20 +25,21 @@ async function captureMinddeckExport(page){
   const diagnostics=await page.evaluate(()=>globalThis.MindDeckCore.Diagnostics.inspect(globalThis.MindDeckApp.getProject()));
   expect(diagnostics.fail,JSON.stringify(diagnostics.results)).toBe(0);
   await page.evaluate(()=>{
-    globalThis.__minddeckCapturedDownloads=[];
-    HTMLAnchorElement.prototype.click=function(){globalThis.__minddeckCapturedDownloads.push({name:this.download,href:this.href})};
+    globalThis.__minddeckCapturedBlobs=[];
+    const originalCreate=URL.createObjectURL.bind(URL);
+    URL.createObjectURL=function(blob){
+      const href=originalCreate(blob);
+      globalThis.__minddeckCapturedBlobs.push({href,type:blob.type,size:blob.size});
+      return href;
+    };
     localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15}));
   });
   page.once('dialog',dialog=>dialog.accept('v99-roundtrip'));
   await page.locator('#exportViewerBtn').click();
-  await page.waitForTimeout(250);
-  const names=await page.evaluate(()=>globalThis.__minddeckCapturedDownloads.map(item=>item.name));
-  if(!names.some(name=>name.endsWith('.minddeck'))){
-    const health=await page.locator('#healthPanel').evaluate(panel=>({open:panel.classList.contains('open'),text:panel.innerText}));
-    throw new Error(`minddeck export was not emitted; captured=${JSON.stringify(names)}; health=${JSON.stringify(health)}`);
-  }
+  await expect.poll(()=>page.evaluate(()=>globalThis.__minddeckCapturedBlobs.some(item=>item.type==='application/zip'))).toBe(true);
   const bytes=await page.evaluate(async()=>{
-    const item=globalThis.__minddeckCapturedDownloads.find(entry=>entry.name.endsWith('.minddeck'));
+    const item=globalThis.__minddeckCapturedBlobs.find(entry=>entry.type==='application/zip');
+    if(!item)throw new Error('minddeck export zip blob missing');
     const response=await fetch(item.href),buffer=await response.arrayBuffer();
     return Array.from(new Uint8Array(buffer));
   });
