@@ -24,6 +24,15 @@ async function generateHealthyDeck(page){
 async function captureMinddeckExport(page){
   const diagnostics=await page.evaluate(()=>globalThis.MindDeckCore.Diagnostics.inspect(globalThis.MindDeckApp.getProject()));
   expect(diagnostics.fail,JSON.stringify(diagnostics.results)).toBe(0);
+
+  await page.locator('#presentationModeBtn').click();
+  await page.locator('#exportSettingsBtn').click();
+  await expect(page.locator('#exportSettingsPanel')).toHaveClass(/open/);
+  await page.locator('#exportPackageMode').selectOption('always');
+  await page.locator('#exportFusionMode').selectOption('separate');
+  await page.locator('#saveExportSettingsBtn').click();
+  await expect(page.locator('#exportSettingsPanel')).not.toHaveClass(/open/);
+
   await page.evaluate(()=>{
     globalThis.__minddeckCapturedBlobs=[];
     const originalCreate=URL.createObjectURL.bind(URL);
@@ -32,7 +41,6 @@ async function captureMinddeckExport(page){
       globalThis.__minddeckCapturedBlobs.push({href,type:blob.type,size:blob.size});
       return href;
     };
-    localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15}));
   });
   page.once('dialog',dialog=>dialog.accept('v99-roundtrip'));
   await page.locator('#exportViewerBtn').click();
