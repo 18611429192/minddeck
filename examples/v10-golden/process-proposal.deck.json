@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "title": "流程优化方案",
+  "goal": "明确四步推进路径",
+  "audience": "跨部门项目组",
+  "theme": "mint",
+  "randomSeed": "v10-golden-process",
+  "slides": [
+    {
+      "id": "process-main",
+      "role": "process",
+      "content": {
+        "title": "推进流程",
+        "items": [
+          {"label": "明确问题"},
+          {"label": "形成方案"},
+          {"label": "小步验证"},
+          {"label": "交付复盘"}
+        ]
+      }
+    }
+  ]
+}

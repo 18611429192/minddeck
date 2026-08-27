@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "title": "季度经营汇报",
+  "goal": "用清晰章节组织本季度重点",
+  "audience": "经营团队",
+  "theme": "aurora",
+  "randomSeed": "v10-golden-company",
+  "slides": [
+    {
+      "id": "company-section",
+      "role": "section",
+      "content": {
+        "title": "本季度三个重点",
+        "summary": "围绕增长、交付与客户反馈展开。",
+        "items": [
+          {"label": "增长质量"},
+          {"label": "交付效率"},
+          {"label": "客户反馈"}
+        ]
+      }
+    }
+  ]
+}

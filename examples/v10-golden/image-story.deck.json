@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "title": "现场故事",
+  "goal": "用现场图片和行动结论完成表达",
+  "audience": "产品与研发团队",
+  "theme": "rose",
+  "randomSeed": "v10-golden-image",
+  "slides": [
+    {
+      "id": "image-main",
+      "role": "image",
+      "content": {
+        "title": "现场观察",
+        "summary": "真实操作路径能暴露文档里看不到的问题。",
+        "items": [
+          {"label": "观察用户操作"},
+          {"label": "记录关键卡点"}
+        ],
+        "media": [
+          {
+            "type": "image",
+            "src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"9\"/%3E",
+            "alt": "现场示意"
+          }
+        ]
+      }
+    },
+    {
+      "id": "image-conclusion",
+      "role": "conclusion",
+      "content": {
+        "title": "结论与下一步",
+        "summary": "先解决真实问题，再持续完善功能。",
+        "takeaway": "把现场证据转成可验证行动。",
+        "items": [
+          {"label": "确认负责人"},
+          {"label": "两周验证"},
+          {"label": "复盘结果"}
+        ]
+      }
+    }
+  ]
+}

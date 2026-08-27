@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "title": "技术方案概览",
+  "goal": "展示方案的关键组成",
+  "audience": "研发与架构团队",
+  "theme": "forest",
+  "randomSeed": "v10-golden-tech",
+  "slides": [
+    {
+      "id": "tech-cards",
+      "role": "cards",
+      "content": {
+        "title": "方案的三个组成",
+        "items": [
+          {"label": "统一数据模型"},
+          {"label": "共享运行时"},
+          {"label": "可移植导出"}
+        ]
+      }
+    }
+  ]
+}

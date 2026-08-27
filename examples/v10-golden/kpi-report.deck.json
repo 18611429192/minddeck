@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "title": "指标工作汇报",
+  "goal": "展示完整年度推进节奏",
+  "audience": "管理团队",
+  "theme": "ocean",
+  "randomSeed": "v10-golden-kpi",
+  "slides": [
+    {
+      "id": "kpi-timeline",
+      "role": "timeline",
+      "content": {
+        "title": "年度路线图",
+        "items": [
+          {"label": "调研阶段"},
+          {"label": "方案阶段"},
+          {"label": "验证阶段"},
+          {"label": "上线阶段"},
+          {"label": "推广阶段"},
+          {"label": "复盘阶段"}
+        ]
+      }
+    }
+  ]
+}

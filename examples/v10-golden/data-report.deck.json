@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "title": "数据报告",
+  "goal": "突出两个核心经营指标",
+  "audience": "管理团队",
+  "theme": "plum",
+  "randomSeed": "v10-golden-data",
+  "slides": [
+    {
+      "id": "data-metrics",
+      "role": "metrics",
+      "content": {
+        "title": "核心指标",
+        "items": [
+          {"value": "32%", "label": "交付效率提升"},
+          {"value": "4.8x", "label": "反馈速度"}
+        ]
+      }
+    }
+  ]
+}

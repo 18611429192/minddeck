@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "title": "咨询分析",
+  "goal": "展示连续阶段中的增长变化",
+  "audience": "业务负责人",
+  "theme": "sand",
+  "randomSeed": "v10-golden-consulting",
+  "slides": [
+    {
+      "id": "consulting-trend",
+      "role": "trend",
+      "content": {
+        "title": "效率提升趋势",
+        "items": [
+          {"value": "20", "label": "起步"},
+          {"value": "35", "label": "验证"},
+          {"value": "52", "label": "推广"},
+          {"value": "78", "label": "稳定"}
+        ]
+      }
+    }
+  ]
+}

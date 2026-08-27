@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "title": "研发培训课件",
+  "goal": "用一句现场经验建立共识",
+  "audience": "新员工",
+  "theme": "slate",
+  "randomSeed": "v10-golden-training",
+  "slides": [
+    {
+      "id": "training-quote",
+      "role": "quote",
+      "content": {
+        "title": "现场的一句话",
+        "summary": "真正的问题，往往不在需求文档里。",
+        "takeaway": "先去看，再判断。"
+      }
+    }
+  ]
+}

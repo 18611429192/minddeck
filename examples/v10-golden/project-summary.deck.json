@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "title": "项目复盘",
+  "goal": "对比改造前后的工作方式",
+  "audience": "项目团队",
+  "theme": "ember",
+  "randomSeed": "v10-golden-project",
+  "slides": [
+    {
+      "id": "project-compare",
+      "role": "compare",
+      "content": {
+        "title": "改造前后对比",
+        "items": [
+          {"label": "改造前：重复维护多套逻辑"},
+          {"label": "改造后：统一运行时复用"}
+        ]
+      }
+    }
+  ]
+}

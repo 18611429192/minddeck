@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "title": "产品能力介绍",
+  "goal": "一句话说明产品核心价值",
+  "audience": "潜在客户",
+  "theme": "cobalt",
+  "randomSeed": "v10-golden-product",
+  "slides": [
+    {
+      "id": "product-statement",
+      "role": "statement",
+      "content": {
+        "title": "把复杂工作变成清晰协作",
+        "summary": "MindDeck 用统一结构连接思考、编辑和演示。",
+        "takeaway": "先组织信息，再选择表达方式。"
+      }
+    }
+  ]
+}
