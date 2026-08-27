@@ -85,6 +85,35 @@ test('portable presentation is generated from the shared shell/runtime',async({p
   expect(html).toContain('id="stage"');
 });
 
+test('portable mindmap reflow/fold and fusion mode switching execute the shared runtime',async({page})=>{
+  await page.goto('/');
+  const exported=await page.evaluate(()=>({
+    mindmap:globalThis.MindDeckApp.exportHtml('mindmap'),
+    fusion:globalThis.MindDeckApp.exportHtml('fusion')
+  }));
+
+  await page.setContent(exported.mindmap,{waitUntil:'load'});
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
+  await expect(page.locator('#mapView')).toHaveClass(/on/);
+  await expect(page.locator('#mapNodes .node').first()).toBeVisible();
+  const before=await page.locator('#mapNodes .node').count();
+  await page.locator('#collapseBtn').click();
+  await expect.poll(()=>page.locator('#mapNodes .node').count()).toBeLessThanOrEqual(before);
+  await page.locator('#expandBtn').click();
+  await expect.poll(()=>page.locator('#mapNodes .node').count()).toBeGreaterThanOrEqual(1);
+  await page.locator('#reflowBtn').click();
+  await expect(page.locator('#mapNodes .node').first()).toBeVisible();
+
+  await page.setContent(exported.fusion,{waitUntil:'load'});
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
+  await expect(page.locator('#mapView')).toHaveClass(/on/);
+  await page.locator('#presentMode').click();
+  await expect(page.locator('#presentationView')).toHaveClass(/on/);
+  await expect(page.locator('#stage')).not.toBeEmpty();
+  await page.locator('#mapMode').click();
+  await expect(page.locator('#mapView')).toHaveClass(/on/);
+});
+
 test('master editor keeps the fixed 1600x900 virtual stage',async({page})=>{
   await page.goto('/');
   await page.evaluate(()=>globalThis.MindDeckApp.openEditor('master'));
