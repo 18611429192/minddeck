@@ -14,7 +14,8 @@ test('app exposes one runtime and the public app adapter',async({page})=>{
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.Composer?.templates?.length)).toBe(24);
 });
 
-test('DeckSpec v1 file host compiles the checked-in example into the native Project',async({page})=>{
+test('DeckSpec v1 file host compiles the checked-in example into the native Project',async({page},testInfo)=>{
+  test.skip(testInfo.project.name.includes('mobile'),'DeckSpec command currently lives in the desktop project toolbar');
   page.on('dialog',dialog=>dialog.accept());
   await page.goto('/');
   await dismissWelcome(page);
