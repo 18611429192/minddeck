@@ -1,7 +1,7 @@
-function freezeTheme(theme){
+function composerFreezeTheme(theme){
   Object.freeze(theme.colors);Object.freeze(theme.typography);Object.values(theme.typography).forEach(Object.freeze);Object.freeze(theme.shape);Object.freeze(theme.spacing);return Object.freeze(theme);
 }
-function makeTheme(id,label,palette,visual={}){
+function composerMakeTheme(id,label,palette,visual={}){
   const typography=visual.typography||{
     display:{fontSize:84,fontWeight:880},title:{fontSize:58,fontWeight:840},heading:{fontSize:38,fontWeight:760},
     body:{fontSize:25,fontWeight:600},caption:{fontSize:19,fontWeight:700},metric:{fontSize:64,fontWeight:900}
@@ -12,12 +12,12 @@ function makeTheme(id,label,palette,visual={}){
     background:palette.bg,surface:palette.surface,surface2:palette.surface2,primary:palette.accent,secondary:palette.accent2,
     text:palette.text,muted:palette.muted,border:palette.line,positive:palette.success,negative:palette.danger
   };
-  return freezeTheme({id,label,colors,typography,shape,spacing,
+  return composerFreezeTheme({id,label,colors,typography,shape,spacing,
     bg:colors.background,surface:colors.surface,surface2:colors.surface2,text:colors.text,muted:colors.muted,
     accent:colors.primary,accent2:colors.secondary,line:colors.border,danger:colors.negative,success:colors.positive
   });
 }
-const palettes=[
+const ComposerThemePalettes=[
  ['aurora','晨光',{bg:'#F7F8FC',surface:'#FFFFFF',surface2:'#EEF2FF',text:'#172033',muted:'#667085',accent:'#5B6CFF',accent2:'#00A8A8',line:'#D9DEEA',danger:'#D1495B',success:'#0E9F6E'}],
  ['cobalt','深海蓝',{bg:'#081426',surface:'#10233E',surface2:'#153052',text:'#F3F7FF',muted:'#A9B7CC',accent:'#4DA3FF',accent2:'#5DE0E6',line:'#29486D',danger:'#FF7B88',success:'#4ED7A8'}],
  ['forest','森林',{bg:'#F5F8F4',surface:'#FFFFFF',surface2:'#E7F0E8',text:'#183126',muted:'#687A70',accent:'#2F7D4A',accent2:'#7E9F35',line:'#D4E0D7',danger:'#B65050',success:'#2F7D4A'}],
@@ -31,7 +31,7 @@ const palettes=[
  ['rose','玫瑰',{bg:'#FFF6F7',surface:'#FFFFFF',surface2:'#FCE7EA',text:'#3B252B',muted:'#826C72',accent:'#D65C7A',accent2:'#EE9B9B',line:'#EFD7DD',danger:'#B8455D',success:'#4B8A70'}],
  ['mono','黑白',{bg:'#FFFFFF',surface:'#FFFFFF',surface2:'#F3F3F3',text:'#111111',muted:'#686868',accent:'#111111',accent2:'#858585',line:'#D9D9D9',danger:'#8F2E2E',success:'#336B4A'}]
 ];
-export const DECK_THEMES=Object.freeze(palettes.map(([id,label,palette])=>makeTheme(id,label,palette)));
+export const DECK_THEMES=Object.freeze(ComposerThemePalettes.map(([id,label,palette])=>composerMakeTheme(id,label,palette)));
 
 export const PAGE_ROLES=Object.freeze([
   ['cover','封面'],['section','章节'],['statement','观点'],['cards','卡片'],['compare','对比'],['process','流程'],
