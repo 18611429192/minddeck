@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import vm from 'node:vm';
 
 async function dismissWelcome(page){
   await page.waitForTimeout(320);
@@ -21,6 +22,16 @@ async function generateHealthyDeck(page){
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
 }
 
+async function assertPortableScriptSyntax(page){
+  const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));
+  const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)].map(match=>match[1]);
+  expect(scripts.length).toBeGreaterThan(0);
+  for(let index=0;index<scripts.length;index++){
+    try{new vm.Script(scripts[index],{filename:`minddeck-portable-${index}.js`})}
+    catch(err){throw new Error(`portable script syntax diagnostic:\n${err.stack}`)}
+  }
+}
+
 async function captureMinddeckExport(page){
   const diagnostics=await page.evaluate(()=>globalThis.MindDeckCore.Diagnostics.inspect(globalThis.MindDeckApp.getProject()));
   expect(diagnostics.fail,JSON.stringify(diagnostics.results)).toBe(0);
@@ -34,6 +45,7 @@ async function captureMinddeckExport(page){
   await expect(page.locator('#exportSettingsPanel')).not.toHaveClass(/open/);
   const savedSettings=await page.evaluate(()=>JSON.parse(localStorage.getItem('minddeck-v8-export-settings')||'{}'));
   expect(savedSettings.packageMode).toBe('always');
+  await assertPortableScriptSyntax(page);
 
   await page.evaluate(()=>{
     globalThis.__minddeckCapturedBlobs=[];
