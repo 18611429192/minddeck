@@ -1,40 +1,7 @@
 import { test, expect } from '@playwright/test';
-
-test('app exposes one runtime and the public app adapter',async({page})=>{
-  await page.goto('/');
-  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.8.0');
-  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp?.runtimeVersion)).toBe('9.8.0');
-});
-
-test('Pages showcase enters the real presentation view',async({page})=>{
-  await page.goto('/?showcase=1');
-  await expect(page.locator('#presentShell')).toHaveClass(/open/);
-  await expect(page.locator('#tocTree')).not.toBeEmpty();
-  await expect(page.locator('#presentStage')).not.toBeEmpty();
-});
-
-test('folding a showcase branch changes the real presentation sequence',async({page})=>{
-  await page.goto('/?showcase=1');
-  const fold=page.locator('.toc-item .fold-mini').filter({hasText:/[+−-]/}).first();
-  await expect(fold).toBeAttached();
-  if(!(await fold.isVisible()))await page.locator('#presentTocToggle').click();
-  const before=await page.locator('.toc-item').count();
-  await fold.click();
-  await expect.poll(()=>page.locator('.toc-item').count()).toBeLessThan(before);
-});
-
-test('portable presentation is generated from the shared shell/runtime',async({page})=>{
-  await page.goto('/');
-  const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));
-  expect(html).toContain('Portable Runtime 9.8.0');
-  expect(html).toContain('MindDeckCore.Portable.mount');
-  expect(html).toContain('id="stage"');
-});
-
-test('master editor keeps the fixed 1600x900 virtual stage',async({page})=>{
-  await page.goto('/');
-  await page.evaluate(()=>globalThis.MindDeckApp.openEditor('master'));
-  await expect(page.locator('#editorShell')).toHaveClass(/open/);
-  await expect(page.locator('#editorStage')).toHaveCSS('width','1600px');
-  await expect(page.locator('#editorStage')).toHaveCSS('height','900px');
-});
+test('app exposes one runtime and the public app adapter',async({page})=>{await page.goto('/');await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp?.runtimeVersion)).toBe('9.9.0');await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.Composer?.templates?.length)).toBe(24)});
+test('Pages showcase enters the real presentation view',async({page})=>{await page.goto('/?showcase=1');await expect(page.locator('#presentShell')).toHaveClass(/open/);await expect(page.locator('#tocTree')).not.toBeEmpty();await expect(page.locator('#presentStage')).not.toBeEmpty()});
+test('folding a showcase branch changes the real presentation sequence',async({page})=>{await page.goto('/?showcase=1');const fold=page.locator('.toc-item .fold-mini').filter({hasText:/[+−-]/}).first();await expect(fold).toBeAttached();if(!(await fold.isVisible()))await page.locator('#presentTocToggle').click();const before=await page.locator('.toc-item').count();await fold.click();await expect.poll(()=>page.locator('.toc-item').count()).toBeLessThan(before)});
+test('portable presentation is generated from the shared shell/runtime',async({page})=>{await page.goto('/');const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));expect(html).toContain('Portable Runtime 9.9.0');expect(html).toContain('MindDeckCore.Portable.mount');expect(html).toContain('id="stage"')});
+test('master editor keeps the fixed 1600x900 virtual stage',async({page})=>{await page.goto('/');await page.evaluate(()=>globalThis.MindDeckApp.openEditor('master'));await expect(page.locator('#editorShell')).toHaveClass(/open/);await expect(page.locator('#editorStage')).toHaveCSS('width','1600px');await expect(page.locator('#editorStage')).toHaveCSS('height','900px')});
+test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentation → Portable',async({page},testInfo)=>{test.skip(testInfo.project.name.includes('mobile'),'desktop freeform workflow coverage');page.on('dialog',dialog=>dialog.accept());await page.goto('/');await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();await page.locator('#v99SmartComposeBtn').click();await page.locator('#v99Outline').fill(`# V9.9 E2E\n> Shared Runtime Composer\n\n## 核心指标\n- 32% 转化提升\n- 4.8x 效率提升\n- 12 周交付\n\n## 推进流程\n- 明确问题\n- 形成方案\n- 小步验证\n- 交付复盘\n\n## 方案对比\n- 原方案路径长\n- 新方案聚焦关键动作\n\n## 结论与下一步\n- 确认负责人\n- 两周验证\n- 复盘结果`);await page.locator('#v99GenerateBtn').click();await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject().deckComposerVersion)).toBe('9.9');const processId=await page.evaluate(()=>globalThis.MindDeckApp.getProject().children.find(node=>node.title==='推进流程')?.id);expect(processId).toBeTruthy();await page.evaluate(id=>globalThis.MindDeckApp.openEditor('slide',id),processId);await expect(page.locator('#editorShell')).toHaveClass(/open/);await expect(page.locator('#v99PageDesignerBtn')).toBeVisible();const beforeTemplate=await page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(node=>node.id===id)?.composer?.selectedTemplateId,processId);await page.locator('#v99PageDesignerBtn').click();await expect(page.locator('.v99-smart-template')).toHaveCount(3);await page.locator('.v99-smart-template').nth(1).click();await page.locator('#v99ApplyTemplate').click();const afterTemplate=await page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(node=>node.id===id)?.composer?.selectedTemplateId,processId);expect(afterTemplate).not.toBe(beforeTemplate);const editable=page.locator('#editorStage .canvas-el[data-master="0"]').first();await expect(editable).toBeVisible();await editable.click();await page.keyboard.press('ArrowRight');await expect.poll(()=>page.evaluate(id=>{const p=globalThis.MindDeckApp.getProject(),n=p.children.find(node=>node.id===id);return globalThis.MindDeckCore.Composer.Provenance.isDirty(n)},processId)).toBe(true);const xAfterManualEdit=await page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(node=>node.id===id).slideElements[0].x,processId);await page.locator('#v99PageDesignerBtn').click();await expect(page.locator('#v99DirtyWarning')).toBeVisible();await page.locator('#v99PageTheme').selectOption('forest');await page.locator('#v99RethemeAll').click();await expect.poll(()=>page.locator('.v99-smart-overlay').count()).toBe(0);const protectedState=await page.evaluate(id=>{const p=globalThis.MindDeckApp.getProject(),n=p.children.find(node=>node.id===id);return {x:n.slideElements[0].x,dirty:globalThis.MindDeckCore.Composer.Provenance.isDirty(n),warnings:p.composerWarnings||[]}},processId);expect(protectedState.x).toBe(xAfterManualEdit);expect(protectedState.dirty).toBe(true);expect(protectedState.warnings.some(item=>item.code==='COMPOSER_DIRTY'&&item.nodeId===processId)).toBe(true);await page.locator('#backToMapBtn').click();await page.evaluate(()=>globalThis.MindDeckApp.enterPresentation({fullscreen:false}));await expect(page.locator('#presentShell')).toHaveClass(/open/);await expect(page.locator('#presentStage')).not.toBeEmpty();const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));expect(html).toContain('V9.9 E2E');expect(html).toContain('Portable Runtime 9.9.0');expect(html).toContain('MindDeckCore.Portable.mount')});
