@@ -9,6 +9,8 @@ const isRc = /-rc(?:\.|$)/.test(pkg.version);
 const display = `MindDeck V${m[1]}${isRc ? ' RC' : ''}`;
 if (!html.includes(display)) throw new Error(`index version mismatch: expected ${display}`);
 if (!html.includes('<!DOCTYPE html') || !html.includes('</html>')) throw new Error('index structure incomplete');
+if (!isRc && (html.includes('发布候选') || html.includes('Release Candidate'))) throw new Error('stable build still contains release-candidate labels');
+if (isRc && !html.includes('发布候选')) throw new Error('RC build is missing release-candidate label');
 
 const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
   .filter(m => !/type=["']text\/plain["']/i.test(m[1]))
