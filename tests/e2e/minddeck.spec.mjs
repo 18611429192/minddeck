@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+async function dismissWelcome(page){
+  await page.waitForTimeout(320);
+  const overlay=page.locator('#welcomeOverlay');
+  if(await overlay.isVisible())await page.locator('#welcomeClose').click();
+  await expect(overlay).not.toHaveClass(/open/);
+}
+
 test('app exposes one runtime and the public app adapter',async({page})=>{
   await page.goto('/');
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
@@ -46,6 +53,7 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
 
   await test.step('generate a Smart Deck through the real UI',async()=>{
     await page.goto('/');
+    await dismissWelcome(page);
     await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
     await page.locator('#v99SmartComposeBtn').click();
     await page.locator('#v99Outline').fill(`# V9.9 E2E
