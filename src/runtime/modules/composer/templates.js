@@ -4,8 +4,8 @@ import { contentFacts, normalizeSlideContent } from './schema.js';
 const ComposerSlotSources=new Set(['title','subtitle','summary','takeaway','items','media']);
 const ComposerSlotKinds=new Set(['text','collection','media']);
 const ComposerCapacityKeys=new Set(['titleChars','summaryChars','items','numericItems','media']);
-const ForbiddenManifestKeys=new Set(['renderer','render','dom','element','component','mount']);
-const isObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+const ComposerForbiddenManifestKeys=new Set(['renderer','render','dom','element','component','mount']);
+const composerTemplateObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 function composerCap(title=64,summary=180,items=[0,6],numeric=[0,6],media=[0,2]){return {titleChars:{max:title},summaryChars:{max:summary},items:{min:items[0],max:items[1]},numericItems:{min:numeric[0],max:numeric[1]},media:{min:media[0],max:media[1]}}}
 function composerSlots(sources,requiredSources=['title']){return sources.map((source,index)=>({id:`${source}-${index+1}`,kind:source==='media'?'media':source==='items'?'collection':'text',source,required:requiredSources.includes(source)}))}
 function composerTemplate(id,label,family,roles,capacity,variant,priority=50,slots=['title','summary','items','media'],requiredSources=['title']){return {id,label,family,roles,priority,capacity,slots:composerSlots(slots,requiredSources),layout:{kind:family,variant,canvas:{width:1600,height:900}}}}
@@ -36,76 +36,76 @@ composerTemplate('conclusion-actions-01','行动结论','conclusion-actions',['c
 composerTemplate('conclusion-summary-01','总结收束','conclusion-summary',['conclusion','statement'],composerCap(54,180,[0,4]),'summary',82)
 ].map(item=>Object.freeze(item)));
 
-function isFiniteNumber(value){return typeof value==='number'&&Number.isFinite(value)}
-function validateRange(range,path,errors){
-  if(!isObject(range)){errors.push(`${path} must be an object`);return}
-  for(const key of ['min','max'])if(range[key]!==undefined&&!isFiniteNumber(range[key]))errors.push(`${path}.${key} must be a finite number`);
+function composerFiniteNumber(value){return typeof value==='number'&&Number.isFinite(value)}
+function composerValidateRange(range,path,errors){
+  if(!composerTemplateObject(range)){errors.push(`${path} must be an object`);return}
+  for(const key of ['min','max'])if(range[key]!==undefined&&!composerFiniteNumber(range[key]))errors.push(`${path}.${key} must be a finite number`);
   if(range.min!==undefined&&range.min<0)errors.push(`${path}.min must be >= 0`);
   if(range.max!==undefined&&range.max<0)errors.push(`${path}.max must be >= 0`);
-  if(isFiniteNumber(range.min)&&isFiniteNumber(range.max)&&range.min>range.max)errors.push(`${path} min exceeds max`);
+  if(composerFiniteNumber(range.min)&&composerFiniteNumber(range.max)&&range.min>range.max)errors.push(`${path} min exceeds max`);
 }
-function validatePureData(value,path,errors,seen=new Set()){
+function composerValidatePureData(value,path,errors,seen=new Set()){
   if(typeof value==='function'){errors.push(`${path} must not contain functions`);return}
   if(value===null||typeof value!=='object')return;
   if(typeof Node!=='undefined'&&value instanceof Node){errors.push(`${path} must not contain DOM nodes`);return}
   if(seen.has(value)){errors.push(`${path} must be acyclic pure data`);return}
   seen.add(value);
   for(const [key,child] of Object.entries(value)){
-    if(ForbiddenManifestKeys.has(String(key).toLowerCase()))errors.push(`${path}.${key} is not allowed in template manifest`);
-    validatePureData(child,`${path}.${key}`,errors,seen);
+    if(ComposerForbiddenManifestKeys.has(String(key).toLowerCase()))errors.push(`${path}.${key} is not allowed in template manifest`);
+    composerValidatePureData(child,`${path}.${key}`,errors,seen);
   }
   seen.delete(value);
 }
 export function validateComposerTemplate(template){
   const errors=[];
-  if(!isObject(template))return {ok:false,errors:['template must be an object']};
+  if(!composerTemplateObject(template))return {ok:false,errors:['template must be an object']};
   if(!composerClean(template.id)||typeof template.id!=='string')errors.push('template id required');
   if(!composerClean(template.family)||typeof template.family!=='string')errors.push('template family required');
   if(!Array.isArray(template.roles)||!template.roles.length||template.roles.some(role=>typeof role!=='string'||!ComposerRoleSet.has(role)))errors.push('template roles invalid');
-  if(!isFiniteNumber(template.priority))errors.push('template priority must be a finite number');
-  if(!isObject(template.capacity))errors.push('template capacity required');
-  else for(const [key,range] of Object.entries(template.capacity)){if(!ComposerCapacityKeys.has(key))errors.push(`capacity key not allowed: ${key}`);else validateRange(range,`capacity.${key}`,errors)}
+  if(!composerFiniteNumber(template.priority))errors.push('template priority must be a finite number');
+  if(!composerTemplateObject(template.capacity))errors.push('template capacity required');
+  else for(const [key,range] of Object.entries(template.capacity)){if(!ComposerCapacityKeys.has(key))errors.push(`capacity key not allowed: ${key}`);else composerValidateRange(range,`capacity.${key}`,errors)}
   if(!Array.isArray(template.slots))errors.push('template slots must be an array');
   else{
     const ids=new Set();
     for(const [index,slot] of template.slots.entries()){
       const path=`slots[${index}]`;
-      if(!isObject(slot)){errors.push(`${path} must be an object`);continue}
+      if(!composerTemplateObject(slot)){errors.push(`${path} must be an object`);continue}
       if(typeof slot.id!=='string'||!composerClean(slot.id))errors.push(`${path}.id must be a non-empty string`);
       else if(ids.has(slot.id))errors.push(`duplicate slot id: ${slot.id}`);else ids.add(slot.id);
       if(!ComposerSlotKinds.has(slot.kind))errors.push(`${path}.kind invalid`);
       if(!ComposerSlotSources.has(slot.source))errors.push(`${path}.source invalid`);
       if(typeof slot.required!=='boolean')errors.push(`${path}.required must be boolean`);
       if(slot.kind==='collection'){
-        for(const key of ['min','max'])if(slot[key]!==undefined&&!isFiniteNumber(slot[key]))errors.push(`${path}.${key} must be a finite number`);
-        if(isFiniteNumber(slot.min)&&slot.min<0)errors.push(`${path}.min must be >= 0`);
-        if(isFiniteNumber(slot.max)&&slot.max<0)errors.push(`${path}.max must be >= 0`);
-        if(isFiniteNumber(slot.min)&&isFiniteNumber(slot.max)&&slot.min>slot.max)errors.push(`${path}.min exceeds max`);
+        for(const key of ['min','max'])if(slot[key]!==undefined&&!composerFiniteNumber(slot[key]))errors.push(`${path}.${key} must be a finite number`);
+        if(composerFiniteNumber(slot.min)&&slot.min<0)errors.push(`${path}.min must be >= 0`);
+        if(composerFiniteNumber(slot.max)&&slot.max<0)errors.push(`${path}.max must be >= 0`);
+        if(composerFiniteNumber(slot.min)&&composerFiniteNumber(slot.max)&&slot.min>slot.max)errors.push(`${path}.min exceeds max`);
       }
     }
   }
-  if(!isObject(template.layout))errors.push('template layout must be pure data object');
+  if(!composerTemplateObject(template.layout))errors.push('template layout must be pure data object');
   else{
-    validatePureData(template.layout,'layout',errors);
-    if(!isObject(template.layout.canvas)||template.layout.canvas.width!==1600||template.layout.canvas.height!==900)errors.push('layout canvas must be 1600x900');
+    composerValidatePureData(template.layout,'layout',errors);
+    if(!composerTemplateObject(template.layout.canvas)||template.layout.canvas.width!==1600||template.layout.canvas.height!==900)errors.push('layout canvas must be 1600x900');
   }
-  validatePureData(template,'template',errors);
+  composerValidatePureData(template,'template',errors);
   return {ok:errors.length===0,errors};
 }
 export function createComposerTemplateRegistry(initial=[]){const map=new Map(),api={register(template){const check=validateComposerTemplate(template);if(!check.ok)throw new Error(check.errors.join('; '));if(map.has(template.id))throw new Error(`duplicate template id: ${template.id}`);map.set(template.id,Object.freeze({...template}));return api},get(id){return map.get(id)||null},has(id){return map.has(id)},list(filter={}){return [...map.values()].filter(item=>(!filter.role||item.roles.includes(filter.role))&&(!filter.family||item.family===filter.family))},validate:validateComposerTemplate};initial.forEach(item=>api.register(item));return api}
 export const TemplateRegistry=createComposerTemplateRegistry(ComposerTemplateManifests);
 
-function validateTypographyScale(scale,key,errors){if(!isObject(scale))errors.push(`typography.${key} must be an object`);else{if(!isFiniteNumber(scale.fontSize)||scale.fontSize<=0)errors.push(`typography.${key}.fontSize invalid`);if(!isFiniteNumber(scale.fontWeight)||scale.fontWeight<=0)errors.push(`typography.${key}.fontWeight invalid`)}}
+function composerValidateTypographyScale(scale,key,errors){if(!composerTemplateObject(scale))errors.push(`typography.${key} must be an object`);else{if(!composerFiniteNumber(scale.fontSize)||scale.fontSize<=0)errors.push(`typography.${key}.fontSize invalid`);if(!composerFiniteNumber(scale.fontWeight)||scale.fontWeight<=0)errors.push(`typography.${key}.fontWeight invalid`)}}
 export function validateComposerTheme(theme){
   const errors=[];
-  if(!isObject(theme))return {ok:false,errors:['theme must be an object']};
+  if(!composerTemplateObject(theme))return {ok:false,errors:['theme must be an object']};
   if(typeof theme.id!=='string'||!composerClean(theme.id))errors.push('theme id required');
   const colorKeys=['background','surface','surface2','primary','secondary','text','muted','border','positive','negative'];
-  if(!isObject(theme.colors))errors.push('theme colors required');else for(const key of colorKeys)if(typeof theme.colors[key]!=='string'||!theme.colors[key])errors.push(`colors.${key} required`);
+  if(!composerTemplateObject(theme.colors))errors.push('theme colors required');else for(const key of colorKeys)if(typeof theme.colors[key]!=='string'||!theme.colors[key])errors.push(`colors.${key} required`);
   const typographyKeys=['display','title','heading','body','caption','metric'];
-  if(!isObject(theme.typography))errors.push('theme typography required');else typographyKeys.forEach(key=>validateTypographyScale(theme.typography[key],key,errors));
-  if(!isObject(theme.shape))errors.push('theme shape required');else for(const key of ['radiusSm','radiusMd','radiusLg','borderWidth'])if(!isFiniteNumber(theme.shape[key])||theme.shape[key]<0)errors.push(`shape.${key} invalid`);
-  if(!isObject(theme.spacing))errors.push('theme spacing required');else for(const key of ['xs','sm','md','lg','xl'])if(!isFiniteNumber(theme.spacing[key])||theme.spacing[key]<0)errors.push(`spacing.${key} invalid`);
+  if(!composerTemplateObject(theme.typography))errors.push('theme typography required');else typographyKeys.forEach(key=>composerValidateTypographyScale(theme.typography[key],key,errors));
+  if(!composerTemplateObject(theme.shape))errors.push('theme shape required');else for(const key of ['radiusSm','radiusMd','radiusLg','borderWidth'])if(!composerFiniteNumber(theme.shape[key])||theme.shape[key]<0)errors.push(`shape.${key} invalid`);
+  if(!composerTemplateObject(theme.spacing))errors.push('theme spacing required');else for(const key of ['xs','sm','md','lg','xl'])if(!composerFiniteNumber(theme.spacing[key])||theme.spacing[key]<0)errors.push(`spacing.${key} invalid`);
   return {ok:errors.length===0,errors};
 }
 export const ThemeRegistry=Object.freeze({
