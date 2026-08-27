@@ -48,7 +48,7 @@ export function composeOutline(source,options={}){
   root.schemaVersion=1;root.presentationOrder=[];root.uiTheme=options.uiTheme||'light';root.deckTheme=theme.id;root.deckDensity=density;root.deckComposerVersion='9.9';root.deckSource='outline';root.master=composerMaster(theme,root.title);root.points=[];root.children=parsed.specs.map((spec,index)=>composerNodeFromOutline(spec,1,index));
   if(!root.children.length){const fallback=Project.createNode({title:'核心内容',text:parsed.subtitle||'请继续补充大纲内容'});fallback.points=[];root.children=[fallback]}
   for(const {node,depth} of composerFlatten(root).slice(1))composerPrepareNode(node,{theme:theme.id,density,root:false,depth});
-  composerPrepareNode(root,{theme:theme.id,density,root:true,depth:0,role:'cover'});
+  composerPrepareNode(root,{theme:theme.id,density,root:true,depth:0,role:'cover',content:{title:root.title,subtitle:root.text,summary:root.text,items:root.children.slice(0,6).map(child=>({label:child.title}))}});
   composerCompilePrepared(root,{seed:options.seed||composerClean(parsed.title)||'minddeck'});composerFinalize(root,{mapLayout:options.mapLayout||'balanced'});return root;
 }
 export function recommendNodeTemplates(node,options={}){if(!node)return [];const content=normalizeSlideContent(options.content||node.composer?.content||contentFromNode(node)),role=composerRoleOf(options.role||node.composer?.role||node.deckRole||inferSlideRole(content,null,{root:options.root}));return recommendTemplates({role,content,registry:TemplateRegistry,currentTemplateId:options.currentTemplateId??node.composer?.selectedTemplateId,limit:options.limit??3})}
