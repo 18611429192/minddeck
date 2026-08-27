@@ -16,6 +16,26 @@ async function generateHealthyDeck(page){
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
 }
 
+async function captureMinddeckExport(page){
+  await page.evaluate(()=>{
+    globalThis.__minddeckCapturedDownloads=[];
+    HTMLAnchorElement.prototype.click=function(){
+      globalThis.__minddeckCapturedDownloads.push({name:this.download,href:this.href});
+    };
+    localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15}));
+  });
+  await page.locator('#exportViewerBtn').click();
+  await expect.poll(()=>page.evaluate(()=>globalThis.__minddeckCapturedDownloads.map(item=>item.name))).toContainEqual(expect.stringMatching(/\.minddeck$/));
+  const bytes=await page.evaluate(async()=>{
+    const item=globalThis.__minddeckCapturedDownloads.find(entry=>entry.name.endsWith('.minddeck'));
+    if(!item)throw new Error('minddeck export blob missing');
+    const response=await fetch(item.href),buffer=await response.arrayBuffer();
+    return Array.from(new Uint8Array(buffer));
+  });
+  expect(bytes.length).toBeGreaterThan(100);
+  return Buffer.from(bytes);
+}
+
 test('project JSON and .minddeck roundtrip preserve the native Project',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'project file commands live in the desktop project toolbar');
   await page.goto('/');
@@ -39,20 +59,9 @@ test('project JSON and .minddeck roundtrip preserve the native Project',async({p
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject().title)).toBe(original.title);
   expect(await page.evaluate(()=>globalThis.MindDeckApp.getProject().presentationOrder)).toEqual(original.order);
 
-  await page.evaluate(()=>localStorage.setItem('minddeck-v8-export-settings',JSON.stringify({fusionMode:'separate',packageMode:'always',imageLimitMB:1,videoLimitMB:3,totalLimitMB:15})));
-  const downloads=[];
-  const listener=download=>downloads.push(download);
-  page.on('download',listener);
-  await page.locator('#exportViewerBtn').click();
-  await expect.poll(()=>downloads.some(download=>download.suggestedFilename().endsWith('.minddeck'))).toBe(true);
-  page.off('download',listener);
-  const packageDownload=downloads.find(download=>download.suggestedFilename().endsWith('.minddeck'));
-  expect(packageDownload).toBeTruthy();
-  const packagePath=await packageDownload.path();
-  expect(packagePath).toBeTruthy();
-
+  const packageBuffer=await captureMinddeckExport(page);
   await page.evaluate(()=>{const project=globalThis.MindDeckApp.getProject();project.title='PACKAGE-MUTATED';project.children=[];project.presentationOrder=[]});
-  await page.locator('#importFile').setInputFiles(packagePath);
+  await page.locator('#importFile').setInputFiles({name:'v99-roundtrip.minddeck',mimeType:'application/zip',buffer:packageBuffer});
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject().title)).toBe(original.title);
   const restored=await page.evaluate(()=>({order:globalThis.MindDeckApp.getProject().presentationOrder,childCount:globalThis.MindDeckApp.getProject().children.length,quality:globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok}));
   expect(restored.order).toEqual(original.order);
