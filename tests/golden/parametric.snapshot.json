@@ -1,0 +1,12 @@
+{
+  "baseline": "V10-step2-parametric",
+  "cards3": {
+    "params": {"itemCount":3,"columns":3,"emphasisIndex":-1,"alignment":"left","density":"standard","titleMode":"standard","visualWeight":1},
+    "cards": [[112,312,408,300],[548,312,408,300],[984,312,408,300]]
+  },
+  "cards4TwoColumns": {
+    "cards": [[112,312,626,210],[766,312,626,210],[112,550,626,210],[766,550,626,210]]
+  },
+  "image35": {"x":112,"y":320,"w":423,"h":430},
+  "image65": {"x":112,"y":320,"w":785,"h":430}
+}

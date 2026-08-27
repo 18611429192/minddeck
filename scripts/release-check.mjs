@@ -4,6 +4,7 @@ const commands=[
   ['node',['scripts/build-single-html.mjs']],
   ['node',['tests/core.test.mjs']],
   ['node',['tests/composer.test.mjs']],
+  ['node',['tests/parametric.test.mjs']],
   ['node',['tests/golden/golden.test.mjs']],
   ['node',['tests/shared-runtime.test.mjs']],
   ['node',['tests/diagnostics.test.mjs']],
