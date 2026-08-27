@@ -32,6 +32,8 @@ async function captureMinddeckExport(page){
   await page.locator('#exportFusionMode').selectOption('separate');
   await page.locator('#saveExportSettingsBtn').click();
   await expect(page.locator('#exportSettingsPanel')).not.toHaveClass(/open/);
+  const savedSettings=await page.evaluate(()=>JSON.parse(localStorage.getItem('minddeck-v8-export-settings')||'{}'));
+  expect(savedSettings.packageMode).toBe('always');
 
   await page.evaluate(()=>{
     globalThis.__minddeckCapturedBlobs=[];
@@ -44,10 +46,17 @@ async function captureMinddeckExport(page){
   });
   page.once('dialog',dialog=>dialog.accept('v99-roundtrip'));
   await page.locator('#exportViewerBtn').click();
-  await expect.poll(()=>page.evaluate(()=>globalThis.__minddeckCapturedBlobs.some(item=>item.type==='application/zip'))).toBe(true);
+  await page.waitForTimeout(350);
+  const exportState=await page.evaluate(()=>({
+    blobs:globalThis.__minddeckCapturedBlobs.map(({type,size})=>({type,size})),
+    settings:JSON.parse(localStorage.getItem('minddeck-v8-export-settings')||'{}'),
+    toast:document.getElementById('toast')?.textContent||'',
+    mode:document.body.classList.contains('mindmap-mode')?'mindmap':'presentation'
+  }));
+  const zip=await page.evaluate(()=>globalThis.__minddeckCapturedBlobs.find(item=>item.type==='application/zip')||null);
+  if(!zip)throw new Error(`minddeck export zip missing: ${JSON.stringify(exportState)}`);
   const bytes=await page.evaluate(async()=>{
     const item=globalThis.__minddeckCapturedBlobs.find(entry=>entry.type==='application/zip');
-    if(!item)throw new Error('minddeck export zip blob missing');
     const response=await fetch(item.href),buffer=await response.arrayBuffer();
     return Array.from(new Uint8Array(buffer));
   });
