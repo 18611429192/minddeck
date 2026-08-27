@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "title": "Native Chart Golden",
+  "goal": "验证原生图表进入 MindDeck Project、Composer 与唯一 Runtime",
+  "audience": "MindDeck V10",
+  "theme": "cobalt",
+  "randomSeed": "v10-step3-native-chart",
+  "slides": [
+    {
+      "id": "metrics-chart",
+      "role": "metrics",
+      "content": {
+        "title": "业务构成",
+        "summary": "四个业务板块的占比",
+        "items": [
+          {"label": "平台", "value": "42"},
+          {"label": "安全", "value": "28"},
+          {"label": "数据", "value": "18"},
+          {"label": "服务", "value": "12"}
+        ],
+        "chart": {
+          "chartType": "donut",
+          "labels": ["平台", "安全", "数据", "服务"],
+          "values": [42, 28, 18, 12],
+          "options": {"showValues": true, "emphasisIndex": 0}
+        }
+      }
+    },
+    {
+      "id": "trend-chart",
+      "role": "trend",
+      "content": {
+        "title": "季度趋势",
+        "summary": "核心指标持续增长",
+        "items": [
+          {"label": "Q1", "value": "18"},
+          {"label": "Q2", "value": "24"},
+          {"label": "Q3", "value": "31"},
+          {"label": "Q4", "value": "39"}
+        ],
+        "chart": {
+          "chartType": "line",
+          "categories": ["Q1", "Q2", "Q3", "Q4"],
+          "series": [{"name": "核心指标", "values": [18, 24, 31, 39]}],
+          "options": {"showValues": true, "emphasisIndex": 3}
+        }
+      }
+    }
+  ]
+}

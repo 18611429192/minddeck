@@ -1,0 +1,11 @@
+{
+  "baseline": "V10-step3-native-chart",
+  "expected": {
+    "schemaVersion": 1,
+    "theme": "cobalt",
+    "charts": [
+      {"id": "metrics-chart", "role": "metrics", "chartType": "donut", "nativeChartCount": 1},
+      {"id": "trend-chart", "role": "trend", "chartType": "line", "nativeChartCount": 1}
+    ]
+  }
+}
