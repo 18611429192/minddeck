@@ -12,6 +12,7 @@ const legalElementTypes=new Set(['text','image','video','shape']);
 const requiredRoles=new Set(['cover','section','statement','cards','compare','process','metrics','trend','timeline','quote','image','conclusion']);
 
 function readJson(path){return JSON.parse(readFileSync(path,'utf8'))}
+function clone(value){return JSON.parse(JSON.stringify(value))}
 function sortObject(input={}){return Object.fromEntries(Object.entries(input).sort(([a],[b])=>a.localeCompare(b)))}
 function flattenProject(project){const out=[];const walk=node=>{out.push(node);for(const child of node.children||[])walk(child)};walk(project);return out}
 function elementSummary(elements=[]){
@@ -63,6 +64,19 @@ function canonicalResult(result){
     quality:canonicalQuality(result.quality)
   };
 }
+function stableBusinessResult(input){
+  const value=clone(input);delete value.project.deckComposerVersion;
+  for(const node of value.project.nodes||[])if(node.provenance)delete node.provenance.generatedAtVersion;
+  return value;
+}
+function assertVersionMetadata(project,file){
+  assert.match(String(project.deckComposerVersion||''),/^\d+\.\d+$/,`${file} deckComposerVersion must be major.minor`);
+  for(const node of flattenProject(project)){
+    assert.equal(node.composer?.generatedBy,'Core.Composer',`${file}/${node.id} generatedBy is part of the stable contract`);
+    assert.match(String(node.composer?.generatedAtVersion||''),/^\d+\.\d+\.\d+$/,`${file}/${node.id} generatedAtVersion must be semver`);
+    assert.ok(node.composer.generatedAtVersion.startsWith(`${project.deckComposerVersion}.`),`${file}/${node.id} generatedAtVersion must match deckComposerVersion`);
+  }
+}
 function assertNativeProject(project){
   assert.equal(project.schemaVersion,1,'native Project schemaVersion must remain 1');
   assert.ok(Array.isArray(project.children),'native Project must use children');
@@ -71,9 +85,7 @@ function assertNativeProject(project){
   for(const node of flattenProject(project)){
     assert.ok(Array.isArray(node.children),`${node.id} must use native children`);
     assert.ok(Array.isArray(node.slideElements),`${node.id} must use native slideElements`);
-    for(const element of node.slideElements){
-      assert.ok(legalElementTypes.has(element.type),`${node.id} contains illegal element type ${element.type}`);
-    }
+    for(const element of node.slideElements)assert.ok(legalElementTypes.has(element.type),`${node.id} contains illegal element type ${element.type}`);
     const elementQuality=Quality.validateElements(node.slideElements||[]);
     assert.equal(elementQuality.ok,true,`${node.id} element quality failed: ${elementQuality.errors.map(item=>item.code).join(',')}`);
   }
@@ -81,7 +93,7 @@ function assertNativeProject(project){
 
 const sampleFiles=readdirSync(sampleDir).filter(name=>name.endsWith('.deck.json')).sort();
 assert.ok(sampleFiles.length>=8&&sampleFiles.length<=12,`expected 8-12 golden samples, got ${sampleFiles.length}`);
-const coveredRoles=new Set();
+const coveredRoles=new Set();let boundaryChecked=false;
 for(const file of sampleFiles){
   const sample=readJson(join(sampleDir,file));
   const snapshotFile=file.replace('.deck.json','.snapshot.json');
@@ -89,10 +101,16 @@ for(const file of sampleFiles){
   assert.equal(snapshot.baseline,'V9.9.0-frozen-for-V10-step0');
   const first=compileDeck(sample,snapshot.compileOptions);
   const second=compileDeck(sample,snapshot.compileOptions);
-  assertNativeProject(first.project);
+  assertNativeProject(first.project);assertVersionMetadata(first.project,file);
   const canonicalFirst=canonicalResult(first),canonicalSecond=canonicalResult(second);
   assert.deepEqual(canonicalSecond,canonicalFirst,`${file} canonical output must be deterministic`);
-  assert.deepEqual(canonicalFirst,snapshot.expected,`${file} changed from V10 Step 0 golden baseline`);
+  assert.deepEqual(stableBusinessResult(canonicalFirst),stableBusinessResult(snapshot.expected),`${file} changed from frozen business-output baseline`);
+  if(!boundaryChecked){
+    const volatile=clone(snapshot.expected);volatile.project.deckComposerVersion='99.1';for(const node of volatile.project.nodes||[])if(node.provenance)node.provenance.generatedAtVersion='99.1.7';assert.deepEqual(stableBusinessResult(volatile),stableBusinessResult(snapshot.expected),'version-only metadata changes must not invalidate frozen business output');
+    const business=clone(snapshot.expected);business.project.nodes[0].title=`${business.project.nodes[0].title}__business_change`;assert.notDeepEqual(stableBusinessResult(business),stableBusinessResult(snapshot.expected),'real slide content changes must remain visible to Golden');
+    const layout=clone(snapshot.expected);layout.project.nodes[0].templateId=`${layout.project.nodes[0].templateId||'none'}__layout_change`;assert.notDeepEqual(stableBusinessResult(layout),stableBusinessResult(snapshot.expected),'template/layout assignment changes must remain visible to Golden');
+    boundaryChecked=true;
+  }
   const normalized=normalizeDeckSpec(sample);
   const assignmentQuality=Quality.validateAssignment(normalized,first.assignments);
   assert.equal(assignmentQuality.ok,true,`${file} assignment quality failed: ${assignmentQuality.errors.map(item=>item.code).join(',')}`);
@@ -101,12 +119,7 @@ for(const file of sampleFiles){
   assert.ok(first.quality.metrics.familyCount>=Math.min(2,first.quality.metrics.composerPages),`${file} must retain family diversity`);
   const firstNodes=flattenProject(first.project),secondNodes=flattenProject(second.project);
   assert.deepEqual(firstNodes.map(node=>node.composer?.generatedHash),secondNodes.map(node=>node.composer?.generatedHash),`${file} provenance hashes must be deterministic`);
-  for(const node of firstNodes){
-    coveredRoles.add(node.composer?.role);
-    assert.equal(node.composer?.generatedBy,'Core.Composer');
-    assert.equal(node.composer?.generatedAtVersion,'9.9.0');
-    assert.equal(Provenance.isDirty(node),false,`${file}/${node.id} must be clean immediately after compilation`);
-  }
+  for(const node of firstNodes){coveredRoles.add(node.composer?.role);assert.equal(Provenance.isDirty(node),false,`${file}/${node.id} must be clean immediately after compilation`)}
 }
 assert.deepEqual([...coveredRoles].sort(),[...requiredRoles].sort(),'golden samples must cover all V9.9 page roles');
-console.log(`MindDeck V10 Step 0 golden regression: OK (${sampleFiles.length} samples, ${coveredRoles.size} roles)`);
+console.log(`MindDeck V10 golden regression: OK (${sampleFiles.length} samples, ${coveredRoles.size} roles; version metadata boundary enforced)`);
