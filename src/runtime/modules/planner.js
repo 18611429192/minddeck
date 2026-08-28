@@ -17,6 +17,7 @@ export function validateDeckPlan(input){
     if(!clean(input.purpose))errors.push(planProblem('purpose','PLAN_PURPOSE','purpose is required'));
     if(!Number.isInteger(input.targetSlides)||input.targetSlides<1||input.targetSlides>60)errors.push(planProblem('targetSlides','PLAN_SLIDES','targetSlides must be 1..60'));
     if(!Array.isArray(input.slideIntents)||!input.slideIntents.length)errors.push(planProblem('slideIntents','PLAN_INTENTS','slideIntents are required'));
+    else if(input.slideIntents[0]?.roleHint!=='cover')errors.push(planProblem('slideIntents[0].roleHint','PLAN_COVER_REQUIRED','first slideIntent must be the cover'));
     if(input.actualSlides!==undefined&&input.actualSlides!==input.slideIntents?.length)errors.push(planProblem('actualSlides','PLAN_ACTUAL_SLIDES','actualSlides must equal slideIntents.length'));
     if(input.warnings!==undefined&&!Array.isArray(input.warnings))errors.push(planProblem('warnings','PLAN_WARNINGS','warnings must be an array'));
     for(const [i,slide] of (input.slideIntents||[]).entries())if(slide.roleHint&&!SlideRoles.includes(slide.roleHint))errors.push(planProblem(`slideIntents[${i}].roleHint`,'PLAN_ROLE',`invalid role ${slide.roleHint}`));
@@ -106,8 +107,8 @@ export function deterministicPlan(source,options={}){
 }
 export function deckPlanToDeckSpec(plan,options={}){
   const check=validateDeckPlan(plan);if(!check.ok){const err=new Error(check.errors.map(e=>`${e.path}: ${e.message}`).join('; '));err.code='DECK_PLAN_INVALID';err.report=check;throw err}
-  const body=plan.slideIntents.filter((_,i)=>i>0||plan.slideIntents.length===1).map((intent,index)=>({id:`plan-${index+1}`,role:intent.roleHint==='cover'&&index>0?'statement':intent.roleHint,content:intentContent(intent)}));
-  const raw={schemaVersion:1,title:plan.slideIntents[0]?.title||plan.source?.title||'Untitled presentation',goal:plan.purpose,audience:plan.audience,theme:options.theme||'aurora',randomSeed:options.seed||`${plan.source?.title||'minddeck'}:${plan.targetSlides}`,slides:body.length?body:[{id:'plan-1',role:'statement',content:{title:plan.source?.title||'Overview',summary:plan.purpose}}]};
+  const coverOnly=plan.slideIntents.length===1,body=plan.slideIntents.slice(1).map((intent,index)=>({id:`plan-${index+1}`,role:intent.roleHint==='cover'?'statement':intent.roleHint,content:intentContent(intent)}));
+  const raw={schemaVersion:1,title:plan.slideIntents[0]?.title||plan.source?.title||'Untitled presentation',goal:plan.purpose,audience:plan.audience,theme:options.theme||'aurora',randomSeed:options.seed||`${plan.source?.title||'minddeck'}:${plan.targetSlides}`,coverOnly,slides:coverOnly?[]:body};
   const spec=preserveRichContent(normalizeDeckSpec(raw),raw.slides),validation=validateDeckSpec(spec);if(!validation.ok){const err=new Error(validation.errors.map(e=>`${e.path}: ${e.message}`).join('; '));err.code='DECK_SPEC_INVALID';err.report=validation;throw err}return spec;
 }
 export const Planner=Object.freeze({validateDeckPlan,deterministicPlan,toDeckSpec:deckPlanToDeckSpec});
