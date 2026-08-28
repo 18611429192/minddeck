@@ -30,6 +30,14 @@ test('SourceDocument normalizes text, markdown and json deterministically',()=>{
   assert.equal(SourceDocument.validate(text).ok,true);
 });
 
+test('requested target normalization is one explicit Planner contract',()=>{
+  assert.equal(Planner.normalizeRequestedTargetSlides(10),10);
+  assert.equal(Planner.normalizeRequestedTargetSlides('10.4'),10);
+  assert.equal(Planner.normalizeRequestedTargetSlides(0),1);
+  assert.equal(Planner.normalizeRequestedTargetSlides(99),60);
+  assert.equal(Planner.normalizeRequestedTargetSlides('not-a-number',7),7);
+});
+
 test('deterministic planner honors targetSlides and compiles only through DeckSpec -> Composer',()=>{
   const source='# Strategy\n\n## Background\nMarket growth is 12%.\n\n## Problem\nConversion is below target.\n\n## Plan\nFirst improve onboarding. Then automate follow-up.\n\n## Result\nTarget 25% conversion improvement.';
   const a=Planner.deterministicPlan(source,{targetSlides:5,audience:'Leadership'}),b=Planner.deterministicPlan(source,{targetSlides:5,audience:'Leadership'});
