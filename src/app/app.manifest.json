@@ -8,6 +8,7 @@
     "modules/20-slide-editor.js",
     "modules/25-smart-compose.js",
     "modules/26-deck-spec-import.js",
+    "modules/27-slide-inspector.js",
     "modules/30-presentation.js",
     "modules/40-portable-export.js",
     "modules/95-showcase.js",

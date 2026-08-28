@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "title": "V10 Design Intent Golden",
+  "goal": "验证 Slide Inspector 通过 DesignIntent 驱动 Composer、Matcher 与参数化编译",
+  "audience": "产品与研发评审",
+  "theme": "aurora",
+  "randomSeed": "v10-step6-design-intent",
+  "slides": [
+    {
+      "id": "intent-cards",
+      "role": "cards",
+      "content": {
+        "title": "四个设计原则",
+        "summary": "列数、重点和密度都由设计意图表达",
+        "items": [
+          {"label": "业务优先", "detail": "先理解问题"},
+          {"label": "结构适配", "detail": "再选择表达"},
+          {"label": "视觉一致", "detail": "保持同一语言"},
+          {"label": "结果验证", "detail": "回到真实效果"}
+        ]
+      }
+    },
+    {
+      "id": "intent-compare",
+      "role": "compare",
+      "content": {
+        "title": "方案对比",
+        "summary": "方向和重点由用户表达，模板由 Matcher 选择",
+        "items": [
+          {"label": "原方案", "detail": "路径更长"},
+          {"label": "新方案", "detail": "聚焦关键动作"}
+        ]
+      }
+    },
+    {
+      "id": "intent-image",
+      "role": "image",
+      "content": {
+        "title": "图文证据",
+        "summary": "图片占比和左右方向可直接表达",
+        "items": [
+          {"label": "现场证据", "detail": "让页面围绕真实使用场景展开"}
+        ],
+        "media": [
+          {
+            "type": "image",
+            "src": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1600\" height=\"900\"><rect width=\"1600\" height=\"900\" fill=\"%23dfe7ff\"/><circle cx=\"800\" cy=\"450\" r=\"220\" fill=\"%236374ff\"/></svg>",
+            "alt": "Design Intent placeholder"
+          }
+        ]
+      }
+    }
+  ]
+}
