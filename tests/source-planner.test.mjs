@@ -36,6 +36,14 @@ test('planner target contract covers 1/5/10 with short, long and repetitive cont
   }
 });
 
+test('targetSlides=1 stays exactly one compiled Project page and DeckPlan requires a leading cover',()=>{
+  const plan=Planner.deterministicPlan('Single-slide brief.',{targetSlides:1}),spec=Planner.toDeckSpec(plan,{theme:'aurora'});
+  assert.equal(plan.targetSlides,1);assert.equal(plan.actualSlides,1);assert.equal(spec.coverOnly,true);assert.equal(spec.slides.length,0);assert.equal(Composer.validateDeckSpec(spec).ok,true);
+  const compiled=Composer.compileDeck(spec,{seed:'single-slide-contract'});assert.equal(compiled.project.composer?.role,'cover');assert.equal(compiled.project.children.length,0,'coverOnly DeckSpec must not create a hidden second page');
+  const invalid={schemaVersion:1,purpose:'One page',audience:'General',tone:'clear',targetSlides:1,slideIntents:[{roleHint:'statement',title:'Not a cover',facts:['x']}]};
+  assert.equal(Planner.validateDeckPlan(invalid).errors.some(item=>item.code==='PLAN_COVER_REQUIRED'),true);
+});
+
 test('planner handles long documents without one-paragraph-one-slide behavior',()=>{
   const source=Array.from({length:40},(_,i)=>`## Topic ${i+1}\nMetric ${100+i}% and explanation for topic ${i+1}.`).join('\n\n');
   const plan=Planner.deterministicPlan(source,{targetSlides:10});assert.equal(plan.targetSlides,10);assert.equal(plan.slideIntents.length,10);assert.ok(plan.sections.length>plan.slideIntents.length);
