@@ -1,12 +1,12 @@
 import { normalizeSourceDocument } from './source-document.js';
 import { normalizeDeckSpec, validateDeckSpec, normalizeSlideContent, inferSlideRole, SlideRoles } from './composer/schema.js';
 const clean=value=>String(value??'').trim();
-const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||min));
 const sentenceSplit=text=>clean(text).split(/(?<=[。！？.!?])\s*|\n+/).map(clean).filter(Boolean);
 const unique=values=>{const seen=new Set();return (values||[]).filter(value=>{const key=clean(value).toLowerCase();if(!key||seen.has(key))return false;seen.add(key);return true})};
 const numericText=text=>/(?:\d+(?:\.\d+)?\s*%|\b\d{2,}\b|\$\s*\d|¥\s*\d)/.test(text);
 const tabularText=text=>/\|.+\|/.test(text)||/(?:^|\n)\s*[-*]\s+[^\n]+:\s*[^\n]+/.test(text);
 const processText=text=>/(步骤|流程|阶段|首先|其次|然后|最后|step|phase|process|workflow)/i.test(text);
+export function normalizeRequestedTargetSlides(value,fallback=8){const fallbackNumber=Number(fallback),safeFallback=Number.isFinite(fallbackNumber)?Math.round(fallbackNumber):8,numeric=Number(value),resolved=Number.isFinite(numeric)?Math.round(numeric):safeFallback;return Math.max(1,Math.min(60,resolved))}
 function targetWarning(input,requested,actual){return (input.warnings||[]).some(item=>item?.code==='TARGET_SLIDES_UNSATISFIABLE'&&item.requested===requested&&item.actual===actual)}
 export function validateDeckPlan(input){
   const errors=[];if(!input||typeof input!=='object'||Array.isArray(input))errors.push({path:'$',code:'PLAN_TYPE',message:'DeckPlan must be an object'});else{
@@ -31,7 +31,7 @@ function fitIntents(intents,target){
   return out.slice(0,target);
 }
 export function deterministicPlan(source,options={}){
-  const doc=normalizeSourceDocument(source,options),requested=options.targetSlides??doc.metadata?.targetSlides??Math.max(4,Math.min(12,doc.sections.length+2)),requestedTargetSlides=clamp(Math.round(requested),1,60),bodyTarget=Math.max(0,requestedTargetSlides-1);
+  const doc=normalizeSourceDocument(source,options),defaultTarget=Math.max(4,Math.min(12,doc.sections.length+2)),requested=options.targetSlides??doc.metadata?.targetSlides??defaultTarget,requestedTargetSlides=normalizeRequestedTargetSlides(requested,defaultTarget),bodyTarget=Math.max(0,requestedTargetSlides-1);
   let intents=doc.sections.map(summarizeBlock);if(!intents.length)intents=[summarizeBlock({title:doc.title,content:doc.rawContent},0)];intents=fitIntents(intents,bodyTarget||1);
   const cover={goal:'Introduce the presentation',roleHint:'cover',title:doc.title,topic:doc.title,facts:[],takeaway:'',chartIntent:null,tableIntent:null,diagramIntent:null,imageIntent:null,emphasis:'title'};
   const slideIntents=requestedTargetSlides===1?[cover]:[cover,...intents].slice(0,requestedTargetSlides),actualSlides=slideIntents.length,warnings=[];if(actualSlides!==requestedTargetSlides)warnings.push({code:'TARGET_SLIDES_UNSATISFIABLE',requested:requestedTargetSlides,actual:actualSlides});
@@ -44,4 +44,4 @@ export function deckPlanToDeckSpec(plan,options={}){
   const spec=normalizeDeckSpec({schemaVersion:1,title:plan.slideIntents[0]?.title||plan.source?.title||'Untitled presentation',goal:plan.purpose,audience:plan.audience,theme:options.theme||'aurora',randomSeed:options.seed||`${plan.source?.title||'minddeck'}:${plan.targetSlides}`,coverOnly,slides:body});
   const validation=validateDeckSpec(spec);if(!validation.ok){const err=new Error(validation.errors.map(e=>`${e.path}: ${e.message}`).join('; '));err.code='DECK_SPEC_INVALID';err.report=validation;throw err}return spec;
 }
-export const Planner=Object.freeze({validateDeckPlan,deterministicPlan,toDeckSpec:deckPlanToDeckSpec});
+export const Planner=Object.freeze({normalizeRequestedTargetSlides,validateDeckPlan,deterministicPlan,toDeckSpec:deckPlanToDeckSpec});
