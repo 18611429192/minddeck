@@ -54,6 +54,24 @@ for(const [label,source,target] of [
   ['target=10 repetitive input',repetitiveInput,10]
 ])test(`planner target contract: ${label}`,()=>assertTargetContract(source,target));
 
+test('target=1 remains one page through DeckSpec -> Composer',()=>{
+  const plan=assertTargetContract(shortInput,1),spec=Planner.toDeckSpec(plan,{theme:'aurora'});
+  assert.equal(spec.coverOnly,true);
+  assert.equal(spec.slides.length,0);
+  assert.equal(Composer.validateDeckSpec(spec).ok,true);
+  const compiled=Composer.compileDeck(spec,{seed:'planner-one-page'});
+  assert.equal(1+(compiled.project.children||[]).length,1);
+});
+
+test('unsatisfiable target keeps requested target visible and compiles only actual intents',()=>{
+  const plan=assertTargetContract(shortInput,10);
+  assert.ok(plan.actualSlides<plan.requestedTargetSlides);
+  const spec=Planner.toDeckSpec(plan,{theme:'aurora'}),compiled=Composer.compileDeck(spec,{seed:'planner-unsat'});
+  assert.equal(1+(compiled.project.children||[]).length,plan.actualSlides);
+  assert.equal(plan.requestedTargetSlides,10);
+  assert.ok(plan.warnings.some(item=>item.code==='TARGET_SLIDES_UNSATISFIABLE'));
+});
+
 test('planner validation rejects a silent target shrink',()=>{
   const plan=assertTargetContract(shortInput,10),invalid={...plan,warnings:[]};
   const check=Planner.validateDeckPlan(invalid);
