@@ -11,6 +11,7 @@ const commands=[
   ['node',['tests/table-diagram.test.mjs']],
   ['node',['tests/source-planner.test.mjs']],
   ['node',['tests/ai-planner.test.mjs']],
+  ['node',['tests/v10-contract-hardening.test.mjs']],
   ['node',['tests/pptx-exporter.test.mjs']],
   ['node',['tests/v10-final.test.mjs']],
   ['node',['tests/golden/golden.test.mjs']],
