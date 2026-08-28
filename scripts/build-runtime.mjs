@@ -59,7 +59,7 @@ function transformModule(file){
 
 const body=modules.map(transformModule).join('\n\n');
 const entry='src/runtime/index.js';
-const out=`/* GENERATED FILE. Edit src/runtime/modules/* and src/runtime/index.js, then run npm run build:runtime. */\n(function(){\n'use strict';\nconst __modules=Object.create(null);\n${body}\nconst VERSION=${JSON.stringify(version)};\nconst {createMindDeckCore}=__modules[${JSON.stringify(entry)}];\nglobal.MindDeckCore=createMindDeckCore(VERSION);\n})();\n`;
+const out=`/* GENERATED FILE. Edit src/runtime/modules/* and src/runtime/index.js, then run npm run build:runtime. */\n(function(){\n'use strict';\nconst __modules=Object.create(null);\n${body}\nconst VERSION=${JSON.stringify(version)};\nconst {createMindDeckCore}=__modules[${JSON.stringify(entry)}];\nglobalThis.MindDeckCore=createMindDeckCore(VERSION);\n})();\n`;
 try{new Function(out)}catch(err){throw new Error(`generated shared runtime is not valid JavaScript: ${err.message}`,{cause:err})}
 fs.writeFileSync(path.join(root,'src/runtime/shared-core.js'),out);
 console.log(`MindDeck Shared Runtime ${version} built from ${modules.length} scoped ES module sources`);
