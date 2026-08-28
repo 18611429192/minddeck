@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {compileDeck,normalizeDeckSpec,TemplateRegistry,Quality,Provenance} from '../../src/core/composer.js';
+import {compileDeck,normalizeDeckSpec,normalizeSlideContent,TemplateRegistry,Quality,Provenance} from '../../src/core/composer.js';
 
 const here=dirname(fileURLToPath(import.meta.url));
 const root=resolve(here,'../..');
@@ -91,20 +91,28 @@ function stableBusinessOutput(result){
     quality:canonicalQuality(result.quality)
   };
 }
-function assertGoldenBoundary(result){
+function assertCompiledContentMatchesSpec(sample,result){
+  const normalized=normalizeDeckSpec(sample),project=result.project;
+  const expectedCover=normalizeSlideContent({title:normalized.title,subtitle:normalized.audience,summary:normalized.goal,items:normalized.slides.slice(0,6).map(slide=>({label:slide.content.title}))});
+  assert.deepEqual(project.composer?.content,expectedCover,'compiled cover content changed from frozen DeckSpec semantics');
+  assert.equal((project.children||[]).length,normalized.slides.length,'compiled body slide count changed from frozen DeckSpec');
+  normalized.slides.forEach((slide,index)=>assert.deepEqual(project.children[index]?.composer?.content,slide.content,`compiled slide content changed: ${slide.id}`));
+}
+function assertGoldenBoundary(result,sample){
   const canonical=canonicalResult(result),normalized=normalizeGoldenMetadata(canonical),versionOnly=structuredClone(canonical);
   versionOnly.project.deckComposerVersion='999.0';
   for(const node of versionOnly.project.nodes||[])node.provenance.generatedAtVersion='999.0.0';
   assert.deepEqual(normalizeGoldenMetadata(versionOnly),normalized,'version-only metadata changes must not fail frozen Golden');
 
-  const business=stableBusinessOutput(result),contentMutation=structuredClone(business),contentNode=contentMutation.project.nodes.find(node=>node.content?.title)||contentMutation.project.nodes[0];
-  contentNode.content ||= {};contentNode.content.title=`${contentNode.content.title||contentNode.title} [regression]`;
-  assert.throws(()=>assert.deepEqual(contentMutation,business),{name:'AssertionError'},'real slide content changes must fail Golden business comparison');
+  const contentResult={...result,project:structuredClone(result.project)},contentNode=flattenProject(contentResult.project).find(node=>node!==contentResult.project&&node.composer?.content?.title)||contentResult.project;
+  contentNode.composer.content.title=`${contentNode.composer.content.title||contentNode.title} [regression]`;
+  assert.throws(()=>assertCompiledContentMatchesSpec(sample,contentResult),{name:'AssertionError'},'real slide content changes must fail Golden content contract');
 
-  const layoutMutation=structuredClone(business),layoutNode=layoutMutation.project.nodes.find(node=>node.elements?.some(element=>Number.isFinite(element.x))),layoutElement=layoutNode?.elements?.find(element=>Number.isFinite(element.x));
+  const business=stableBusinessOutput(result),layoutMutation=structuredClone(business),layoutNode=layoutMutation.project.nodes.find(node=>node.elements?.some(element=>Number.isFinite(element.x))),layoutElement=layoutNode?.elements?.find(element=>Number.isFinite(element.x));
   assert.ok(layoutElement,'Golden boundary sample must contain a positioned slide element');
   layoutElement.x+=1;
   assert.throws(()=>assert.deepEqual(layoutMutation,business),{name:'AssertionError'},'real element/layout changes must fail Golden business comparison');
+  const dirtyProject=structuredClone(result.project),dirtyNode=flattenProject(dirtyProject).find(node=>node.slideElements?.some(element=>Number.isFinite(element.x))),dirtyElement=dirtyNode?.slideElements?.find(element=>Number.isFinite(element.x));dirtyElement.x+=1;assert.equal(Provenance.isDirty(dirtyNode),true,'layout mutation must remain visible to provenance guard');
 }
 function assertNativeProject(project){
   assert.equal(project.schemaVersion,1,'native Project schemaVersion must remain 1');
@@ -134,24 +142,25 @@ for(const file of sampleFiles){
   const first=compileDeck(sample,snapshot.compileOptions);
   const second=compileDeck(sample,snapshot.compileOptions);
   assertNativeProject(first.project);
+  assertCompiledContentMatchesSpec(sample,first);
   const canonicalFirst=canonicalResult(first),canonicalSecond=canonicalResult(second);
   assert.deepEqual(canonicalSecond,canonicalFirst,`${file} canonical output must be deterministic`);
   assert.deepEqual(stableBusinessOutput(second),stableBusinessOutput(first),`${file} full content/layout business output must be deterministic`);
   assert.deepEqual(normalizeGoldenMetadata(canonicalFirst),normalizeGoldenMetadata(snapshot.expected),`${file} changed from V10 Step 0 golden baseline outside the allowed version metadata boundary`);
-  if(!boundaryChecked){assertGoldenBoundary(first);boundaryChecked=true}
+  if(!boundaryChecked){assertGoldenBoundary(first,sample);boundaryChecked=true}
   const normalized=normalizeDeckSpec(sample);
   const assignmentQuality=Quality.validateAssignment(normalized,first.assignments);
   assert.equal(assignmentQuality.ok,true,`${file} assignment quality failed: ${assignmentQuality.errors.map(item=>item.code).join(',')}`);
   assert.equal(first.quality.ok,true,`${file} project quality failed: ${first.quality.errors.map(item=>item.code).join(',')}`);
   assert.equal(first.project.children.length,normalized.slides.length,`${file} slide count mismatch`);
   assert.ok(first.quality.metrics.familyCount>=Math.min(2,first.quality.metrics.composerPages),`${file} must retain family diversity`);
-  assert.match(first.project.deckComposerVersion,/^\d+\.\d+(?:\.\d+)?$/,'deckComposerVersion must remain valid version metadata');
+  assert.equal(first.project.deckComposerVersion,Provenance.deckVersion,'deckComposerVersion must match the current Composer metadata source');
   const firstNodes=flattenProject(first.project),secondNodes=flattenProject(second.project);
   assert.deepEqual(firstNodes.map(node=>node.composer?.generatedHash),secondNodes.map(node=>node.composer?.generatedHash),`${file} provenance hashes must be deterministic`);
   for(const node of firstNodes){
     coveredRoles.add(node.composer?.role);
     assert.equal(node.composer?.generatedBy,'Core.Composer');
-    assert.match(node.composer?.generatedAtVersion,/^\d+\.\d+\.\d+(?:[-+].*)?$/,'generatedAtVersion must remain valid version metadata');
+    assert.equal(node.composer?.generatedAtVersion,Provenance.version,'generatedAtVersion must match the current Composer metadata source');
     assert.equal(Provenance.isDirty(node),false,`${file}/${node.id} must be clean immediately after compilation`);
   }
 }
