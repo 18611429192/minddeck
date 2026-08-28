@@ -42,8 +42,8 @@ test('deterministic planner honors targetSlides and compiles only through DeckSp
   const source='# Strategy\n\n## Background\nMarket growth is 12%.\n\n## Problem\nConversion is below target.\n\n## Plan\nFirst improve onboarding. Then automate follow-up.\n\n## Result\nTarget 25% conversion improvement.';
   const a=Planner.deterministicPlan(source,{targetSlides:5,audience:'Leadership'}),b=Planner.deterministicPlan(source,{targetSlides:5,audience:'Leadership'});
   assert.deepEqual(a,b);assert.equal(a.targetSlides,5);assert.equal(a.requestedTargetSlides,5);assert.equal(Planner.validateDeckPlan(a).ok,true);
-  const spec=Planner.toDeckSpec(a,{theme:'aurora'});assert.equal(Composer.validateDeckSpec(spec).ok,true);
-  const compiled=Composer.compileDeck(spec,{seed:'planner-golden'});assert.ok(compiled.project);assert.ok(Array.isArray(compiled.project.children));
+  const spec=Planner.toDeckSpec(a,{theme:'aurora'});assert.equal(Composer.validateDeckSpec(spec).ok,true);assert.deepEqual(spec.planning,{requestedTargetSlides:5,actualSlides:a.actualSlides,warnings:a.warnings});
+  const compiled=Composer.compileDeck(spec,{seed:'planner-golden'});assert.ok(compiled.project);assert.ok(Array.isArray(compiled.project.children));assert.deepEqual(compiled.project.deckPlanning,spec.planning);
 });
 
 test('planner handles long documents without one-paragraph-one-slide behavior',()=>{
@@ -69,15 +69,18 @@ test('target=1 remains one page through DeckSpec -> Composer',()=>{
   assert.equal(Composer.validateDeckSpec(spec).ok,true);
   const compiled=Composer.compileDeck(spec,{seed:'planner-one-page'});
   assert.equal(1+(compiled.project.children||[]).length,1);
+  assert.deepEqual(compiled.project.deckPlanning,{requestedTargetSlides:1,actualSlides:1,warnings:[]});
 });
 
-test('unsatisfiable target keeps requested target visible and compiles only actual intents',()=>{
+test('unsatisfiable target keeps requested target visible through final Project metadata',()=>{
   const plan=assertTargetContract(shortInput,10);
   assert.ok(plan.actualSlides<plan.requestedTargetSlides);
   const spec=Planner.toDeckSpec(plan,{theme:'aurora'}),compiled=Composer.compileDeck(spec,{seed:'planner-unsat'});
   assert.equal(1+(compiled.project.children||[]).length,plan.actualSlides);
   assert.equal(plan.requestedTargetSlides,10);
   assert.ok(plan.warnings.some(item=>item.code==='TARGET_SLIDES_UNSATISFIABLE'));
+  assert.deepEqual(spec.planning,{requestedTargetSlides:10,actualSlides:plan.actualSlides,warnings:plan.warnings});
+  assert.deepEqual(compiled.project.deckPlanning,spec.planning);
 });
 
 test('planner validation rejects a silent target shrink',()=>{
