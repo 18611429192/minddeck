@@ -1,9 +1,9 @@
 {
   "name": "minddeck",
-  "version": "9.9.0",
+  "version": "10.0.0",
   "private": true,
   "type": "module",
-  "description": "Mind map structured presentation editor with smart outline-to-deck composition, freeform 16:9 slides and portable single-HTML export",
+  "description": "Mind map structured presentation editor with SourceDocument planning, AI-assisted DeckPlan composition, unified runtime and editable PPTX export",
   "scripts": {
     "build": "node scripts/build-runtime.mjs && node scripts/build-single-html.mjs",
     "build:runtime": "node scripts/build-runtime.mjs",
@@ -11,7 +11,7 @@
     "test": "node scripts/release-check.mjs",
     "check": "node scripts/release-check.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "audit:architecture": "node scripts/verify-architecture.mjs",
+    "audit:architecture": "node scripts/verify-architecture.mjs && node scripts/verify-v10-architecture.mjs",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "serve": "python -m http.server 8080"

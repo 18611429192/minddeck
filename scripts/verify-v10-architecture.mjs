@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const source=read('src/runtime/modules/source-document.js'),planner=read('src/runtime/modules/planner.js'),ai=read('src/runtime/modules/ai-provider.js'),pptx=read('src/runtime/modules/pptx-exporter.js'),index=read('src/runtime/index.js'),build=read('scripts/build-runtime.mjs');
+assert.ok(!planner.includes("from './model.js'"),'Planner must not import Project/Runtime model');
+assert.ok(!planner.includes('Project.'),'Planner must not create or mutate MindDeck Project');
+assert.ok(!ai.includes("from './model.js'"),'AI layer must not import Project model');
+assert.ok(!ai.includes("from './composer.js'"),'AI provider must not invoke Composer directly');
+assert.ok(!/createElement|innerHTML|document\.|window\./.test(source+planner),'SourceDocument/Planner must not depend on DOM');
+assert.ok(pptx.includes("from './model.js'"),'PPTX exporter must consume MindDeck Project model');
+assert.ok(!/normalizeDeckSpec|validateDeckSpec|compileDeck|DeckSpec/.test(pptx),'PPTX exporter must not create an independent DeckSpec layout path');
+assert.ok(!/matchTemplates|allocateTemplates|compileSlide/.test(pptx),'PPTX exporter must not duplicate Composer algorithms');
+assert.ok(index.includes('SourceDocument,Planner,AIStoryPlanner,OpenAICompatibleProvider,PptxExporter'),'V10 public runtime APIs missing');
+for(const file of ['source-document.js','planner.js','ai-provider.js','pptx-exporter.js'])assert.ok(build.includes(`src/runtime/modules/${file}`),`Shared Runtime build omits ${file}`);
+assert.equal((index.match(/\bComposer\b/g)||[]).length>=1,true,'Composer public facade missing');
+console.log('V10 architecture audit: OK (Source/Planner/AI -> DeckPlan/DeckSpec -> Composer -> Project; PPTX consumes Project only)');

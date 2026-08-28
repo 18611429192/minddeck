@@ -9,6 +9,10 @@ const commands=[
   ['node',['tests/design-intent.test.mjs']],
   ['node',['tests/chart.test.mjs']],
   ['node',['tests/table-diagram.test.mjs']],
+  ['node',['tests/source-planner.test.mjs']],
+  ['node',['tests/ai-planner.test.mjs']],
+  ['node',['tests/pptx-exporter.test.mjs']],
+  ['node',['tests/v10-final.test.mjs']],
   ['node',['tests/golden/golden.test.mjs']],
   ['node',['tests/shared-runtime.test.mjs']],
   ['node',['tests/diagnostics.test.mjs']],
@@ -18,6 +22,7 @@ const commands=[
   ['node',['scripts/verify-modular-build.mjs']],
   ['node',['scripts/verify-single-html.mjs']],
   ['node',['scripts/verify-architecture.mjs']],
+  ['node',['scripts/verify-v10-architecture.mjs']],
   ['node',['scripts/verify-demo-runtime.mjs']],
   ['node',['scripts/verify-portable-contracts.mjs']],
   ['node',['scripts/verify-interaction-contracts.mjs']],
@@ -26,4 +31,4 @@ const commands=[
   ['node',['scripts/verify-rc-contracts.mjs']],
 ];
 for(const [cmd,args] of commands){const result=spawnSync(cmd,args,{stdio:'inherit'});if(result.status!==0)process.exit(result.status||1)}
-console.log('MindDeck release check: ALL OK');
+console.log('MindDeck V10 release check: ALL OK');

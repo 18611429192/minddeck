@@ -1,0 +1,6 @@
+{
+  "title": "V10 Strategy",
+  "targetSlides": 5,
+  "roles": ["cover", "statement", "problem", "metrics", "process"],
+  "titles": ["V10 Strategy", "Background", "Problem", "Metrics", "Process"]
+}
