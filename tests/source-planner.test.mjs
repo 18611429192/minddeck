@@ -83,6 +83,16 @@ test('unsatisfiable target keeps requested target visible through final Project 
   assert.deepEqual(compiled.project.deckPlanning,spec.planning);
 });
 
+test('DeckSpec planning boundary rejects lost warnings and incorrect actual page counts',()=>{
+  const plan=assertTargetContract(shortInput,10),spec=Planner.toDeckSpec(plan,{theme:'aurora'});
+  const silent={...spec,planning:{...spec.planning,warnings:[]}},silentCheck=Composer.validateDeckSpec(silent);
+  assert.equal(silentCheck.ok,false);
+  assert.ok(silentCheck.errors.some(item=>item.code==='PLANNING_TARGET_SILENT_MISMATCH'));
+  const wrongActual={...spec,planning:{...spec.planning,actualSlides:spec.planning.actualSlides+1,warnings:[{code:'TARGET_SLIDES_UNSATISFIABLE',requested:10,actual:spec.planning.actualSlides+1}]}},actualCheck=Composer.validateDeckSpec(wrongActual);
+  assert.equal(actualCheck.ok,false);
+  assert.ok(actualCheck.errors.some(item=>item.code==='PLANNING_PAGE_COUNT'));
+});
+
 test('planner validation rejects a silent target shrink',()=>{
   const plan=assertTargetContract(shortInput,10),invalid={...plan,warnings:[]};
   const check=Planner.validateDeckPlan(invalid);
