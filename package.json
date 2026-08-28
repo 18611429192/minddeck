@@ -16,7 +16,11 @@
     "e2e:headed": "playwright test --headed",
     "serve": "python -m http.server 8080"
   },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  },
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "jszip": "^3.10.1"
   }
 }
