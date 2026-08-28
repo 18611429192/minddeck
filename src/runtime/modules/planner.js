@@ -9,6 +9,7 @@ const processText=text=>/(步骤|流程|阶段|首先|其次|然后|最后|step|
 const CHART_TYPES=new Set(['bar','line','area','donut','radar','funnel','waterfall']);
 const DIAGRAM_TYPES=new Set(['matrix','pyramid','cycle','funnel','roadmap','swot','pest','porter']);
 function planProblem(path,code,message){return {path,code,message}}
+function hasTargetWarning(input,actual){return Array.isArray(input?.warnings)&&input.warnings.some(item=>item?.code==='TARGET_SLIDES_UNSATISFIABLE'&&item.requested===input.targetSlides&&item.actual===actual)}
 export function validateDeckPlan(input){
   const errors=[];
   if(!input||typeof input!=='object'||Array.isArray(input))errors.push(planProblem('$','PLAN_TYPE','DeckPlan must be an object'));
@@ -18,8 +19,10 @@ export function validateDeckPlan(input){
     if(!Number.isInteger(input.targetSlides)||input.targetSlides<1||input.targetSlides>60)errors.push(planProblem('targetSlides','PLAN_SLIDES','targetSlides must be 1..60'));
     if(!Array.isArray(input.slideIntents)||!input.slideIntents.length)errors.push(planProblem('slideIntents','PLAN_INTENTS','slideIntents are required'));
     else if(input.slideIntents[0]?.roleHint!=='cover')errors.push(planProblem('slideIntents[0].roleHint','PLAN_COVER_REQUIRED','first slideIntent must be the cover'));
-    if(input.actualSlides!==undefined&&input.actualSlides!==input.slideIntents?.length)errors.push(planProblem('actualSlides','PLAN_ACTUAL_SLIDES','actualSlides must equal slideIntents.length'));
+    const actual=Array.isArray(input.slideIntents)?input.slideIntents.length:0;
+    if(input.actualSlides!==undefined&&input.actualSlides!==actual)errors.push(planProblem('actualSlides','PLAN_ACTUAL_SLIDES','actualSlides must equal slideIntents.length'));
     if(input.warnings!==undefined&&!Array.isArray(input.warnings))errors.push(planProblem('warnings','PLAN_WARNINGS','warnings must be an array'));
+    if(Number.isInteger(input.targetSlides)&&actual>0&&actual!==input.targetSlides&&!hasTargetWarning(input,actual))errors.push(planProblem('warnings','PLAN_TARGET_SILENT_MISMATCH','target slide mismatch requires TARGET_SLIDES_UNSATISFIABLE warning'));
     for(const [i,slide] of (input.slideIntents||[]).entries())if(slide.roleHint&&!SlideRoles.includes(slide.roleHint))errors.push(planProblem(`slideIntents[${i}].roleHint`,'PLAN_ROLE',`invalid role ${slide.roleHint}`));
   }
   return {ok:errors.length===0,errors};
