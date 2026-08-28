@@ -41,7 +41,8 @@ export function deterministicPlan(source,options={}){
 export function deckPlanToDeckSpec(plan,options={}){
   const check=validateDeckPlan(plan);if(!check.ok){const err=new Error(check.errors.map(e=>`${e.path}: ${e.message}`).join('; '));err.code='DECK_PLAN_INVALID';err.report=check;throw err}
   const coverOnly=plan.slideIntents.length===1,body=plan.slideIntents.filter((_,i)=>i>0).map((intent,index)=>({id:`plan-${index+1}`,role:intent.roleHint==='cover'?'statement':intent.roleHint,content:{title:intent.title||intent.topic,summary:(intent.facts||[]).slice(0,2).join(' '),takeaway:intent.takeaway,items:(intent.facts||[]).slice(2,8).map(label=>({label}))}}));
-  const spec=normalizeDeckSpec({schemaVersion:1,title:plan.slideIntents[0]?.title||plan.source?.title||'Untitled presentation',goal:plan.purpose,audience:plan.audience,theme:options.theme||'aurora',randomSeed:options.seed||`${plan.source?.title||'minddeck'}:${plan.targetSlides}`,coverOnly,slides:body});
+  const planning={requestedTargetSlides:plan.requestedTargetSlides??plan.targetSlides,actualSlides:plan.actualSlides??plan.slideIntents.length,warnings:(plan.warnings||[]).map(item=>item&&typeof item==='object'&&!Array.isArray(item)?{...item}:item)};
+  const spec=normalizeDeckSpec({schemaVersion:1,title:plan.slideIntents[0]?.title||plan.source?.title||'Untitled presentation',goal:plan.purpose,audience:plan.audience,theme:options.theme||'aurora',randomSeed:options.seed||`${plan.source?.title||'minddeck'}:${plan.targetSlides}`,coverOnly,planning,slides:body});
   const validation=validateDeckSpec(spec);if(!validation.ok){const err=new Error(validation.errors.map(e=>`${e.path}: ${e.message}`).join('; '));err.code='DECK_SPEC_INVALID';err.report=validation;throw err}return spec;
 }
 export const Planner=Object.freeze({normalizeRequestedTargetSlides,validateDeckPlan,deterministicPlan,toDeckSpec:deckPlanToDeckSpec});
