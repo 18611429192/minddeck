@@ -35,6 +35,14 @@ async function openMobileCommand(page,command){
   await button.click();
 }
 
+async function downloadMobileCommand(page,command){
+  await page.locator('#mobileMainMore').click();
+  const download=page.waitForEvent('download');
+  await page.locator(`[data-mm="${command}"]`).click();
+  const result=await download;
+  expect(await result.failure()).toBeNull();
+}
+
 test('desktop manual-style sweep clicks project, panel, node, editor and presentation controls',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop button sweep');
   const pageErrors=watchPageErrors(page);
@@ -149,8 +157,13 @@ test('desktop manual-style sweep clicks project, panel, node, editor and present
   const imageChooser=await imageChooserPromise;
   await imageChooser.setFiles({name:'pixel.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZfC8AAAAASUVORK5CYII=','base64')});
   await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)?.slideElements.some(item=>item.type==='image'),createdNodeId)).toBe(true);
-  await page.locator('#addVideoUrlBtn').click();
+
+  const videoChooserPromise=page.waitForEvent('filechooser');
+  await page.locator('#addVideoBtn').click();
+  const videoChooser=await videoChooserPromise;
+  await videoChooser.setFiles({name:'tiny.mp4',mimeType:'video/mp4',buffer:Buffer.from([0,0,0,20,102,116,121,112,105,115,111,109])});
   await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)?.slideElements.some(item=>item.type==='video'),createdNodeId)).toBe(true);
+  await page.locator('#addVideoUrlBtn').click();
 
   await page.locator('#v99PageDesignerBtn').click();
   await expect(page.locator('#v99PageCancel')).toBeVisible();
@@ -203,9 +216,73 @@ test('mobile manual-style sweep clicks mobile project and editor controls',async
 
   await page.locator('#mobileMainFit').click();
   await page.locator('#mobileMainAdd').click();
+  const firstChildId=await page.evaluate(()=>globalThis.MindDeckApp.getProject().children.at(-1)?.id);
+  await expect(page.locator('#mobileNodeContext')).toHaveClass(/open/);
+  await page.locator('#mobileNodeDetailBtn').click();
+  await expect(page.locator('#nodePanel')).toHaveClass(/open/);
+  await closeMapPanel(page,'nodePanel');
+  await expect(page.locator('#mobileNodeContext')).toHaveClass(/open/);
+  await page.locator('#mobileNodeChildBtn').click();
+  const activeNodeId=await page.evaluate(()=>{
+    const project=globalThis.MindDeckApp.getProject();
+    const walk=node=>node.id===globalThis.MindDeckApp.getSelectedNodeId?.()?node:(node.children||[]).map(walk).find(Boolean);
+    return globalThis.MindDeckApp.getSelectedNodeId?.()||project.children.at(-1)?.children?.at(-1)?.id||project.children.at(-1)?.id;
+  });
+  await page.locator('#mobileNodeContextClose').click();
+  await page.locator(`.node[data-id="${activeNodeId||firstChildId}"]`).tap();
+  await expect(page.locator('#mobileNodeContext')).toHaveClass(/open/);
+  await page.locator('#mobileEditPageBtn').click();
+  await expect(page.locator('#editorShell')).toHaveClass(/open/);
+
+  await page.locator('#mobileInsertBtn').click();
+  await page.locator('[data-mi="text"]').click();
+  await page.locator('#mobileInsertBtn').click();
+  await page.locator('[data-mi="rect"]').click();
+  const mobileIds=await page.evaluate(id=>{
+    const find=node=>node.id===id?node:(node.children||[]).map(find).find(Boolean);
+    const node=find(globalThis.MindDeckApp.getProject());
+    return node?.slideElements?.slice(-2).map(item=>item.id)||[];
+  },activeNodeId||firstChildId);
+  expect(mobileIds).toHaveLength(2);
+
+  await page.locator('#mobileMultiBtn').click();
+  await page.locator(`.canvas-el[data-id="${mobileIds[0]}"]`).tap();
+  await page.locator('#mobileAlignBtn').click();
+  await page.locator('[data-ma="left"]').click();
+  await page.locator('#mobileMultiBtn').click();
+  await page.locator('#editorStageWrap').tap({position:{x:12,y:12}});
+  await page.locator(`.canvas-el[data-id="${mobileIds[1]}"]`).tap();
+  await page.locator('#mobilePropBtn').click();
+  await page.locator('#mobilePropClose').click();
+
+  await page.locator('#mobileLayerBtn').click();
+  await page.locator('[data-ml="duplicate"]').click();
+  for(const action of ['up','down','front','back']){
+    await page.locator('#mobileLayerBtn').click();
+    await page.locator(`[data-ml="${action}"]`).click();
+  }
+  await page.locator('#mobileViewBtn').click();
+  await page.locator('#mobileViewBtn').click();
+  await page.locator('#saveEditorBtn').click();
+  await page.locator('#backToMapBtn').click();
+
+  await page.locator('#mobileMainPage').click();
+  await expect(page.locator('#editorShell')).toHaveClass(/open/);
+  await page.locator('#backToMapBtn').click();
+
   await page.locator('#mobileMainMore').click();
-  await expect(page.locator('#mobileMainSheet')).toHaveClass(/open/);
-  await page.locator('#mobileMainSheetClose').click();
+  await page.locator('#mobileMapLayoutSelect').selectOption('left');
+  await openMobileCommand(page,'reset');
+  await downloadMobileCommand(page,'save');
+  await downloadMobileCommand(page,'export');
+
+  const mobileSnapshot=await page.evaluate(()=>globalThis.MindDeckApp.getProject());
+  await page.locator('#mobileMainMore').click();
+  const chooserPromise=page.waitForEvent('filechooser');
+  await page.locator('[data-mm="import"]').click();
+  const chooser=await chooserPromise;
+  await chooser.setFiles({name:'mobile-button-sweep.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(mobileSnapshot))});
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject()?.id)).toBe(mobileSnapshot.id);
 
   await openMobileCommand(page,'appearance');
   const firstTheme=page.locator('[data-theme-choice]').first();
@@ -221,21 +298,13 @@ test('mobile manual-style sweep clicks mobile project and editor controls',async
   await page.locator('#saveExportSettingsBtn').click();
   await openMobileCommand(page,'help');
   await page.locator('#welcomeClose').click();
-
-  await page.locator('#mobileMainPage').click();
+  await openMobileCommand(page,'master');
   await expect(page.locator('#editorShell')).toHaveClass(/open/);
-  await page.locator('#mobileInsertBtn').click();
-  await page.locator('[data-mi="text"]').click();
-  await page.locator('#mobilePropBtn').click();
-  await page.locator('#mobilePropClose').click();
-  await page.locator('#mobileMultiBtn').click();
-  await page.locator('#mobileMultiBtn').click();
-  await page.locator('#mobileLayerBtn').click();
-  await page.locator('[data-ml="duplicate"]').click();
-  await page.locator('#mobileViewBtn').click();
-  await page.locator('#mobileViewBtn').click();
-  await page.locator('#saveEditorBtn').click();
   await page.locator('#backToMapBtn').click();
+
+  await page.locator('#mobileMainMore').click();
+  await expect(page.locator('#mobileMainSheet')).toHaveClass(/open/);
+  await page.locator('#mobileMainSheetClose').click();
 
   await page.locator('#mobileMainPresent').click();
   await expect(page.locator('#presentShell')).toHaveClass(/open/);
