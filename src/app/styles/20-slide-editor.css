@@ -65,6 +65,7 @@
 }
 .master-panel-empty.open{display:block}
 .align-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.editor-topbar .align-btns{flex:0 0 455px;min-width:455px}
 .align-btns .btn{padding:7px 5px;font-size:11px}
 .element-toolbar{display:flex;gap:6px;align-items:center}
 .file-input{display:none}
