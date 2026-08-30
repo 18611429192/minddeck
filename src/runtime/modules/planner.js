@@ -86,7 +86,7 @@ function normalizeImageIntent(intent){
   return [{type:'image',src,alt:clean(raw.alt)||clean(intent?.title)||clean(intent?.topic)}];
 }
 function intentContent(intent){
-  const base={title:intent.title||intent.topic,summary:(intent.facts||[]).slice(0,2).join(' '),takeaway:intent.takeaway,items:(intent.facts||[]).slice(2,8).map(label=>({label})),media:normalizeImageIntent(intent)};
+  const facts=(intent.facts||[]).filter(Boolean),base={title:intent.title||intent.topic,summary:facts.slice(0,2).join(' '),takeaway:intent.takeaway,items:facts.slice(0,6).map(label=>({label})),media:normalizeImageIntent(intent)};
   const chart=normalizeChartIntent(intent),table=normalizeTableIntent(intent),diagram=normalizeDiagramIntent(intent),role=intent.roleHint;
   if((role==='metrics'||role==='trend')&&chart)base.chart=chart;
   else if(role==='table'&&table)base.table=table;
