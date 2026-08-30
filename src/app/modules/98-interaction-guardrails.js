@@ -40,26 +40,48 @@
   interactionGuardObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
   setTimeout(syncSmartMobileEntry,0);
 
-  // Mobile insertions used to land at the exact same center point, making the most recent
-  // shape intercept taps intended for the previously inserted element. Pick the least-
-  // overlapping slot after insertion while keeping every element inside the 1600×900 stage.
+  // Insertions must not bury the natural click target of existing elements. The original
+  // mobile-only placer minimized overlap area, but a large image/video could still sit over
+  // the centre of text or shapes and make them practically unselectable on desktop. Score a
+  // full 3x3 stage grid and heavily penalize covering an existing element's centre point.
   function elementOverlapArea(a,b){
     const left=Math.max(a.x,b.x),top=Math.max(a.y,b.y),right=Math.min(a.x+a.w,b.x+b.w),bottom=Math.min(a.y+a.h,b.y+b.h);
     return Math.max(0,right-left)*Math.max(0,bottom-top);
   }
+  function boxContainsPoint(box,x,y){
+    return x>=box.x&&x<=box.x+box.w&&y>=box.y&&y<=box.y+box.h;
+  }
   function placeMobileInsertedElement(element,elements){
     if(!element)return;
-    const offsets=[{x:0,y:-190},{x:0,y:190},{x:-350,y:20},{x:350,y:20},{x:-300,y:-210},{x:300,y:-210}];
     const others=(elements||[]).filter(item=>item!==element),margin=24;
+    const maxX=Math.max(margin,W-element.w-margin),maxY=Math.max(margin,H-element.h-margin);
+    const xs=[margin,Math.round((margin+maxX)/2),maxX];
+    const ys=[margin,Math.round((margin+maxY)/2),maxY];
+    const candidates=[];
+    ys.forEach(y=>xs.forEach(x=>candidates.push({x,y})));
+
+    // Keep a few legacy near-centre choices for small items so normal text/shape insertion
+    // still feels local when those positions are genuinely clearer.
+    const centreX=Math.round((W-element.w)/2),centreY=Math.round((H-element.h)/2);
+    [{x:centreX,y:centreY-190},{x:centreX,y:centreY+190},{x:centreX-350,y:centreY+20},{x:centreX+350,y:centreY+20}]
+      .forEach(p=>candidates.push({x:Math.max(margin,Math.min(maxX,p.x)),y:Math.max(margin,Math.min(maxY,p.y))}));
+
     let best=null;
-    for(const offset of offsets){
-      const maxX=Math.max(margin,W-element.w-margin),maxY=Math.max(margin,H-element.h-margin);
-      const x=Math.max(margin,Math.min(maxX,Math.round((W-element.w)/2+offset.x)));
-      const y=Math.max(margin,Math.min(maxY,Math.round((H-element.h)/2+offset.y)));
-      const box={x,y,w:element.w,h:element.h};
+    for(const point of candidates){
+      const box={x:point.x,y:point.y,w:element.w,h:element.h};
       const overlap=others.reduce((sum,item)=>sum+elementOverlapArea(box,{x:Number(item.x)||0,y:Number(item.y)||0,w:Number(item.w)||0,h:Number(item.h)||0}),0);
-      const score=overlap+Math.hypot(offset.x,offset.y)*.01;
-      if(!best||score<best.score)best={x,y,score};
+      let coveredCentres=0,coveredPrimaryCentres=0;
+      others.forEach(item=>{
+        const cx=(Number(item.x)||0)+(Number(item.w)||0)/2,cy=(Number(item.y)||0)+(Number(item.h)||0)/2;
+        if(!boxContainsPoint(box,cx,cy))return;
+        coveredCentres++;
+        // Text and shapes do not have an intrinsic media surface users can target elsewhere;
+        // protect their centre hit targets most strongly.
+        if(item.type==='text'||item.type==='shape')coveredPrimaryCentres++;
+      });
+      const stageCentreDistance=Math.hypot(point.x-centreX,point.y-centreY);
+      const score=overlap+coveredCentres*250000+coveredPrimaryCentres*1000000+stageCentreDistance*.01;
+      if(!best||score<best.score)best={x:point.x,y:point.y,score};
     }
     if(best){element.x=best.x;element.y=best.y}
   }
