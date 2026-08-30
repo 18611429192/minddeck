@@ -7,9 +7,13 @@
     const portableTheme=UI_THEMES.includes(project.uiTheme)?project.uiTheme:"light";
     const title=((data.projectName||findNode(data.id)?.title||"MindDeck").replace(/[<>]/g,""));
     const sharedRuntimeSource=document.getElementById("minddeck-shared-runtime")?.textContent||"";
+    // The Shared Runtime is already valid JavaScript, but when it is embedded into another
+    // <script> block any literal closing-script token would terminate that block early.
+    // Escape only the HTML parser sentinel; JavaScript semantics stay unchanged.
+    const embeddedRuntimeSource=sharedRuntimeSource.replace(/<\/script/gi,"<\\/script");
     const shellSource=document.getElementById("minddeck-portable-shell")?.textContent||"";
     if(!shellSource)throw new Error("Portable shell missing");
-    const bootstrap='<scr'+'ipt>\n'+sharedRuntimeSource+'\nconst data='+payload+',KIND='+kindJson+',RUNTIME_VERSION='+JSON.stringify(RUNTIME_VERSION)+';\n'+
+    const bootstrap='<scr'+'ipt>\n'+embeddedRuntimeSource+'\nconst data='+payload+',KIND='+kindJson+',RUNTIME_VERSION='+JSON.stringify(RUNTIME_VERSION)+';\n'+
       'document.body.classList.add("kind-"+KIND);\nif(!globalThis.MindDeckCore||globalThis.MindDeckCore.VERSION!==RUNTIME_VERSION)throw new Error("MindDeck Portable Runtime mismatch");\n'+
       'globalThis.MindDeckCore.Portable.mount({data,kind:KIND,width:1600,height:900,document,window});\n</scr'+'ipt>';
     return shellSource
