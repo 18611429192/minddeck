@@ -18,7 +18,8 @@ appBundle=appBundle
   .replace(/APP_VERSION="\d+\.\d+\.\d+(?: RC)?"/,`APP_VERSION="${version}${isRc?' RC':''}"`)
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
   .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`)
-  .replace("content:'9.9'",`content:'${versionBadge}'`);
+  .replace("content:'9.9'",`content:'${versionBadge}'`)
+  .replace('24 个结构模板由 Matcher + Diversity Allocator 自动分配','${ComposerV99.templates.length} 个结构模板由 Matcher + Diversity Allocator 自动分配');
 const sharedStyles=read('src/runtime/shared-styles.css');
 const sharedRuntime=read('src/runtime/shared-core.js');
 if(!sharedRuntime.includes(`const VERSION=${JSON.stringify(version)};`)){
