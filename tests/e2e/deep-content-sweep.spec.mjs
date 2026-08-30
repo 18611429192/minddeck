@@ -273,6 +273,7 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await selectElement(page,textEl.id);
   await selectElement(page,rectEl.id,['Shift']);
   await selectElement(page,circleEl.id,['Shift']);
+  const preAlign=await Promise.all([textEl.id,rectEl.id,circleEl.id].map(id=>slideElement(page,statusId,id)));
   await page.locator('[data-align="left"]').click();
   const aligned=await Promise.all([textEl.id,rectEl.id,circleEl.id].map(id=>slideElement(page,statusId,id)));
   expect(new Set(aligned.map(el=>el.x)).size).toBe(1);
@@ -282,6 +283,15 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await page.locator('[data-align="distributeV"]').click();
   const distributed=await Promise.all([textEl.id,rectEl.id,circleEl.id].map(id=>slideElement(page,statusId,id)));
   distributed.forEach(el=>{expect(Number.isFinite(el.x)).toBe(true);expect(Number.isFinite(el.y)).toBe(true)});
+
+  // Restore the original layout through the real multi-level undo stack before targeted clicks.
+  await page.keyboard.press('Control+z');
+  await page.keyboard.press('Control+z');
+  await page.keyboard.press('Control+z');
+  await expect.poll(async()=>{
+    const restored=await Promise.all([textEl.id,rectEl.id,circleEl.id].map(id=>slideElement(page,statusId,id)));
+    return restored.map(el=>({x:el.x,y:el.y,w:el.w,h:el.h}));
+  }).toEqual(preAlign.map(el=>({x:el.x,y:el.y,w:el.w,h:el.h})));
 
   // Duplicate, z-order, clipboard, keyboard nudge and undo/redo.
   await selectElement(page,rectEl.id);
