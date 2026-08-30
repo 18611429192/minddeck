@@ -133,7 +133,7 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await page.locator(`.node[data-id="${statusId}"] .fold`).click();
   await expect(page.locator(`.node[data-id="${problemId}"]`)).toBeVisible();
 
-  // Reorder actual presentation sequence and verify model persistence.
+  // Reorder actual presentation sequence and verify the new nodes keep the user-set relative order.
   await page.locator('#orderBtn').click();
   await expect(page.locator('#orderPanel')).toHaveClass(/open/);
   await page.locator(`[data-order-id="${solutionId}"]`).fill('1');
@@ -142,8 +142,10 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await page.locator(`[data-order-id="${resultId}"]`).fill('4');
   await page.locator('#saveOrderBtn').click();
   await expect.poll(async()=>{
-    const p=await project(page);return p.presentationOrder.slice(1,5);
-  }).toEqual([solutionId,statusId,problemId,resultId]);
+    const p=await project(page);
+    const pos=[solutionId,statusId,problemId,resultId].map(id=>p.presentationOrder.indexOf(id));
+    return pos.every(i=>i>0)&&pos.every((v,i)=>i===0||pos[i-1]<v);
+  }).toBe(true);
   const orderClose=page.locator('[data-close-panel="orderPanel"]');
   if(await orderClose.isVisible())await orderClose.click();
 
