@@ -105,6 +105,26 @@
     },0);
   });
 
+  // Master settings must remain usable while the live background preview changes. The core
+  // panel previously rebuilt the whole editor for bgColor/bgFit, and renderEditor() closes
+  // the property panel when no canvas element is selected. Replace only those two live
+  // handlers with a direct background refresh so users can edit all master settings in one pass.
+  const showMasterSettingsPanelBeforeBackgroundGuard=showMasterSettingsPanel;
+  showMasterSettingsPanel=function(...args){
+    const result=showMasterSettingsPanelBeforeBackgroundGuard(...args);
+    if(editorMode!=="master")return result;
+    propContent.querySelectorAll('[data-master-p="bgColor"],[data-master-p="bgFit"]').forEach(input=>{
+      input.onfocus=()=>checkpoint();
+      const apply=()=>{
+        data.master[input.dataset.masterP]=input.value;
+        save();
+        SlideCore.applyBackground(editorBg,data.master);
+      };
+      input.oninput=apply;input.onchange=apply;
+    });
+    return result;
+  };
+
   // Layer commands must never persist NaN/Infinity. JSON cloning converts non-finite numbers
   // to null, which silently corrupts z-order and later makes duplicate/front/back operations
   // unreliable. Repair only the current editor stack, preserving its visual relative order.
