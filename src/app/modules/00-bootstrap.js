@@ -190,7 +190,11 @@
   }
   function openHealthPanel(){
     closeMobileMainSheet();hideMobileNodeContext();nodePanel.classList.remove("open");orderPanel.classList.remove("open");document.getElementById("exportSettingsPanel").classList.remove("open");
-    const panel=document.getElementById("healthPanel");panel.classList.add("open");const report=runProjectHealthCheck(true);renderHealthReport(report);
+    const panel=document.getElementById("healthPanel");
+    panel.classList.remove("panel-collapsed");panel.classList.add("open");
+    if(activeCollapsedMapPanelId==="healthPanel")activeCollapsedMapPanelId=null;
+    document.getElementById("panelRestoreHandle")?.classList.remove("open");
+    const report=runProjectHealthCheck(true);renderHealthReport(report);
     toast(report.fail?"自检发现需要处理的问题":report.warn?"自检完成：有风险提示":"自检通过");
   }
   function healthReportText(report=lastHealthReport){
@@ -302,131 +306,79 @@
   }
 
   function analyzeEmbeddedResources(){
-    const stats={totalBytes:0,imageMax:0,videoMax:0,imageCount:0,videoCount:0,items:[]};
-    const seen=new Set();
+    let imageBytes=0,videoBytes=0,maxImage=0,maxVideo=0,count=0;
     forEachResourceRef(data,r=>{
-      if(!r.src.startsWith("data:")||seen.has(r.src))return;
-      seen.add(r.src);
-      const p=parseDataUrl(r.src),size=dataUrlByteSize(r.src);
-      const kind=(p?.mime||"").startsWith("video/")?"video":(p?.mime||"").startsWith("image/")?"image":r.kind;
-      stats.totalBytes+=size;
-      if(kind==="video"){stats.videoCount++;stats.videoMax=Math.max(stats.videoMax,size)}
-      else{stats.imageCount++;stats.imageMax=Math.max(stats.imageMax,size)}
-      stats.items.push({kind,size,mime:p?.mime||"application/octet-stream"});
+      const size=dataUrlByteSize(r.src);if(!size)return;count++;
+      if(r.kind==="video"){videoBytes+=size;maxVideo=Math.max(maxVideo,size)}else{imageBytes+=size;maxImage=Math.max(maxImage,size)}
     });
-    return stats;
+    return {imageBytes,videoBytes,totalBytes:imageBytes+videoBytes,maxImage,maxVideo,count};
   }
-  function shouldGenerateMinddeck(stats,s){
-    if(s.packageMode==="always")return true;
-    if(s.packageMode==="htmlOnly")return false;
+  function shouldGenerateMinddeck(stats,settings){
+    if(settings.packageMode==="always")return true;
+    if(settings.packageMode==="htmlOnly")return false;
     const MB=1024*1024;
-    return stats.imageMax>s.imageLimitMB*MB || stats.videoMax>s.videoLimitMB*MB || stats.totalBytes>s.totalLimitMB*MB;
-  }
-
-  // Minimal ZIP writer/reader using the STORE method (no compression).
-  // This keeps already-compressed PNG/JPEG/MP4 assets close to their original size.
-  let CRC_TABLE=null;
-  function crcTable(){
-    if(CRC_TABLE)return CRC_TABLE;
-    CRC_TABLE=new Uint32Array(256);
-    for(let n=0;n<256;n++){
-      let c=n;
-      for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
-      CRC_TABLE[n]=c>>>0;
-    }
-    return CRC_TABLE;
+    return stats.maxImage>settings.imageLimitMB*MB || stats.maxVideo>settings.videoLimitMB*MB || stats.totalBytes>settings.totalLimitMB*MB;
   }
   function crc32(bytes){
-    const t=crcTable();let c=0xffffffff;
-    for(let i=0;i<bytes.length;i++)c=t[(c^bytes[i])&255]^(c>>>8);
-    return (c^0xffffffff)>>>0;
-  }
-  function concatBytes(parts){
-    const total=parts.reduce((s,p)=>s+p.length,0),out=new Uint8Array(total);let off=0;
-    parts.forEach(p=>{out.set(p,off);off+=p.length});return out;
-  }
-  function zipStored(entries){
-    const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
-    entries.forEach(entry=>{
-      const name=enc.encode(entry.name),bytes=entry.bytes instanceof Uint8Array?entry.bytes:new Uint8Array(entry.bytes);
-      const crc=crc32(bytes),local=new Uint8Array(30+name.length),ld=new DataView(local.buffer);
-      ld.setUint32(0,0x04034b50,true);ld.setUint16(4,20,true);ld.setUint16(6,0x0800,true);ld.setUint16(8,0,true);
-      ld.setUint16(10,0,true);ld.setUint16(12,0,true);ld.setUint32(14,crc,true);ld.setUint32(18,bytes.length,true);ld.setUint32(22,bytes.length,true);
-      ld.setUint16(26,name.length,true);ld.setUint16(28,0,true);local.set(name,30);
-      locals.push(local,bytes);
-
-      const central=new Uint8Array(46+name.length),cd=new DataView(central.buffer);
-      cd.setUint32(0,0x02014b50,true);cd.setUint16(4,20,true);cd.setUint16(6,20,true);cd.setUint16(8,0x0800,true);cd.setUint16(10,0,true);
-      cd.setUint16(12,0,true);cd.setUint16(14,0,true);cd.setUint32(16,crc,true);cd.setUint32(20,bytes.length,true);cd.setUint32(24,bytes.length,true);
-      cd.setUint16(28,name.length,true);cd.setUint16(30,0,true);cd.setUint16(32,0,true);cd.setUint16(34,0,true);cd.setUint16(36,0,true);
-      cd.setUint32(38,0,true);cd.setUint32(42,offset,true);central.set(name,46);centrals.push(central);
-      offset+=local.length+bytes.length;
-    });
-    const centralBytes=concatBytes(centrals),eocd=new Uint8Array(22),ed=new DataView(eocd.buffer);
-    ed.setUint32(0,0x06054b50,true);ed.setUint16(4,0,true);ed.setUint16(6,0,true);ed.setUint16(8,entries.length,true);ed.setUint16(10,entries.length,true);
-    ed.setUint32(12,centralBytes.length,true);ed.setUint32(16,offset,true);ed.setUint16(20,0,true);
-    return concatBytes([...locals,centralBytes,eocd]);
-  }
-  function unzipStored(arrayBuffer){
-    const bytes=new Uint8Array(arrayBuffer),dv=new DataView(arrayBuffer),dec=new TextDecoder(),out=new Map();let p=0;
-    while(p+4<=bytes.length){
-      const sig=dv.getUint32(p,true);
-      if(sig!==0x04034b50)break;
-      const method=dv.getUint16(p+8,true),size=dv.getUint32(p+18,true),nameLen=dv.getUint16(p+26,true),extraLen=dv.getUint16(p+28,true);
-      if(method!==0)throw new Error("当前版本只支持 MindDeck 自己生成的 STORE ZIP 项目包");
-      const name=dec.decode(bytes.subarray(p+30,p+30+nameLen)),start=p+30+nameLen+extraLen;
-      out.set(name,bytes.slice(start,start+size));p=start+size;
+    let crc=0xffffffff;
+    for(let i=0;i<bytes.length;i++){
+      crc^=bytes[i];
+      for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);
     }
-    return out;
+    return (crc^0xffffffff)>>>0;
   }
-
-  function buildMinddeckPackage(projectName){
-    normalize();
-    const project=clone(data),assets=[],dedupe=new Map();let seq=1;
-    forEachResourceRef(project,r=>{
-      if(!r.src.startsWith("data:"))return;
-      if(dedupe.has(r.src)){r.owner[r.key]="asset://"+dedupe.get(r.src);return}
-      const parsed=dataUrlToBytes(r.src);if(!parsed)return;
-      const ext=extForMime(parsed.mime),path=`assets/asset_${String(seq++).padStart(3,"0")}.${ext}`;
-      dedupe.set(r.src,path);r.owner[r.key]="asset://"+path;
-      assets.push({path,mime:parsed.mime,bytes:parsed.bytes,kind:r.kind,label:r.label});
+  function dosTimeDate(date=new Date()){
+    const year=Math.max(1980,date.getFullYear());
+    const time=((date.getHours()&31)<<11)|((date.getMinutes()&63)<<5)|((Math.floor(date.getSeconds()/2))&31);
+    const day=((year-1980)&127)<<9|((date.getMonth()+1)&15)<<5|(date.getDate()&31);
+    return {time,day};
+  }
+  function zipStore(entries){
+    const enc=new TextEncoder(),chunks=[],central=[];let offset=0;const dt=dosTimeDate();
+    entries.forEach(entry=>{
+      const name=enc.encode(entry.name),dataBytes=entry.bytes,crc=crc32(dataBytes);
+      const local=new Uint8Array(30+name.length+dataBytes.length),dv=new DataView(local.buffer);
+      dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt.time,true);dv.setUint16(12,dt.day,true);
+      dv.setUint32(14,crc,true);dv.setUint32(18,dataBytes.length,true);dv.setUint32(22,dataBytes.length,true);dv.setUint16(26,name.length,true);dv.setUint16(28,0,true);
+      local.set(name,30);local.set(dataBytes,30+name.length);chunks.push(local);
+      const c=new Uint8Array(46+name.length),cd=new DataView(c.buffer);
+      cd.setUint32(0,0x02014b50,true);cd.setUint16(4,20,true);cd.setUint16(6,20,true);cd.setUint16(8,0,true);cd.setUint16(10,0,true);cd.setUint16(12,dt.time,true);cd.setUint16(14,dt.day,true);
+      cd.setUint32(16,crc,true);cd.setUint32(20,dataBytes.length,true);cd.setUint32(24,dataBytes.length,true);cd.setUint16(28,name.length,true);cd.setUint16(30,0,true);cd.setUint16(32,0,true);cd.setUint16(34,0,true);cd.setUint16(36,0,true);cd.setUint32(38,0,true);cd.setUint32(42,offset,true);c.set(name,46);central.push(c);offset+=local.length;
     });
-    project.minddeckFormat=1;project.schemaVersion=project.schemaVersion||1;
-    const manifest={
-      format:"MindDeck",
-      version:1,
-      schemaVersion:project.schemaVersion||1,
-      runtimeVersion:RUNTIME_VERSION,
-      releaseChannel:RELEASE_CHANNEL,
-      projectName,
-      exportedAt:new Date().toISOString(),
-      assets:assets.map(a=>({path:a.path,mime:a.mime,size:a.bytes.length,kind:a.kind,label:a.label}))
-    };
+    const centralSize=central.reduce((s,c)=>s+c.length,0),end=new Uint8Array(22),ed=new DataView(end.buffer);
+    ed.setUint32(0,0x06054b50,true);ed.setUint16(4,0,true);ed.setUint16(6,0,true);ed.setUint16(8,entries.length,true);ed.setUint16(10,entries.length,true);ed.setUint32(12,centralSize,true);ed.setUint32(16,offset,true);ed.setUint16(20,0,true);
+    const total=offset+centralSize+end.length,out=new Uint8Array(total);let p=0;chunks.forEach(c=>{out.set(c,p);p+=c.length});central.forEach(c=>{out.set(c,p);p+=c.length});out.set(end,p);return out;
+  }
+  function unzipStored(buffer){
+    const bytes=new Uint8Array(buffer),dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),dec=new TextDecoder();let p=0;const entries={};
+    while(p+30<=bytes.length && dv.getUint32(p,true)===0x04034b50){
+      const method=dv.getUint16(p+8,true),size=dv.getUint32(p+18,true),nameLen=dv.getUint16(p+26,true),extraLen=dv.getUint16(p+28,true);if(method!==0)throw new Error("只支持 MindDeck 内置未压缩项目包");
+      const name=dec.decode(bytes.slice(p+30,p+30+nameLen)),start=p+30+nameLen+extraLen;entries[name]=bytes.slice(start,start+size);p=start+size;
+    }
+    return entries;
+  }
+  function buildMinddeckPackage(projectName){
+    const project=clone(data),assets=[],manifest={schemaVersion:1,kind:"minddeck-package",runtimeVersion:RUNTIME_VERSION,createdAt:new Date().toISOString(),projectFile:"project.json",assets:[]};let ai=0;
+    forEachResourceRef(project,r=>{
+      const parsed=dataUrlToBytes(r.src);if(!parsed)return;
+      const ext=extForMime(parsed.mime),path=`assets/${String(++ai).padStart(3,"0")}-${sanitizeFilename(r.label)}.${ext}`;
+      r.owner[r.key]=`minddeck-asset:${path}`;assets.push({name:path,bytes:parsed.bytes});manifest.assets.push({path,mime:parsed.mime,kind:r.kind,size:parsed.bytes.length});
+    });
+    project.projectName=projectName;
     const enc=new TextEncoder();
-    const entries=[
+    return zipStore([
       {name:"project.json",bytes:enc.encode(JSON.stringify(project,null,2))},
       {name:"manifest.json",bytes:enc.encode(JSON.stringify(manifest,null,2))},
-      ...assets.map(a=>({name:a.path,bytes:a.bytes}))
-    ];
-    return zipStored(entries);
+      ...assets
+    ]);
   }
-
   function restoreMinddeckProject(entries){
-    const dec=new TextDecoder(),projectBytes=entries.get("project.json");
-    if(!projectBytes)throw new Error("项目包中缺少 project.json");
-    const project=JSON.parse(dec.decode(projectBytes));
-    let mimeMap={};
-    const manifestBytes=entries.get("manifest.json");
-    if(manifestBytes){
-      try{
-        const m=JSON.parse(dec.decode(manifestBytes));
-        (m.assets||[]).forEach(a=>mimeMap[a.path]=a.mime);
-      }catch{}
-    }
+    const dec=new TextDecoder(),pj=entries["project.json"];if(!pj)throw new Error("项目包缺少 project.json");
+    const project=JSON.parse(dec.decode(pj)),manifest=entries["manifest.json"]?JSON.parse(dec.decode(entries["manifest.json"])):{assets:[]};
+    const mimeMap={};(manifest.assets||[]).forEach(a=>mimeMap[a.path]=a.mime);
     forEachResourceRef(project,r=>{
-      if(typeof r.src!=="string"||!r.src.startsWith("asset://"))return;
-      const path=r.src.slice("asset://".length),bytes=entries.get(path);
-      if(!bytes)throw new Error(`项目包中缺少资源：${path}`);
+      if(!String(r.src||"").startsWith("minddeck-asset:"))return;
+      const path=r.src.slice("minddeck-asset:".length),bytes=entries[path];if(!bytes)throw new Error(`项目包缺少资源 ${path}`);
       r.owner[r.key]=bytesToDataUrl(bytes,mimeMap[path]||mimeForPath(path));
     });
     return project;
@@ -559,52 +511,7 @@
     document.getElementById("healthPanel").classList.remove("open");
     document.getElementById("themePanel").classList.remove("open");
     closeMobileMainSheet();
-    renderMap();updateMobileNodeContext();
+    renderMap();renderOrderPanel();updateMobileNodeContext();
   }
 
-  function newNodeObject(title="新节点"){return ProjectCore.createNode({title,slideFactory:nodeSlideFromLegacy})}
-  function applyMainMapAction(action){
-    const mutating=new Set(["add-child","add-sibling","delete","toggle","first-child"]);
-    if(mutating.has(action))checkpoint();
-    const result=CommandsCore.applyMapAction(data,selectedNodeId,action,{createNode:()=>newNodeObject()});
-    if(result.blocked==="root-delete"){toast("中心节点不能删除");return result}
-    selectedNodeId=result.selectedId;
-    if(result.changed)save();
-    renderMap();selectNode(selectedNodeId);
-    return result;
-  }
-  function addChildNode(){return applyMainMapAction("add-child").created}
-  function addSiblingNode(){return applyMainMapAction("add-sibling").created}
-  function deleteCurrentNode(){return applyMainMapAction("delete")}
-  function toggleCurrentNode(){return applyMainMapAction("toggle")}
-  function selectParentNode(){return applyMainMapAction("parent")}
-  function selectFirstChildNode(){return applyMainMapAction("first-child")}
-  function selectSibling(delta){return applyMainMapAction(delta<0?"prev-sibling":"next-sibling")}
-  function focusNodeTitle(){
-    if(appMode==="mindmap"){beginInlineMapEdit(selectedNodeId,"title");return}
-    document.getElementById("nodePanel")?.classList.remove("panel-collapsed");document.getElementById("panelRestoreHandle")?.classList.remove("open");activeCollapsedMapPanelId=null;nodePanel.classList.add("open");
-    const input=document.getElementById("nodeTitle");input.focus();input.select();
-  }
-
-  function beginInlineMapEdit(nodeId,field="title",initialChar=null){
-    if(appMode!=="mindmap")return;
-    const n=findNode(nodeId);if(!n)return;
-    selectedNodeId=nodeId;renderMap();
-    const nodeEl=document.querySelector(`.node[data-id="${nodeId}"]`);if(!nodeEl)return;
-    let target=field==="text"?nodeEl.querySelector(".desc"):nodeEl.querySelector(".title");
-    if(!target&&field==="text"){
-      target=document.createElement("div");target.className="desc inline-empty";target.textContent="双击添加说明";nodeEl.appendChild(target);
-    }
-    if(!target)return;
-    checkpoint();
-    InlineEditorCore.start({
-      node:n,element:target,field,initial:initialChar===null?undefined:initialChar,
-      caretAtEnd:true,fallbackTitle:"未命名节点",
-      onCommit:()=>{save();renderMap()}
-    });
-  }
-
-  function isInlineMapEditing(){
-    const a=document.activeElement;
-    return !!a && a.closest?.(".node") && a.isContentEditable;
-  }
+  // The app closure continues in subsequent modules.
