@@ -11,6 +11,11 @@ await import('../src/runtime/shared-core.js?generated-runtime-test');
 const GeneratedCore=globalThis.MindDeckCore;
 assert.equal(GeneratedCore.VERSION,packageVersion);
 
+const expectedRanges={MASTER_Z_MIN:0,MASTER_Z_MAX:999,SLIDE_Z_MIN:1000,SLIDE_Z_MAX:999999};
+for(const [label,runtime] of [['source adapter',Core],['ESM source',SourceCore],['generated browser',GeneratedCore]]){
+  assert.deepEqual({...runtime.RANGES},expectedRanges,`${label} runtime layer ranges drifted or were not fully exported`);
+}
+
 const names=['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Composer','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'];
 for(const name of names){
   assert.ok(Core[name],`missing source adapter core ${name}`);
