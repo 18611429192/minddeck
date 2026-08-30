@@ -13,6 +13,7 @@
     "modules/40-portable-export.js",
     "modules/95-showcase.js",
     "modules/98-interaction-guardrails.js",
+    "modules/99-panel-reopen.js",
     "modules/90-bindings-init.js"
   ],
   "styles": [
