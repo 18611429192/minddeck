@@ -104,3 +104,66 @@
       save();renderEditor();
     },0);
   });
+
+  // Layer commands must never persist NaN/Infinity. JSON cloning converts non-finite numbers
+  // to null, which silently corrupts z-order and later makes duplicate/front/back operations
+  // unreliable. Repair only the current editor stack, preserving its visual relative order.
+  function editorLayerFloor(){
+    const raw=editorMode==='master'?MASTER_Z_MIN:SLIDE_Z_MIN;
+    const n=Number(raw);
+    return Number.isFinite(n)?n:(editorMode==='master'?0:1000);
+  }
+  function finiteLayerValue(value,fallback){
+    const n=Number(value);
+    return Number.isFinite(n)?n:fallback;
+  }
+  function repairCurrentEditorLayers(){
+    if(!editorOpen)return false;
+    const elements=currentEditorElements();
+    if(!Array.isArray(elements)||!elements.length)return false;
+    const floor=editorLayerFloor();
+    const originalIndex=new Map(elements.map((element,index)=>[element,index]));
+    const ordered=elements.slice().sort((a,b)=>{
+      const az=finiteLayerValue(a.z,floor+originalIndex.get(a));
+      const bz=finiteLayerValue(b.z,floor+originalIndex.get(b));
+      return az-bz||originalIndex.get(a)-originalIndex.get(b);
+    });
+    let changed=false;
+    ordered.forEach((element,index)=>{
+      const next=floor+index;
+      if(element.z!==next){element.z=next;changed=true}
+    });
+    return changed;
+  }
+
+  const duplicateSelectedBeforeLayerRepair=duplicateSelected;
+  duplicateSelected=function(...args){
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    const result=duplicateSelectedBeforeLayerRepair(...args);
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    return result;
+  };
+
+  const moveLayerStepBeforeLayerRepair=moveLayerStep;
+  moveLayerStep=function(...args){
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    const result=moveLayerStepBeforeLayerRepair(...args);
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    return result;
+  };
+
+  const zMoveBeforeLayerRepair=zMove;
+  zMove=function(...args){
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    const result=zMoveBeforeLayerRepair(...args);
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    return result;
+  };
+
+  const pasteElementsBeforeLayerRepair=pasteElements;
+  pasteElements=function(...args){
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    const result=pasteElementsBeforeLayerRepair(...args);
+    if(repairCurrentEditorLayers()){save();renderEditor()}
+    return result;
+  };
