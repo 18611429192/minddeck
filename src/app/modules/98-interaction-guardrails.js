@@ -82,26 +82,3 @@
       save();renderEditor();
     },0);
   });
-
-  // Applying an A/B/C template is a generated edit. Capture the pre-click state and schedule
-  // sealing immediately from capture phase; the timeout runs only after the template handler,
-  // normalization and editor render have all finished. If the user cancels, hashes stay equal.
-  document.addEventListener('click',event=>{
-    if(event.target?.id!=='v99ApplyTemplate')return;
-    const node=editorNodeId?findNode(editorNodeId):null;
-    if(!node?.composer)return;
-    const snapshot={
-      node,
-      elementHash:ComposerV99.Provenance.hashElements(node.slideElements||[]),
-      templateId:node.composer?.selectedTemplateId||''
-    };
-    setTimeout(()=>{
-      const currentHash=ComposerV99.Provenance.hashElements(node.slideElements||[]);
-      const generatedChanged=currentHash!==snapshot.elementHash||
-        (node.composer?.selectedTemplateId||'')!==snapshot.templateId;
-      if(generatedChanged&&node.composer.generatedHash!==currentHash){
-        ComposerV99.Provenance.refresh(node);
-        save();
-      }
-    },0);
-  },true);

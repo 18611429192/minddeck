@@ -35,4 +35,13 @@ import { Provenance } from '../src/runtime/modules/composer/provenance.js';
   assert.equal(Provenance.isDirty(node),true,'real manual geometry changes must still mark the page dirty');
 }
 
+{
+  const node={deckRole:'statement',slideElements:[{id:'e1',type:'text',x:10,y:10,w:200,h:80,z:1000,text:'Persisted',fontFamily:undefined,style:{opacity:1,shadow:undefined},tokens:[1,undefined,3]}],composer:{role:'statement',content:{title:'Persisted'},selectedTemplateId:'statement-a'}};
+  Provenance.attach(node,node.composer,node.slideElements);
+  const reloaded=JSON.parse(JSON.stringify(node));
+  assert.equal(Provenance.isDirty(reloaded),false,'JSON save/clone/reload must not mark untouched generated elements dirty when undefined fields disappear');
+  reloaded.slideElements[0].x+=1;
+  assert.equal(Provenance.isDirty(reloaded),true,'manual edits after reload must still mark the page dirty');
+}
+
 console.log('MindDeck V10 contract hardening tests: OK');
