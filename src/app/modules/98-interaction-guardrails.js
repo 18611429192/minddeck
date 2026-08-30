@@ -83,25 +83,19 @@
     },0);
   });
 
-  // Applying an A/B/C template is a generated edit. Seal provenance after the entire click
-  // transaction finishes, because the handler normalizes z-order before the final UI state.
-  // A cancelled dirty-page confirmation leaves the element hash unchanged and is not sealed.
-  let templateApplySnapshot=null;
+  // Applying an A/B/C template is a generated edit. Capture the pre-click state and schedule
+  // sealing immediately from capture phase; the timeout runs only after the template handler,
+  // normalization and editor render have all finished. If the user cancels, hashes stay equal.
   document.addEventListener('click',event=>{
     if(event.target?.id!=='v99ApplyTemplate')return;
     const node=editorNodeId?findNode(editorNodeId):null;
-    templateApplySnapshot=node?{
+    if(!node?.composer)return;
+    const snapshot={
       node,
       elementHash:ComposerV99.Provenance.hashElements(node.slideElements||[]),
       templateId:node.composer?.selectedTemplateId||''
-    }:null;
-  },true);
-  document.addEventListener('click',event=>{
-    if(event.target?.id!=='v99ApplyTemplate'||!templateApplySnapshot)return;
-    const snapshot=templateApplySnapshot;templateApplySnapshot=null;
+    };
     setTimeout(()=>{
-      const node=snapshot.node;
-      if(!node?.composer)return;
       const currentHash=ComposerV99.Provenance.hashElements(node.slideElements||[]);
       const generatedChanged=currentHash!==snapshot.elementHash||
         (node.composer?.selectedTemplateId||'')!==snapshot.templateId;
@@ -110,4 +104,4 @@
         save();
       }
     },0);
-  });
+  },true);
