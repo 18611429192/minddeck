@@ -23,6 +23,48 @@ function parseNamedList(text,{forImport=false}={}){
     return forImport?(source===alias?source:`${source}:${alias}`):{source,alias};
   });
 }
+
+// The runtime bundler is intentionally lightweight, but exported variable declarations
+// may contain more than one binding (for example: `export const A=1,B=2`). The old
+// declaration regex recorded only the first name, silently turning later imports into
+// `undefined` in the generated browser runtime. Scan each exported const/let/var statement
+// and collect every top-level declarator name while ignoring commas inside initializers.
+function exportedVariableNames(source,file){
+  const names=[];
+  const pattern=/\bexport\s+(?:const|let|var)\s+/g;
+  for(const match of source.matchAll(pattern)){
+    let i=match.index+match[0].length;
+    let paren=0,bracket=0,brace=0,quote=null,escaped=false,expectName=true,closed=false;
+    while(i<source.length){
+      if(expectName){
+        while(/\s/.test(source[i]||''))i++;
+        const nameMatch=source.slice(i).match(/^([A-Za-z_$][\w$]*)/);
+        if(!nameMatch)throw new Error(`unsupported exported variable declaration in ${file}`);
+        names.push(nameMatch[1]);i+=nameMatch[1].length;expectName=false;continue;
+      }
+      const ch=source[i];
+      if(quote){
+        if(escaped){escaped=false;i++;continue}
+        if(ch==='\\'){escaped=true;i++;continue}
+        if(ch===quote)quote=null;
+        i++;continue;
+      }
+      if(ch==="'"||ch==='"'||ch==='`'){quote=ch;i++;continue}
+      if(ch==='(')paren++;
+      else if(ch===')')paren=Math.max(0,paren-1);
+      else if(ch==='[')bracket++;
+      else if(ch===']')bracket=Math.max(0,bracket-1);
+      else if(ch==='{')brace++;
+      else if(ch==='}')brace=Math.max(0,brace-1);
+      else if(ch===','&&paren===0&&bracket===0&&brace===0){expectName=true;i++;continue}
+      else if(ch===';'&&paren===0&&bracket===0&&brace===0){closed=true;break}
+      i++;
+    }
+    if(!closed)throw new Error(`unterminated exported variable declaration in ${file}`);
+  }
+  return names;
+}
+
 function transformModule(file){
   let code=read(file);
   const imports=[];
@@ -46,6 +88,7 @@ function transformModule(file){
   const original=read(file);
   const exportDeclarationPattern=/\bexport\s+(?:(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)|(?:async\s+)?function\s+([A-Za-z_$][\w$]*))/g;
   for(const match of original.matchAll(exportDeclarationPattern)){const name=match[1]||match[2];exports.set(name,name)}
+  for(const name of exportedVariableNames(original,file))exports.set(name,name);
   if(/^\s*export\b/m.test(code))throw new Error(`unsupported export syntax remains in ${file}`);
 
   // Fail early if our lightweight transform accidentally lost an exported declaration.
