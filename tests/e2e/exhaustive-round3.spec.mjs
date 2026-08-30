@@ -53,10 +53,8 @@ async function importBytes(page,name,mimeType,buffer){const pending=page.waitFor
 async function mobileInsert(page,kind){await page.locator('#mobileInsertBtn').click();const b=page.locator(`[data-mi="${kind}"]`);await expect(b).toBeVisible();await b.click()}
 async function pinch(page){
   const box=await page.locator('#editorStageWrap').boundingBox();expect(box).toBeTruthy();
-  const c=await page.context().newCDPSession(page),cx=box.x+box.width/2,cy=box.y+box.height/2;
-  await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:cx-35,y:cy},{x:cx+35,y:cy}]});
-  await c.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:cx-70,y:cy},{x:cx+70,y:cy}]});
-  await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  const c=await page.context().newCDPSession(page),x=Math.round(box.x+box.width/2),y=Math.round(box.y+box.height/2);
+  await c.send('Input.synthesizePinchGesture',{x,y,scaleFactor:1.7,relativeSpeed:800,gestureSourceType:'touch'});
 }
 
 test('desktop round3 package recovery exports persistence shortcuts and node drag',async({page},testInfo)=>{
