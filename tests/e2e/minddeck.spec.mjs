@@ -1,4 +1,9 @@
+import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
+
+const PACKAGE_VERSION=JSON.parse(fs.readFileSync(new URL('../../package.json',import.meta.url),'utf8')).version;
+const RUNTIME_VERSION=PACKAGE_VERSION.split('-')[0];
+const COMPOSER_VERSION=RUNTIME_VERSION.split('.').slice(0,2).join('.');
 
 async function dismissWelcome(page){
   await page.waitForTimeout(320);
@@ -9,9 +14,12 @@ async function dismissWelcome(page){
 
 test('app exposes one runtime and the public app adapter',async({page})=>{
   await page.goto('/');
-  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe('9.9.0');
-  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp?.runtimeVersion)).toBe('9.9.0');
-  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.Composer?.templates?.length)).toBe(24);
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.VERSION)).toBe(RUNTIME_VERSION);
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp?.runtimeVersion)).toBe(RUNTIME_VERSION);
+  await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore?.Composer?.templates?.length)).toBe(72);
+  await expect(page.locator('#v99SmartComposeBtn')).toBeAttached();
+  const badge=await page.locator('#v99SmartComposeBtn').evaluate(node=>getComputedStyle(node,'::after').content.replaceAll('"',''));
+  expect(badge).toBe(COMPOSER_VERSION);
 });
 
 test('DeckSpec v1 file host compiles the checked-in example into the native Project',async({page},testInfo)=>{
@@ -62,7 +70,7 @@ test('folding a showcase branch changes the real presentation sequence',async({p
 test('portable presentation is generated from the shared shell/runtime',async({page})=>{
   await page.goto('/');
   const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));
-  expect(html).toContain('Portable Runtime 9.9.0');
+  expect(html).toContain(`Portable Runtime ${RUNTIME_VERSION}`);
   expect(html).toContain('MindDeckCore.Portable.mount');
   expect(html).toContain('id="stage"');
 });
@@ -84,7 +92,7 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
     await dismissWelcome(page);
     await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
     await page.locator('#v99SmartComposeBtn').click();
-    await page.locator('#v99Outline').fill(`# V9.9 E2E
+    await page.locator('#v99Outline').fill(`# V10 E2E
 > Shared Runtime Composer
 
 ## 核心指标
@@ -108,7 +116,7 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
 - 复盘结果`);
     await page.locator('#v99GenerateBtn').click();
     await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
-    await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject().deckComposerVersion)).toBe('9.9');
+    await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject().deckComposerVersion)).toBe(COMPOSER_VERSION);
     await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
   });
 
@@ -180,8 +188,8 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
     await expect(page.locator('#presentShell')).toHaveClass(/open/);
     await expect(page.locator('#presentStage')).not.toBeEmpty();
     const html=await page.evaluate(()=>globalThis.MindDeckApp.exportHtml('presentation'));
-    expect(html).toContain('V9.9 E2E');
-    expect(html).toContain('Portable Runtime 9.9.0');
+    expect(html).toContain('V10 E2E');
+    expect(html).toContain(`Portable Runtime ${RUNTIME_VERSION}`);
     expect(html).toContain('MindDeckCore.Portable.mount');
   });
 });
