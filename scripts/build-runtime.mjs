@@ -86,14 +86,18 @@ function transformModule(file){
   code=code.replace(/\bexport\s+(?=(?:(?:async\s+)?function|const|let|var|class)\b)/g,'');
   const declarationPattern=/\b(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)|\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/g;
   const original=read(file);
+  const multiExportNames=exportedVariableNames(original,file);
   const exportDeclarationPattern=/\bexport\s+(?:(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)|(?:async\s+)?function\s+([A-Za-z_$][\w$]*))/g;
   for(const match of original.matchAll(exportDeclarationPattern)){const name=match[1]||match[2];exports.set(name,name)}
-  for(const name of exportedVariableNames(original,file))exports.set(name,name);
+  for(const name of multiExportNames)exports.set(name,name);
   if(/^\s*export\b/m.test(code))throw new Error(`unsupported export syntax remains in ${file}`);
 
   // Fail early if our lightweight transform accidentally lost an exported declaration.
+  // The generic declaration regex sees only the first variable in `const A=1,B=2`, so
+  // include every name recovered from exported multi-declarator statements as declared.
   const declared=new Set();
   for(const match of code.matchAll(declarationPattern))declared.add(match[1]||match[2]);
+  for(const name of multiExportNames)declared.add(name);
   for(const source of exports.values())if(!declared.has(source)&&!imports.some(line=>new RegExp(`\\b${source}\\b`).test(line)))throw new Error(`export ${source} in ${file} is not declared or imported`);
 
   const returned=[...exports.entries()].map(([alias,source])=>alias===source?alias:`${JSON.stringify(alias)}:${source}`).join(',');
