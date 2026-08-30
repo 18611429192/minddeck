@@ -17,7 +17,14 @@ async function bytes(download){const p=await download.path();expect(p).toBeTruth
 function zipLocalNames(buffer){const names=[];let off=0;while(off+30<=buffer.length&&buffer.readUInt32LE(off)===0x04034b50){const size=buffer.readUInt32LE(off+18),nameLen=buffer.readUInt16LE(off+26),extraLen=buffer.readUInt16LE(off+28),nameStart=off+30;names.push(buffer.subarray(nameStart,nameStart+nameLen).toString('utf8'));off=nameStart+nameLen+extraLen+size}return names}
 async function cdp(page){return page.context().newCDPSession(page)}
 async function pinch(page,selector,factor=1.55){const box=await page.locator(selector).boundingBox();expect(box).toBeTruthy();const client=await cdp(page);await client.send('Input.synthesizePinchGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),scaleFactor:factor,relativeSpeed:700,gestureSourceType:'touch'})}
-async function touchDrag(page,selector,dx,dy){const box=await page.locator(selector).boundingBox();expect(box).toBeTruthy();const client=await cdp(page);await client.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),xDistance:dx,yDistance:dy,speed:650,gestureSourceType:'touch'})}
+async function touchDrag(page,selector,dx,dy){
+  const box=await page.locator(selector).boundingBox();expect(box).toBeTruthy();
+  const client=await cdp(page),sx=Math.round(box.x+box.width/2),sy=Math.round(box.y+box.height/2);
+  const point=(x,y)=>({x:Math.round(x),y:Math.round(y),radiusX:1,radiusY:1,force:1});
+  await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(sx,sy)]});
+  for(let i=1;i<=5;i++)await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(sx+dx*i/5,sy+dy*i/5)]});
+  await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+}
 
 async function openMobileMore(page){await page.locator('#mobileMainMore').click();await expect(page.locator('#mobileMainSheet')).toHaveClass(/open/)}
 async function setMobileLayout(page,value){await openMobileMore(page);await page.locator('#mobileMapLayoutSelect').selectOption(value);await expect.poll(async()=>(await project(page)).mapLayout).toBe(value)}
