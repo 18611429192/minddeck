@@ -7,6 +7,7 @@ const root=path.resolve(here,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8').trimEnd();
 const pkg=JSON.parse(read('package.json'));
 const version=pkg.version.split('-')[0];
+const versionBadge=version.split('.').slice(0,2).join('.');
 const isRc=/-rc(?:\.|$)/.test(pkg.version);
 const display=`V${version}${isRc?' RC':''}`;
 const manifest=JSON.parse(read('src/app/app.manifest.json'));
@@ -16,7 +17,8 @@ let appBundle=manifest.scripts.map(p=>read('src/app/'+p)).join('\n\n');
 appBundle=appBundle
   .replace(/APP_VERSION="\d+\.\d+\.\d+(?: RC)?"/,`APP_VERSION="${version}${isRc?' RC':''}"`)
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
-  .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`);
+  .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`)
+  .replace("content:'9.9'",`content:'${versionBadge}'`);
 const sharedStyles=read('src/runtime/shared-styles.css');
 const sharedRuntime=read('src/runtime/shared-core.js');
 if(!sharedRuntime.includes(`const VERSION=${JSON.stringify(version)};`)){
