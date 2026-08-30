@@ -6,7 +6,9 @@ assert.ok(!planner.includes("from './model.js'"),'Planner must not import Projec
 assert.ok(!planner.includes('Project.'),'Planner must not create or mutate MindDeck Project');
 assert.ok(!ai.includes("from './model.js'"),'AI layer must not import Project model');
 assert.ok(!ai.includes("from './composer.js'"),'AI provider must not invoke Composer directly');
-assert.ok(!/createElement|innerHTML|document\.|window\./.test(source+planner),'SourceDocument/Planner must not depend on DOM');
+const planningSource=source+planner;
+const directDomAccess=/(?<![-A-Za-z0-9_$])(?:document|window)\s*\./;
+assert.ok(!/createElement|innerHTML/.test(planningSource)&&!directDomAccess.test(planningSource),'SourceDocument/Planner must not depend on DOM');
 assert.ok(pptx.includes("from './model.js'"),'PPTX exporter must consume MindDeck Project model');
 assert.ok(!/normalizeDeckSpec|validateDeckSpec|compileDeck|DeckSpec/.test(pptx),'PPTX exporter must not create an independent DeckSpec layout path');
 assert.ok(!/matchTemplates|allocateTemplates|compileSlide/.test(pptx),'PPTX exporter must not duplicate Composer algorithms');
