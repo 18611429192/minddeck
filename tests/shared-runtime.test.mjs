@@ -1,13 +1,15 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { createMindDeckCore } from '../src/runtime/index.js';
 import { Core } from '../src/core/runtime.js';
 
+const packageVersion=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')).version.split('-')[0];
 assert.equal(Core.VERSION,'source');
 const SourceCore=createMindDeckCore('source-test');
 assert.equal(SourceCore.VERSION,'source-test');
 await import('../src/runtime/shared-core.js?generated-runtime-test');
 const GeneratedCore=globalThis.MindDeckCore;
-assert.equal(GeneratedCore.VERSION,'9.9.0');
+assert.equal(GeneratedCore.VERSION,packageVersion);
 
 const names=['Ids','Tree','Project','Layout','Commands','Presentation','PresentationSession','Stage','MapViewport','Animation','Element','Slide','Composer','Fullscreen','Input','Recovery','Diagnostics','InlineEditor','MapRenderer','TocRenderer','PresentationView','ExportData','Portable','Architecture'];
 for(const name of names){

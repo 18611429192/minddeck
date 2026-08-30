@@ -4,7 +4,7 @@ const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../src/app/shell.html',import.meta.url),'utf8');
 const manifest=JSON.parse(fs.readFileSync(new URL('../src/app/app.manifest.json',import.meta.url),'utf8'));
 const pkg=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-const version=pkg.version.split('-')[0],isRc=/-rc(?:\.|$)/.test(pkg.version);
+const version=pkg.version.split('-')[0],versionBadge=version.split('.').slice(0,2).join('.'),isRc=/-rc(?:\.|$)/.test(pkg.version);
 const read=p=>fs.readFileSync(new URL('../src/app/'+p,import.meta.url),'utf8').trimEnd();
 let runtime=fs.readFileSync(new URL('../src/runtime/shared-core.js',import.meta.url),'utf8').trimEnd();
 runtime=runtime.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
@@ -13,7 +13,9 @@ let appBundle=manifest.scripts.map(read).join('\n\n');
 appBundle=appBundle
   .replace(/APP_VERSION="\d+\.\d+\.\d+(?: RC)?"/,`APP_VERSION="${version}${isRc?' RC':''}"`)
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
-  .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`);
+  .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`)
+  .replace("content:'9.9'",`content:'${versionBadge}'`)
+  .replace('24 个结构模板由 Matcher + Diversity Allocator 自动分配','${ComposerV99.templates.length} 个结构模板由 Matcher + Diversity Allocator 自动分配');
 const appStyles=manifest.styles.map(read).join('\n\n');
 for(const slot of ['__MINDDECK_APP_STYLES__','__MINDDECK_SHARED_STYLES__','__MINDDECK_SHARED_RUNTIME__','__MINDDECK_APP_BUNDLE__']) assert.ok(shell.includes(slot),'shell slot missing: '+slot);
 assert.ok(manifest.scripts.length>=7,'application source was not meaningfully modularized');
