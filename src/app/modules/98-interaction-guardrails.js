@@ -114,6 +114,7 @@
     return Number.isFinite(n)?n:(editorMode==='master'?0:1000);
   }
   function finiteLayerValue(value,fallback){
+    if(value===null||value===undefined||value==='')return fallback;
     const n=Number(value);
     return Number.isFinite(n)?n:fallback;
   }
@@ -135,35 +136,33 @@
     });
     return changed;
   }
+  function prepareEditorLayerCommand(){
+    // Do not render here. Rendering between selection and the real command can disturb the
+    // active selection, turning the following front/back action into a no-op. The command
+    // itself renders after it has completed.
+    if(repairCurrentEditorLayers())save();
+  }
 
   const duplicateSelectedBeforeLayerRepair=duplicateSelected;
   duplicateSelected=function(...args){
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    const result=duplicateSelectedBeforeLayerRepair(...args);
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    return result;
+    prepareEditorLayerCommand();
+    return duplicateSelectedBeforeLayerRepair(...args);
   };
 
   const moveLayerStepBeforeLayerRepair=moveLayerStep;
   moveLayerStep=function(...args){
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    const result=moveLayerStepBeforeLayerRepair(...args);
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    return result;
+    prepareEditorLayerCommand();
+    return moveLayerStepBeforeLayerRepair(...args);
   };
 
   const zMoveBeforeLayerRepair=zMove;
   zMove=function(...args){
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    const result=zMoveBeforeLayerRepair(...args);
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    return result;
+    prepareEditorLayerCommand();
+    return zMoveBeforeLayerRepair(...args);
   };
 
   const pasteElementsBeforeLayerRepair=pasteElements;
   pasteElements=function(...args){
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    const result=pasteElementsBeforeLayerRepair(...args);
-    if(repairCurrentEditorLayers()){save();renderEditor()}
-    return result;
+    prepareEditorLayerCommand();
+    return pasteElementsBeforeLayerRepair(...args);
   };
