@@ -331,11 +331,12 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await page.locator('#toggleMasterModeBtn').click();
   await expect(page.locator('#masterSettingsBtn')).toBeVisible();
   await page.locator('#masterSettingsBtn').click();
-  await page.locator('#masterBgColor').fill('#102030');
-  await page.locator('#masterBgFit').selectOption('contain');
-  await page.locator('#masterTocVisibility').selectOption('show');
-  await page.locator('#masterTocSide').selectOption('right');
-  await page.locator('#masterBgFile').setInputFiles({name:'master.png',mimeType:'image/png',buffer:PNG_1PX});
+  await expect(page.locator('#propPanel')).toHaveClass(/open/);
+  await page.locator('[data-master-p="bgColor"]').fill('#102030');
+  await page.locator('[data-master-p="bgFit"]').selectOption('contain');
+  await page.locator('[data-master-p="tocVisibility"]').selectOption('show');
+  await page.locator('[data-master-p="tocSide"]').selectOption('right');
+  await page.locator('#masterSettingsBgFile').setInputFiles({name:'master.png',mimeType:'image/png',buffer:PNG_1PX});
   await expect.poll(async()=>{
     const p=await project(page);return !!p.master.bgImage;
   }).toBe(true);
