@@ -35,9 +35,6 @@
   border-radius:18px;box-shadow:var(--shadow);z-index:55;padding:16px;overflow:auto;display:none
 }
 .map-panel.open{display:block}
-/* Opening a panel must win over a stale desktop collapsed flag. The later
-   workspace rule uses !important, so this more-specific state rule also does. */
-.map-panel.open.panel-collapsed{transform:none!important;opacity:1!important;pointer-events:auto!important}
 .map-panel h3{margin:2px 0 14px;font-size:16px}
 .field{margin:12px 0}
 .field label{display:block;font-size:12px;color:#6f7785;margin-bottom:6px}
