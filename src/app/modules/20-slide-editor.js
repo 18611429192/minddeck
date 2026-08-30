@@ -436,7 +436,7 @@
     const r=new FileReader();r.onload=()=>{
       const arr=currentEditorElements(),ordered=orderedCurrentElements();
       const e={id:uid(),type:"image",x:420,y:220,w:620,h:420,z:(ordered.length?ordered[ordered.length-1].z+1:(editorMode==="master"?MASTER_Z_MIN:SLIDE_Z_MIN)),src:r.result,fit:"contain",animation:{type:"inherit",delay:0,duration:.5}};
-      arr.push(e);selectedEls.clear();selectedEls.add(e.id);selectionAnchorId=e.id;save();renderEditor()
+      arr.push(e);placeMobileInsertedElement(e,arr);selectedEls.clear();selectedEls.add(e.id);selectionAnchorId=e.id;save();renderEditor()
     };r.readAsDataURL(file)
   }
   function addVideoElement(src){
@@ -444,7 +444,7 @@
     const arr=currentEditorElements(),ordered=orderedCurrentElements();
     const e={id:uid(),type:"video",x:330,y:190,w:760,h:430,z:(ordered.length?ordered[ordered.length-1].z+1:(editorMode==="master"?MASTER_Z_MIN:SLIDE_Z_MIN)),src,fit:"contain",
       controls:true,autoplay:false,muted:false,loop:false,animation:{type:"inherit",delay:0,duration:.5}};
-    arr.push(e);selectedEls.clear();selectedEls.add(e.id);selectionAnchorId=e.id;save();renderEditor()
+    arr.push(e);placeMobileInsertedElement(e,arr);selectedEls.clear();selectedEls.add(e.id);selectionAnchorId=e.id;save();renderEditor()
   }
   function addVideoFromFile(file){
     if(file.size>25*1024*1024){
