@@ -30,3 +30,19 @@
       throw err;
     }
   };
+
+  // The editor already has an overlap-aware insertion placer for touch devices.
+  // Use the same placement contract on desktop so consecutive Text/Rect/Circle inserts
+  // do not stack on the same hit target and block normal Shift-click multi-selection.
+  const addElementBeforePlacementGuard=addElement;
+  addElement=function(type){
+    const beforeCount=currentEditorElements().length;
+    const result=addElementBeforePlacementGuard(type);
+    const elements=currentEditorElements();
+    if(elements.length>beforeCount){
+      const inserted=elements[elements.length-1];
+      placeMobileInsertedElement(inserted,elements);
+      save();renderEditor();
+    }
+    return result;
+  };
