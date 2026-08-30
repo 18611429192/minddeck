@@ -315,6 +315,9 @@ test('desktop deep sweep creates real content, edits geometry/media, roundtrips 
   await page.keyboard.press('Control+Shift+z');
   await expect.poll(async()=>(await slideElement(page,statusId,textEl.id)).x).toBe(nudgeBefore.x+10);
 
+  // Undo/redo restores the project snapshot and intentionally clears selection, so a real
+  // clipboard workflow must reselect the element before copying it.
+  await selectElement(page,textEl.id);
   const clipBefore=await slideCount(page,statusId);
   await page.keyboard.press('Control+c');
   await page.keyboard.press('Control+v');
