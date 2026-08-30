@@ -8,6 +8,7 @@ const tabularText=text=>/\|.+\|/.test(text)||/(?:^|\n)\s*[-*]\s+[^\n]+:\s*[^\n]+
 const processText=text=>/(步骤|流程|阶段|首先|其次|然后|最后|step|phase|process|workflow)/i.test(text);
 const CHART_TYPES=new Set(['bar','line','area','donut','radar','funnel','waterfall']);
 const DIAGRAM_TYPES=new Set(['matrix','pyramid','cycle','funnel','roadmap','swot','pest','porter']);
+const ROLE_MIN_ITEMS=Object.freeze({agenda:2,cards:2,compare:2,process:3,timeline:3,roadmap:3,architecture:3,matrix:4,table:2,trend:3});
 function planProblem(path,code,message){return {path,code,message}}
 function hasTargetWarning(input,actual){return Array.isArray(input?.warnings)&&input.warnings.some(item=>item?.code==='TARGET_SLIDES_UNSATISFIABLE'&&item.requested===input.targetSlides&&item.actual===actual)}
 export function validateDeckPlan(input){
@@ -27,11 +28,30 @@ export function validateDeckPlan(input){
   }
   return {ok:errors.length===0,errors};
 }
+function structuredFragments(text,role){
+  const source=clean(text).replace(/^[^:：\n]{1,48}[:：]\s*/,'').replace(/[。.!?！？]+$/,'');
+  if(!source)return [];
+  if(role==='timeline'){
+    const milestones=source.match(/\b(?:Q[1-4]|H[12]|FY\d{2,4}|20\d{2}(?:[-/]\d{1,2})?)\b/gi);
+    if(milestones?.length>=3)return milestones.map(clean);
+  }
+  const separator=role==='compare'?/\s*(?:,|，|;|；|\bversus\b|\bvs\.?\b|相比|对比|相较于)\s*/i:
+    role==='trend'?/\s*(?:,|，|;|；|\bto\b|→|->|至|到)\s*/i:
+    /\s*(?:,|，|;|；|\bthen\b|\bfinally\b|\band\b|然后|接着|最后|以及|与)\s*/i;
+  return source.split(separator).map(value=>clean(value).replace(/^(?:first|首先|其次|then|然后|finally|最后)\s*[:：-]?\s*/i,'')).filter(Boolean);
+}
+function factsForRole(role,baseFacts,text){
+  const min=ROLE_MIN_ITEMS[role]||0;if(!min||baseFacts.length>=min)return {role,facts:baseFacts};
+  const expanded=structuredFragments(text,role);
+  if(expanded.length>=min)return {role,facts:expanded.slice(0,12)};
+  return {role:'statement',facts:baseFacts};
+}
 function summarizeBlock(section,index){
-  const text=clean(section.content),sentences=sentenceSplit(text),facts=sentences.slice(0,8),title=clean(section.title)||clean(sentences[0])||`Topic ${index+1}`,signal=`${title}\n${text}`;
-  const content=normalizeSlideContent({title,summary:sentences.slice(0,2).join(' '),items:facts.slice(1,5).map(value=>({label:value})),takeaway:sentences.at(-1)||''});
+  const text=clean(section.content),sentences=sentenceSplit(text),baseFacts=sentences.slice(0,8),title=clean(section.title)||clean(sentences[0])||`Topic ${index+1}`,signal=`${title}\n${text}`;
+  const content=normalizeSlideContent({title,summary:sentences.slice(0,2).join(' '),items:baseFacts.slice(1,5).map(value=>({label:value})),takeaway:sentences.at(-1)||''});
   let role=inferSlideRole(content,null,{depth:1,index});if(numericText(signal))role='metrics';else if(tabularText(text))role='table';else if(processText(signal)&&!numericText(signal))role='process';
-  return {goal:`Explain ${title}`,roleHint:role,title,topic:title,facts,takeaway:sentences.at(-1)||'',chartIntent:numericText(signal)?{recommended:true,type:/趋势|growth|trend/i.test(signal)?'line':'bar'}:null,tableIntent:tabularText(text)?{recommended:true}:null,diagramIntent:processText(signal)?{recommended:true,type:'process'}:null,imageIntent:null,emphasis:numericText(signal)?'data':'balanced'};
+  const fitted=factsForRole(role,baseFacts,text);role=fitted.role;const facts=fitted.facts;
+  return {goal:`Explain ${title}`,roleHint:role,title,topic:title,facts,takeaway:sentences.at(-1)||'',chartIntent:numericText(signal)?{recommended:true,type:/趋势|growth|trend/i.test(signal)?'line':'bar'}:null,tableIntent:role==='table'||tabularText(text)?{recommended:true}:null,diagramIntent:['process','architecture','roadmap','matrix'].includes(role)?{recommended:true,type:role==='process'?'process':role}:null,imageIntent:null,emphasis:numericText(signal)?'data':'balanced'};
 }
 function mergeIntents(out,target){
   while(out.length>target){let best=0,score=Infinity;for(let i=0;i<out.length-1;i++){const s=(out[i].facts?.length||0)+(out[i+1].facts?.length||0);if(s<score){score=s;best=i}}const a=out[best],b=out[best+1];out.splice(best,2,{...a,title:`${a.title} / ${b.title}`,topic:`${a.topic}; ${b.topic}`,facts:[...(a.facts||[]),...(b.facts||[])].slice(0,12),takeaway:b.takeaway||a.takeaway,roleHint:(!(a.facts||[]).length||a.roleHint==='section')?b.roleHint:a.roleHint,chartIntent:a.chartIntent||b.chartIntent,tableIntent:a.tableIntent||b.tableIntent,diagramIntent:a.diagramIntent||b.diagramIntent,imageIntent:a.imageIntent||b.imageIntent})}
