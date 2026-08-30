@@ -22,9 +22,14 @@ async function closeMapPanel(page,id){
 }
 
 async function downloadFrom(page,locator){
-  const download=page.waitForEvent('download');
+  const control=await locator.getAttribute('id')||await locator.getAttribute('data-mm')||'unknown-control';
+  const download=page.waitForEvent('download',{timeout:8000});
   await locator.click();
-  const result=await download;
+  let result;
+  try{result=await download}catch(err){
+    const toast=(await page.locator('#toast').textContent().catch(()=>''))?.trim();
+    throw new Error(`${control} did not start a download${toast?` · toast: ${toast}`:''} · ${err.message}`);
+  }
   expect(await result.failure()).toBeNull();
 }
 
@@ -37,19 +42,20 @@ async function openMobileCommand(page,command){
 
 async function downloadMobileCommand(page,command){
   await page.locator('#mobileMainMore').click();
-  const download=page.waitForEvent('download');
-  await page.locator(`[data-mm="${command}"]`).click();
-  const result=await download;
-  expect(await result.failure()).toBeNull();
+  await downloadFrom(page,page.locator(`[data-mm="${command}"]`));
+}
+
+function acceptDialog(dialog){
+  const promptText=dialog.type()==='prompt'
+    ? (dialog.message().includes('视频 URL')?'https://example.com/demo.mp4':dialog.defaultValue())
+    : undefined;
+  dialog.accept(promptText).catch(()=>{});
 }
 
 test('desktop manual-style sweep clicks project, panel, node, editor and presentation controls',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop button sweep');
   const pageErrors=watchPageErrors(page);
-  page.on('dialog',dialog=>{
-    const promptText=dialog.type()==='prompt'&&dialog.message().includes('视频 URL')?'https://example.com/demo.mp4':undefined;
-    dialog.accept(promptText).catch(()=>{});
-  });
+  page.on('dialog',acceptDialog);
 
   await page.goto('/');
   await dismissWelcome(page);
@@ -208,7 +214,7 @@ test('desktop manual-style sweep clicks project, panel, node, editor and present
 test('mobile manual-style sweep clicks mobile project and editor controls',async({page},testInfo)=>{
   test.skip(!testInfo.project.name.includes('mobile'),'mobile button sweep');
   const pageErrors=watchPageErrors(page);
-  page.on('dialog',dialog=>dialog.accept().catch(()=>{}));
+  page.on('dialog',acceptDialog);
 
   await page.goto('/');
   await dismissWelcome(page);
