@@ -96,15 +96,23 @@ test('desktop manual-style sweep clicks project, panel, node, editor and present
   await chooser.setFiles({name:'button-sweep.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(snapshot))});
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckApp.getProject()?.id)).toBe(snapshot.id);
 
+  await page.locator('#healthCheckBtn').click();
+  const restoreBackup=page.locator('#restoreBackupBtn');
+  if(await restoreBackup.isEnabled())await restoreBackup.click();
+  await closeMapPanel(page,'healthPanel');
+
   await page.locator('#v99SmartComposeBtn').click();
   await expect(page.locator('#v99Outline')).toBeVisible();
   await page.locator('#v99SampleBtn').click();
+  const templateCount=await page.evaluate(()=>globalThis.MindDeckCore.Composer.templates.length);
+  await expect(page.locator('#v99Preview')).toContainText(`${templateCount} 个结构模板`);
   await page.locator('#v99CancelBtn').click();
   await page.locator('#v99DeckSpecBtn').click();
   await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
   await page.locator('#v99DeckSpecCancel').click();
 
-  await page.locator('.node').first().click();
+  const rootId=await page.evaluate(()=>globalThis.MindDeckApp.getProject().id);
+  await page.locator(`.node[data-id="${rootId}"]`).click();
   await expect(page.locator('#nodePanel')).toHaveClass(/open/);
   await page.locator('#saveNodeBtn').click();
   await page.locator('#addChildBtn').click();
@@ -140,14 +148,23 @@ test('desktop manual-style sweep clicks project, panel, node, editor and present
   await page.locator('#addImageBtn').click();
   const imageChooser=await imageChooserPromise;
   await imageChooser.setFiles({name:'pixel.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZfC8AAAAASUVORK5CYII=','base64')});
+  await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)?.slideElements.some(item=>item.type==='image'),createdNodeId)).toBe(true);
   await page.locator('#addVideoUrlBtn').click();
+  await expect.poll(()=>page.evaluate(id=>globalThis.MindDeckApp.getProject().children.find(item=>item.id===id)?.slideElements.some(item=>item.type==='video'),createdNodeId)).toBe(true);
 
   await page.locator('#v99PageDesignerBtn').click();
   await expect(page.locator('#v99PageCancel')).toBeVisible();
   await page.locator('#v99PageCancel').click();
   await page.locator('#slideInspectorBtn').click();
-  await expect(page.locator('#v10InspectorDone')).toBeVisible();
-  await page.locator('#v10InspectorDone').click();
+  await expect(page.locator('#v10InspectorReset')).toBeVisible();
+  await page.locator('#v10InspectorReset').click();
+  await expect(page.locator('#v10InspectorTemplates')).toBeVisible();
+  await page.locator('#v10InspectorTemplates').click();
+  await expect(page.locator('#v99PageCancel')).toBeVisible();
+  await page.locator('#v99PageCancel').click();
+  await page.locator('#slideInspectorBtn').click();
+  await expect(page.locator('.v10-inspector-close')).toBeVisible();
+  await page.locator('.v10-inspector-close').click();
 
   await page.locator('#saveEditorBtn').click();
   await page.locator('#toggleMasterModeBtn').click();
