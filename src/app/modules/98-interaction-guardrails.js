@@ -19,6 +19,30 @@
     document.getElementById('exportSettingsPanel')?.classList.add('open');
   },0));
 
+  // Desktop close buttons collapse side panels by leaving `open` in place and adding
+  // `panel-collapsed` (pointer-events:none). Explicitly opening a tool again must clear
+  // that collapsed state; otherwise the panel is visible after `.open` is added again,
+  // but every control inside it remains untouchable.
+  function prepareMapPanelOpen(panelId){
+    const panel=document.getElementById(panelId);
+    if(!panel)return;
+    panel.classList.remove('panel-collapsed');
+    document.getElementById('panelRestoreHandle')?.classList.remove('open');
+    activeCollapsedMapPanelId=null;
+  }
+  const openHealthPanelBase=openHealthPanel;
+  openHealthPanel=function(...args){prepareMapPanelOpen('healthPanel');return openHealthPanelBase(...args)};
+  const openThemePanelBase=openThemePanel;
+  openThemePanel=function(...args){prepareMapPanelOpen('themePanel');return openThemePanelBase(...args)};
+  const assertProjectExportReadyBase=assertProjectExportReady;
+  assertProjectExportReady=function(...args){
+    try{return assertProjectExportReadyBase(...args)}
+    catch(err){
+      if(document.getElementById('healthPanel')?.classList.contains('open'))prepareMapPanelOpen('healthPanel');
+      throw err;
+    }
+  };
+
   const interactionGuardStyle=document.createElement('style');
   interactionGuardStyle.id='minddeck-v10-interaction-guardrails';
   interactionGuardStyle.textContent=`
