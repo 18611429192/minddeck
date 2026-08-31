@@ -8,6 +8,6 @@ export default defineConfig({
   webServer:{command:'python -m http.server 8080',url:'http://127.0.0.1:8080',reuseExistingServer:true},
   projects:[
     {name:'desktop-chromium',use:{...devices['Desktop Chrome']}},
-    {name:'mobile-chromium',use:{...devices['Pixel 7']}}
+    {name:'mobile-chromium',testIgnore:['**/ai-real-usage.spec.mjs'],use:{...devices['Pixel 7']}}
   ]
 });
