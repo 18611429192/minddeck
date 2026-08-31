@@ -13,6 +13,7 @@
     "modules/29-chart-editor.js",
     "modules/29-rich-editor.js",
     "modules/29-redesign.js",
+    "modules/29-ai-assistant.js",
     "modules/30-presentation.js",
     "modules/40-portable-export.js",
     "modules/41-pptx-export.js",
