@@ -9,14 +9,14 @@ const rightCard={id:'right',type:'shape',x:782,y:320,w:610,h:410,z:1003};
 const rightText={id:'right-text',type:'text',x:820,y:370,w:520,h:260,z:1004,text:'Visual placeholder'};
 const reference=[header,leftCard,leftText,rightCard,rightText];
 
-function rich(type='chart'){return {id:'rich',type,x:112,y:292,w:1280,h:470,z:1100}}
+function rich(type='table'){return {id:'rich',type,x:112,y:292,w:1280,h:470,z:1100}}
 
-test('rich body uses a semantic split slot instead of fixed legacy geometry',()=>{
-  const elements=RichLayout.reflowElements([header,rich('chart')],reference,{params:{visualWeight:1}});
-  const chart=elements.find(item=>item.type==='chart');
-  assert.ok(chart);
-  assert.notDeepEqual([chart.x,chart.y,chart.w,chart.h],[112,292,1280,470]);
-  assert.ok(chart.x>=782,'visual slot should choose the right split panel by default');
+test('table rich body uses a semantic split slot instead of fixed legacy geometry',()=>{
+  const elements=RichLayout.reflowElements([header,rich('table')],reference,{params:{visualWeight:1}});
+  const table=elements.find(item=>item.type==='table');
+  assert.ok(table);
+  assert.notDeepEqual([table.x,table.y,table.w,table.h],[112,292,1280,470]);
+  assert.ok(table.x>=782,'visual slot should choose the right split panel by default');
   assert.ok(elements.some(item=>item.id==='left-text'),'non-overlapping narrative content should survive');
 });
 
@@ -33,4 +33,13 @@ test('diagram uses the same shared semantic body contract',()=>{
   const diagram=node.slideElements.find(item=>item.type==='diagram');
   assert.ok(diagram.x>=782);
   assert.ok(node.slideElements.some(item=>item.id==='left-text'));
+});
+
+test('native chart geometry is never overwritten by shared RichLayout',()=>{
+  assert.equal(RichLayout.types.includes('chart'),false);
+  const chart=rich('chart'),source=[header,chart];
+  const elements=RichLayout.reflowElements(source,reference,{params:{visualWeight:1.2},intent:{contentBalance:'visual'}});
+  const after=elements.find(item=>item.type==='chart');
+  assert.deepEqual([after.x,after.y,after.w,after.h],[112,292,1280,470]);
+  assert.strictEqual(after,chart,'RichLayout must leave native chart objects untouched');
 });
