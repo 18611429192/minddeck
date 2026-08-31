@@ -79,7 +79,7 @@ test('complex DeckSpec generates through real buttons and every native chart typ
     expect(state.element.series[0].values[0]).toBe(editedValue);
     expect(state.content.categories[0]).toBe(`已编辑-${type}`);
     expect(state.content.series[0].values[0]).toBe(editedValue);
-    expect(state.dirty).toBe(false);
+    expect(state.dirty).toBe(true);
     await page.locator('#backToMapBtn').click();await expect(page.locator('#editorShell')).not.toHaveClass(/open/);
   }
 
@@ -100,7 +100,7 @@ test('A/B/C redesign candidates really reflow chart geometry and preserve edited
     await openSlideByButtons(page,id);
     const host=page.locator('#editorStage .canvas-el.el-chart').first();await host.click();
     const edited=page.locator('[data-chart-value-row="0"][data-chart-value-series="0"]');await edited.fill('987');await edited.press('Tab');
-    let state=await chartState(page,id);expect(state.content.series[0].values[0]).toBe(987);
+    let state=await chartState(page,id);expect(state.content.series[0].values[0]).toBe(987);expect(state.dirty).toBe(true);
 
     await page.locator('#v99PageDesignerBtn').click();
     await expect(page.locator('#slideInspectorPanel')).toHaveClass(/open/);
