@@ -40,7 +40,7 @@ async function currentChart(page){
   });
 }
 
-test('native chart editor changes real data and survives template recompile',async({page},testInfo)=>{
+test('native chart editor changes real data and survives unified redesign recompile',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop chart editor contract');
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(error.message));
@@ -109,12 +109,16 @@ test('native chart editor changes real data and survives template recompile',asy
   expect(chart.content.series[0].values).toEqual([123,20,30,456]);
   expect(chart.content.series[1].name).toBe('利润');
 
-  // Recompile the dirty slide through the real Page Designer. The edited chart source
-  // must be used as the source of truth instead of restoring the original DeckSpec data.
+  // Recompile the dirty slide through the unified Redesign panel. Intent is the
+  // constraint input and A/B/C are concrete template outcomes. Edited chart source
+  // must remain canonical instead of restoring the original DeckSpec data.
   await page.locator('#v99PageDesignerBtn').click();
-  await expect(page.locator('#v99ApplyTemplate')).toBeVisible();
-  await page.locator('#v99ApplyTemplate').click();
-  await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
+  await expect(page.locator('#slideInspectorPanel')).toHaveClass(/open/);
+  await expect(page.locator('#slideInspectorPanel .v10-inspector-head h3')).toHaveText('重新设计本页');
+  const candidates=page.locator('#slideInspectorPanel [data-redesign-template]');
+  await expect(candidates).not.toHaveCount(0);
+  await candidates.first().click();
+  await expect(page.locator('#editorStage svg[aria-label="bar chart"]')).toBeVisible();
 
   chart=await currentChart(page);
   expect(chart.element.chartType).toBe('bar');
