@@ -16,7 +16,16 @@ function structuredSuggestedRole(kind,input){
   if(subtype==='pyramid')return 'cards';
   return 'matrix';
 }
-function structuredMatcherItems(kind,input){if(kind==='table'){const data=normalizeTableData(input);return data.rows.map((row,index)=>({id:row.id||`table-row-${index+1}`,label:row.cells[0]?.text||`Row ${index+1}`,value:row.cells[1]?.text||'',detail:row.cells.slice(2).map(cell=>cell.text).filter(Boolean).join(' · '),unit:'',image:''}))}const data=normalizeDiagramData(input);return data.data.items.map((item,index)=>({id:item.id||`diagram-item-${index+1}`,label:item.label||`Item ${index+1}`,value:item.value||'',detail:item.detail||'',unit:'',image:''}))}
+function structuredSample(values=[],limit=6){if(values.length<=limit)return values.map((value,index)=>({value,index}));const out=[];for(let slot=0;slot<limit;slot++){const index=Math.round(slot*(values.length-1)/Math.max(1,limit-1));if(!out.some(item=>item.index===index))out.push({value:values[index],index})}return out}
+function structuredMatcherItems(kind,input){
+  if(kind==='table'){
+    const data=normalizeTableData(input),sample=structuredSample(data.rows,6),items=sample.map(({value:row,index})=>({id:row.id||`table-row-${index+1}`,label:row.cells[0]?.text||`Row ${index+1}`,value:row.cells[1]?.text||'',detail:row.cells.slice(2).map(cell=>cell.text).filter(Boolean).join(' · '),unit:'',image:''}));
+    if(items.length===1)items.push({id:'table-row-summary',label:'数据行',value:'1',detail:'单行表格',unit:'',image:''});
+    return items;
+  }
+  const data=normalizeDiagramData(input),sample=structuredSample(data.data.items,4);
+  return sample.map(({value:item,index})=>({id:item.id||`diagram-item-${index+1}`,label:item.label||`Item ${index+1}`,value:item.value||'',detail:item.detail||'',unit:'',image:''}));
+}
 function structuredApplyMatcherFacts(content,kind,input){if(!content?.items?.length)content.items=structuredMatcherItems(kind,input);return content}
 function structuredRichKinds(content={}){return [['chart',content?.chart],['table',structuredRawTable(content)],['diagram',structuredRawDiagram(content)]].filter(([,value])=>value!==undefined&&value!==null)}
 function structuredValidatedTable(input,path='table'){const check=validateTableData(input);if(!check.ok){const err=new Error(check.errors.map(item=>`${path}.${item.path}: ${item.message}`).join('; '));err.code='TABLE_VALIDATION_ERROR';err.report=check;throw err}return check.normalized}
