@@ -33,18 +33,24 @@ async function assertDesktopWorkspace(page,label){
     };
     const shell=document.querySelector('#editorShell');
     const topbar=document.querySelector('.editor-topbar');
+    const htmlOverflow=getComputedStyle(document.documentElement).overflowX;
+    const bodyOverflow=getComputedStyle(document.body).overflowX;
     return {
-      stage:rect('#editorStage'),wrap:rect('#editorStageWrap'),panel:rect('#propPanel'),
+      stage:rect('#editorStage'),wrap:rect('#editorStageWrap'),panel:rect('#propPanel'),shell:rect('#editorShell'),
       back:rect('#backToMapBtn'),save:rect('#saveEditorBtn'),topbar:rect('.editor-topbar'),
       logical:{width:document.querySelector('#editorStage').style.width,height:document.querySelector('#editorStage').style.height},
       viewport:{width:innerWidth,height:innerHeight},
-      bodyOverflow:document.documentElement.scrollWidth>innerWidth+1 || document.body.scrollWidth>innerWidth+1,
+      pageOverflowLocked:['hidden','clip'].includes(htmlOverflow)&&['hidden','clip'].includes(bodyOverflow),
       topbarScrolls:topbar.scrollWidth>topbar.clientWidth+1,
       shellOverflow:shell.scrollWidth>shell.clientWidth+2
     };
   });
 
   expect(geometry.logical,`${label}: logical slide must remain fixed`).toEqual({width:'1600px',height:'900px'});
+  expect(geometry.shell.left,`${label}: editor shell starts at viewport edge`).toBeGreaterThanOrEqual(-1);
+  expect(geometry.shell.right,`${label}: editor shell ends at viewport edge`).toBeLessThanOrEqual(geometry.viewport.width+1);
+  expect(geometry.topbar.left,`${label}: ribbon stays inside editor`).toBeGreaterThanOrEqual(geometry.shell.left-1);
+  expect(geometry.topbar.right,`${label}: ribbon stays inside editor`).toBeLessThanOrEqual(geometry.shell.right+1);
   expect(geometry.panel.left,`${label}: inspector must start after usable stage wrap`).toBeGreaterThanOrEqual(geometry.wrap.right-1.5);
   expect(geometry.stage.right,`${label}: stage must not hide behind inspector`).toBeLessThanOrEqual(geometry.panel.left+1.5);
   expect(geometry.stage.left,`${label}: stage left must stay in viewport`).toBeGreaterThanOrEqual(geometry.wrap.left-1.5);
@@ -54,7 +60,7 @@ async function assertDesktopWorkspace(page,label){
   expect(geometry.back.left,`${label}: back control must stay visible`).toBeGreaterThanOrEqual(0);
   expect(geometry.save.right,`${label}: save control must stay visible`).toBeLessThanOrEqual(geometry.viewport.width+1);
   expect(geometry.topbar.height,`${label}: ribbon height must be deterministic`).toBeLessThanOrEqual(100);
-  expect(geometry.bodyOverflow,`${label}: document must not gain horizontal overflow`).toBe(false);
+  expect(geometry.pageOverflowLocked,`${label}: fixed editor must not expose page-level scrolling`).toBe(true);
   expect(geometry.shellOverflow,`${label}: editor shell must contain ribbon scrolling internally`).toBe(false);
 }
 
