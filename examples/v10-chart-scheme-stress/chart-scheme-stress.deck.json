@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "title": "复杂图表方案与编辑回归",
+  "goal": "验证复杂 DeckSpec 可生成，七类图表可编辑，A/B/C 页面方案真正改变图表布局且不覆盖已编辑数据",
+  "audience": "MindDeck V10 QA",
+  "theme": "aurora",
+  "slides": [
+    {
+      "id": "chart-bar-complex",
+      "role": "metrics",
+      "content": {
+        "title": "区域收入与利润结构",
+        "summary": "多系列堆叠柱状图，覆盖横向方向、图例、标签和值显示。",
+        "chart": {
+          "chartType": "bar",
+          "categories": ["华北", "华东", "华南", "西南", "西北", "东北", "海外"],
+          "series": [
+            {"id": "revenue", "name": "收入", "values": [128, 176, 164, 118, 86, 92, 205]},
+            {"id": "profit", "name": "利润", "values": [34, 51, 46, 28, 19, 21, 63]},
+            {"id": "target", "name": "目标差额", "values": [12, -8, 5, 14, 18, 9, -11]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "showGrid": true, "stacked": true, "orientation": "horizontal"}
+        }
+      }
+    },
+    {
+      "id": "chart-line-complex",
+      "role": "trend",
+      "content": {
+        "title": "全年收入与活跃用户趋势",
+        "summary": "十二个月双系列折线，覆盖平滑曲线与完整时间序列。",
+        "chart": {
+          "chartType": "line",
+          "categories": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+          "series": [
+            {"id": "actual", "name": "实际", "values": [82, 88, 96, 103, 111, 126, 132, 145, 153, 166, 178, 194]},
+            {"id": "plan", "name": "计划", "values": [80, 90, 98, 108, 116, 124, 134, 144, 154, 164, 176, 188]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": false, "showGrid": true, "smooth": true}
+        }
+      }
+    },
+    {
+      "id": "chart-area-complex",
+      "role": "trend",
+      "content": {
+        "title": "季度容量与峰值负载",
+        "summary": "面积趋势覆盖双系列和不同数量级。",
+        "chart": {
+          "chartType": "area",
+          "categories": ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"],
+          "series": [
+            {"id": "capacity", "name": "容量", "values": [55, 57, 60, 62, 66, 69, 72, 76, 79, 82, 86, 91]},
+            {"id": "peak", "name": "峰值", "values": [42, 45, 47, 51, 53, 56, 61, 64, 66, 71, 73, 78]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": false, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "chart-donut-complex",
+      "role": "metrics",
+      "content": {
+        "title": "客户结构占比",
+        "summary": "环形图覆盖六个分组和数值标签。",
+        "chart": {
+          "chartType": "donut",
+          "labels": ["大型企业", "中型企业", "小微企业", "政府", "教育", "其他"],
+          "values": [32, 24, 18, 11, 9, 6],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "innerRadius": 0.62}
+        }
+      }
+    },
+    {
+      "id": "chart-radar-complex",
+      "role": "metrics",
+      "content": {
+        "title": "产品能力雷达",
+        "summary": "雷达图覆盖六个维度和两套对比数据。",
+        "chart": {
+          "chartType": "radar",
+          "categories": ["性能", "稳定性", "易用性", "安全性", "扩展性", "成本"],
+          "series": [
+            {"id": "current", "name": "当前", "values": [82, 91, 73, 94, 78, 69]},
+            {"id": "benchmark", "name": "标杆", "values": [88, 90, 86, 92, 85, 80]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "chart-funnel-complex",
+      "role": "metrics",
+      "content": {
+        "title": "销售转化漏斗",
+        "summary": "漏斗图覆盖从线索到签约的七个阶段。",
+        "chart": {
+          "chartType": "funnel",
+          "labels": ["曝光", "访问", "留资", "有效线索", "方案", "谈判", "签约"],
+          "values": [12000, 7200, 3100, 1900, 980, 520, 286],
+          "options": {"showLegend": false, "showLabels": true, "showValues": true}
+        }
+      }
+    },
+    {
+      "id": "chart-waterfall-complex",
+      "role": "trend",
+      "content": {
+        "title": "利润增减因素瀑布",
+        "summary": "瀑布图覆盖正负变化和最终结果。",
+        "chart": {
+          "chartType": "waterfall",
+          "labels": ["期初", "新增收入", "价格影响", "效率提升", "人工成本", "采购优化", "一次性费用", "期末"],
+          "values": [120, 35, -28, 42, -17, 31, -21, 162],
+          "options": {"showLegend": false, "showLabels": true, "showValues": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "table-complex",
+      "role": "table",
+      "content": {
+        "title": "关键项目状态表",
+        "summary": "同时验证复杂 Spec 中的结构化表格没有被图表改动破坏。",
+        "table": {
+          "columns": [{"label": "项目"}, {"label": "负责人"}, {"label": "进度"}, {"label": "风险"}],
+          "rows": [
+            ["统一编辑器", "A组", "92%", "低"], ["PPTX 导出", "B组", "86%", "中"], ["移动端适配", "C组", "78%", "中"],
+            ["图表重设计", "A组", "88%", "低"], ["模板扩展", "D组", "74%", "中"], ["性能回归", "E组", "95%", "低"]
+          ]
+        }
+      }
+    },
+    {
+      "id": "roadmap-complex",
+      "role": "roadmap",
+      "content": {
+        "title": "版本推进路线",
+        "summary": "验证复杂 Spec 混合 Diagram。",
+        "diagram": {
+          "subtype": "roadmap",
+          "data": {"items": [
+            {"label": "输入", "detail": "Markdown / DeckSpec"}, {"label": "规划", "detail": "角色与目标"}, {"label": "套版", "detail": "A/B/C 方案"},
+            {"label": "编辑", "detail": "元素与图表"}, {"label": "导出", "detail": "HTML / PPTX"}, {"label": "验收", "detail": "页面与 OOXML"}
+          ]}
+        }
+      }
+    },
+    {
+      "id": "conclusion-complex",
+      "role": "conclusion",
+      "content": {
+        "title": "验收结论",
+        "summary": "生成不是终点，真实可修改和方案真实生效才算通过。",
+        "items": [
+          {"label": "复杂输入可生成", "detail": "七类图表与结构化内容共存"},
+          {"label": "每类图表可编辑", "detail": "数据写回 canonical content"},
+          {"label": "A/B/C 真重排", "detail": "图表几何来自选中模板"},
+          {"label": "PPTX 可继续编辑", "detail": "优先导出原生 chart 对象"}
+        ]
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-const RICH_TYPES=new Set(['chart','table','diagram']);
+const RICH_TYPES=new Set(['table','diagram']);
 const num=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
 const area=e=>Math.max(0,num(e?.w))*Math.max(0,num(e?.h));
 const body=e=>e&&num(e.y)>=270&&num(e.w)>60&&num(e.h)>40;
