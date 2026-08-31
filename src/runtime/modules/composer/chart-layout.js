@@ -25,23 +25,32 @@ function scaleWidth(box,factor,alignment='center'){
   const x=alignment==='left'?box.x:alignment==='right'?box.x+delta:box.x+delta/2;
   return safeBox({...box,x,w:nextW});
 }
-function scaleAll(box,factor,alignment='center'){
+function scaleAll(box,factor,alignment='center',vertical='center'){
   const next=scaleWidth(box,factor,alignment),nextH=clamp(next.h*factor,230,CANVAS_H-next.y-60),delta=next.h-nextH;
-  return safeBox({...next,y:next.y+delta/2,h:nextH});
+  const y=vertical==='top'?next.y:vertical==='bottom'?next.y+delta:next.y+delta/2;
+  return safeBox({...next,y,h:nextH});
+}
+function templateProfile(template={}){
+  const family=String(template?.family||'').toLowerCase(),variant=String(template?.layout?.variant||'').toLowerCase();
+  if(family.includes('kpi-dashboard'))return variant==='hero'?{scale:.74,align:'right',vertical:'center',top:8}:{scale:.82,align:'center',vertical:'bottom',top:16};
+  if(family.includes('chart-story'))return variant==='hero'?{scale:.93,align:'left',vertical:'center',top:4}:{scale:.87,align:'center',vertical:'center',top:12};
+  if(family.includes('trend-chart-analysis'))return variant==='steps'?{scale:.78,align:'left',vertical:'bottom',top:18}:{scale:.96,align:'center',vertical:'center',top:4};
+  if(family.includes('big-number'))return variant==='hero'?{scale:.7,align:'right',vertical:'bottom',top:24}:{scale:.8,align:'center',vertical:'bottom',top:18};
+  if(family.includes('metrics-hero'))return {scale:.76,align:'right',vertical:'center',top:12};
+  if(family.includes('metrics-cards'))return {scale:.85,align:'center',vertical:'bottom',top:14};
+  if(family.includes('trend-bars'))return {scale:.95,align:'left',vertical:'center',top:5};
+  if(family.includes('trend-steps'))return {scale:.79,align:'left',vertical:'bottom',top:18};
+  if(variant==='hero')return {scale:.75,align:'right',vertical:'center',top:10};
+  if(variant==='cards'||variant==='grid')return {scale:.86,align:'center',vertical:'bottom',top:14};
+  if(variant==='steps'||variant==='vertical')return {scale:.8,align:'left',vertical:'bottom',top:18};
+  if(variant==='bars'||variant==='line'||variant==='horizontal')return {scale:.95,align:'center',vertical:'center',top:5};
+  if(variant==='split')return {scale:.88,align:'right',vertical:'center',top:10};
+  if(variant==='list'||variant==='table')return {scale:.83,align:'center',vertical:'bottom',top:15};
+  return {scale:.9,align:'center',vertical:'center',top:10};
 }
 function semanticTemplateBox(box,template={}){
-  const family=String(template?.family||'').toLowerCase(),variant=String(template?.layout?.variant||'').toLowerCase();
-  if(family.includes('kpi-dashboard'))return variant==='hero'?inset(box,{left:30,right:104,top:6,bottom:24}):inset(box,{left:72,right:72,top:20,bottom:28});
-  if(family.includes('chart-story'))return variant==='hero'?expand(inset(box,{left:12,right:44,top:4,bottom:8}),{x:14,y:8}):inset(box,{left:48,right:26,top:16,bottom:16});
-  if(family.includes('trend-chart-analysis'))return variant==='steps'?inset(box,{left:106,right:38,top:22,bottom:12}):inset(box,{left:18,right:52,top:6,bottom:10});
-  if(family.includes('big-number'))return inset(expand(box,{x:20,y:6}),{left:104,right:26,top:26,bottom:4});
-  if(variant==='hero')return expand(inset(box,{left:18,right:18,top:4,bottom:4}),{x:18,y:8});
-  if(variant==='cards'||variant==='grid'||family.includes('dashboard'))return inset(box,{left:44,right:44,top:14,bottom:18});
-  if(variant==='steps'||variant==='vertical')return inset(box,{left:92,right:52,top:18,bottom:10});
-  if(variant==='bars'||variant==='line'||variant==='horizontal')return inset(box,{left:12,right:26,top:4,bottom:8});
-  if(variant==='split')return inset(box,{left:36,right:36,top:10,bottom:10});
-  if(variant==='list'||variant==='table')return inset(box,{left:64,right:46,top:14,bottom:18});
-  return box;
+  const profile=templateProfile(template),prepared=inset(box,{top:profile.top||0}),scaled=scaleAll(prepared,profile.scale,profile.align,profile.vertical);
+  return safeBox(scaled);
 }
 function applyIntent(box,intent={}){
   let next={...box};
@@ -56,7 +65,7 @@ function applyIntent(box,intent={}){
   return safeBox(next);
 }
 export function resolveNativeChartLayout({elements=[],template=null,intent={}}={}){
-  const base=bodyBounds(elements),templated=semanticTemplateBox(base,template||{}),geometry=applyIntent(templated,intent||{});
-  return {geometry,meta:{templateId:template?.id||'',family:template?.family||'',variant:template?.layout?.variant||'',source:'template-body'}};
+  const base=bodyBounds(elements),profile=templateProfile(template||{}),templated=semanticTemplateBox(base,template||{}),geometry=applyIntent(templated,intent||{});
+  return {geometry,meta:{templateId:template?.id||'',family:template?.family||'',variant:template?.layout?.variant||'',profile,source:'template-body'}};
 }
 export const NativeChartLayout=Object.freeze({resolve:resolveNativeChartLayout,defaultBox:DEFAULT_BOX});
