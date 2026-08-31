@@ -8,8 +8,20 @@ import { normalizeChartData, validateChartData, resolveChartThemeStyle, validate
 
 const chartNormalizeSlideContentBase=normalizeSlideContent,chartNormalizeDeckSpecBase=normalizeDeckSpec,chartValidateDeckSpecBase=validateDeckSpec,chartBaseQuality=Quality;
 const chartRole=role=>role==='metrics'||role==='trend';
+const chartSuggestedRole=chart=>['line','area','waterfall'].includes(chart?.chartType)?'trend':'metrics';
 const rawChart=content=>content&&typeof content==='object'&&!Array.isArray(content)?content.chart:null;
 function chartProblem(code,path,message){return {code,path,message}}
+function chartMatcherItems(input){
+  const chart=normalizeChartData(input),labels=chart.labels.length?chart.labels:chart.categories,primary=chart.values.length?chart.values:(chart.series[0]?.values||[]);
+  return labels.map((label,index)=>({
+    id:`chart-item-${index+1}`,
+    label:label||`Item ${index+1}`,
+    value:primary[index]===undefined?'':String(primary[index]),
+    detail:chart.series.length>1?chart.series.slice(1).map(series=>`${series.name} ${series.values[index]??''}`.trim()).filter(Boolean).join(' · '):'',
+    unit:'',image:''
+  }));
+}
+function chartApplyMatcherFacts(content,input){if(!content?.items?.length)content.items=chartMatcherItems(input);return content}
 function validatedChart(input,path='chart'){
   const check=validateChartData(input);
   if(!check.ok){const err=new Error(check.errors.map(item=>`${path}.${item.path}: ${item.message}`).join('; '));err.code='CHART_VALIDATION_ERROR';err.report=check;throw err}
@@ -20,9 +32,9 @@ function chartElement({chart,theme,title='',baseElements=[]}={}){
   const normalized=validatedChart(chart),themeTokens=ThemeRegistry.resolve(theme),style=resolveChartThemeStyle(themeTokens),maxZ=Math.max(999,...baseElements.map(item=>Number(item.z)||0));
   return {id:`chart_${composerHashString(`${title}:${normalized.chartType}:${JSON.stringify(normalized)}`)}`,type:'chart',x:112,y:292,w:1280,h:470,z:maxZ+1,...normalized,style,animation:{type:'inherit',delay:.08,duration:.55}};
 }
-export function normalizeSlideContentWithCharts(input={}){const normalized=chartNormalizeSlideContentBase(input);if(rawChart(input))normalized.chart=normalizeChartData(input.chart);return normalized}
-export function normalizeDeckSpecWithCharts(input={},options={}){const normalized=chartNormalizeDeckSpecBase(input,options),sourceSlides=Array.isArray(input?.slides)?input.slides:[];normalized.slides.forEach((slide,index)=>{const chart=rawChart(sourceSlides[index]?.content);if(chart)slide.content.chart=normalizeChartData(chart)});return normalized}
-export function validateDeckSpecWithCharts(input){const base=chartValidateDeckSpecBase(input),errors=[...(base.errors||[])],warnings=[...(base.warnings||[])];for(const [index,slide] of (Array.isArray(input?.slides)?input.slides:[]).entries()){const chart=rawChart(slide?.content);if(!chart)continue;const check=validateChartData(chart);for(const item of check.errors)errors.push({...item,path:`slides[${index}].content.${item.path}`});for(const item of check.warnings||[])warnings.push({...item,path:`slides[${index}].content.${item.path}`})}return {ok:errors.length===0,errors,warnings}}
+export function normalizeSlideContentWithCharts(input={}){const normalized=chartNormalizeSlideContentBase(input),chart=rawChart(input);if(chart){normalized.chart=normalizeChartData(chart);chartApplyMatcherFacts(normalized,normalized.chart)}return normalized}
+export function normalizeDeckSpecWithCharts(input={},options={}){const normalized=chartNormalizeDeckSpecBase(input,options),sourceSlides=Array.isArray(input?.slides)?input.slides:[];normalized.slides.forEach((slide,index)=>{const sourceSlide=sourceSlides[index]||{},chart=rawChart(sourceSlide.content);if(!chart)return;slide.content.chart=normalizeChartData(chart);chartApplyMatcherFacts(slide.content,slide.content.chart);if(sourceSlide.role===undefined||sourceSlide.role===null||sourceSlide.role==='')slide.role=chartSuggestedRole(slide.content.chart)});return normalized}
+export function validateDeckSpecWithCharts(input){const base=chartValidateDeckSpecBase(input),errors=[...(base.errors||[])],warnings=[...(base.warnings||[])];for(const [index,slide] of (Array.isArray(input?.slides)?input.slides:[]).entries()){const chart=rawChart(slide?.content);if(!chart)continue;const check=validateChartData(chart);for(const item of check.errors)errors.push({...item,path:`slides[${index}].content.${item.path}`});for(const item of check.warnings||[])warnings.push({...item,path:`slides[${index}].content.${item.path}`});if(slide?.role!==undefined&&!chartRole(slide.role))errors.push({code:'CHART_ROLE_UNSUPPORTED',path:`slides[${index}].role`,message:'native chart slides must use metrics or trend role, or omit role for automatic inference'})}return {ok:errors.length===0,errors,warnings}}
 export function applyNativeChartToCompiled(result,request={}){const chart=rawChart(request.content),manifest=templateManifest(request.template),role=request.role||manifest?.roles?.find(chartRole)||null;if(!chart||!chartRole(role))return result;const keep=(result.elements||[]).filter(element=>(Number(element.y)||0)<280),native=chartElement({chart,theme:request.theme,title:request.content?.title,baseElements:keep});return {...result,elements:[...keep,native],generatedElementIds:[...keep.map(element=>element.id),native.id],chartType:native.chartType}}
 export function compileSlideWithCharts(baseCompileSlide,request={}){const validation=rawChart(request.content)?validateChartData(request.content.chart):null;if(validation&&!validation.ok){const err=new Error(validation.errors.map(item=>item.message).join('; '));err.code='CHART_VALIDATION_ERROR';err.report=validation;throw err}return applyNativeChartToCompiled(baseCompileSlide(request),request)}
 function attachNodeChart(node,chart,theme){if(!node||!chart||!chartRole(node.composer?.role||node.deckRole))return node;const keep=(node.slideElements||[]).filter(element=>(Number(element.y)||0)<280),native=chartElement({chart,theme,title:node.composer?.content?.title||node.title,baseElements:keep});node.slideElements=[...keep,native];node.composer ||= {};node.composer.content={...(node.composer.content||{}),chart:normalizeChartData(chart)};Provenance.attach(node,node.composer,node.slideElements);return node}
