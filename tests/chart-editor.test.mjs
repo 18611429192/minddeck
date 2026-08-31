@@ -4,14 +4,12 @@ import fs from 'node:fs';
 import { NativeChart } from '../src/runtime/modules/chart.js';
 
 const editorSource=fs.readFileSync(new URL('../src/app/modules/29-chart-editor.js',import.meta.url),'utf8');
-const hardeningSource=fs.readFileSync(new URL('../src/app/modules/29-chart-editor-hardening.js',import.meta.url),'utf8');
 const manifest=JSON.parse(fs.readFileSync(new URL('../src/app/app.manifest.json',import.meta.url),'utf8'));
 
 test('chart editor is part of the application closure and exposes real data controls',()=>{
   const editorIndex=manifest.scripts.indexOf('modules/29-chart-editor.js');
-  const hardeningIndex=manifest.scripts.indexOf('modules/29-chart-editor-hardening.js');
   assert.ok(editorIndex>manifest.scripts.indexOf('modules/20-slide-editor.js'));
-  assert.ok(hardeningIndex>editorIndex);
+  assert.ok(editorIndex<manifest.scripts.indexOf('modules/30-presentation.js'));
   assert.match(editorSource,/图表属性/);
   assert.match(editorSource,/data-chart-type/);
   assert.match(editorSource,/data-chart-category/);
@@ -20,7 +18,9 @@ test('chart editor is part of the application closure and exposes real data cont
   assert.match(editorSource,/add-point/);
   assert.match(editorSource,/add-series/);
   assert.match(editorSource,/node\.composer\.content\.chart/,'chart edits must sync back to Composer source data');
-  assert.match(hardeningSource,/NativeChart\.validate/,'invalid chart mutations must be rejected before commit');
+  const validateIndex=editorSource.indexOf('Core.NativeChart.validate(normalized)');
+  const assignIndex=editorSource.indexOf('chartAssignNormalizedV10(e,normalized)',validateIndex);
+  assert.ok(validateIndex>=0&&assignIndex>validateIndex,'chart edit must validate before mutating the Project element');
 });
 
 test('native chart data contract preserves multi-series edits used by the editor',()=>{
