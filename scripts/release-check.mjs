@@ -9,6 +9,7 @@ const commands=[
   ['node',['tests/design-intent.test.mjs']],
   ['node',['tests/chart.test.mjs']],
   ['node',['tests/table-diagram.test.mjs']],
+  ['node',['tests/input-matrix.test.mjs']],
   ['node',['tests/source-planner.test.mjs']],
   ['node',['tests/ai-planner.test.mjs']],
   ['node',['tests/v10-contract-hardening.test.mjs']],
