@@ -31,7 +31,11 @@ function scaleAll(box,factor,alignment='center'){
 }
 function semanticTemplateBox(box,template={}){
   const family=String(template?.family||'').toLowerCase(),variant=String(template?.layout?.variant||'').toLowerCase();
-  if(variant==='hero'||family.includes('big-number'))return expand(inset(box,{left:18,right:18,top:4,bottom:4}),{x:18,y:8});
+  if(family.includes('kpi-dashboard'))return variant==='hero'?inset(box,{left:30,right:104,top:6,bottom:24}):inset(box,{left:72,right:72,top:20,bottom:28});
+  if(family.includes('chart-story'))return variant==='hero'?expand(inset(box,{left:12,right:44,top:4,bottom:8}),{x:14,y:8}):inset(box,{left:48,right:26,top:16,bottom:16});
+  if(family.includes('trend-chart-analysis'))return variant==='steps'?inset(box,{left:106,right:38,top:22,bottom:12}):inset(box,{left:18,right:52,top:6,bottom:10});
+  if(family.includes('big-number'))return inset(expand(box,{x:20,y:6}),{left:104,right:26,top:26,bottom:4});
+  if(variant==='hero')return expand(inset(box,{left:18,right:18,top:4,bottom:4}),{x:18,y:8});
   if(variant==='cards'||variant==='grid'||family.includes('dashboard'))return inset(box,{left:44,right:44,top:14,bottom:18});
   if(variant==='steps'||variant==='vertical')return inset(box,{left:92,right:52,top:18,bottom:10});
   if(variant==='bars'||variant==='line'||variant==='horizontal')return inset(box,{left:12,right:26,top:4,bottom:8});
