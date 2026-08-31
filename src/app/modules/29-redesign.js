@@ -9,8 +9,8 @@
     body.querySelector('#v10InspectorReset').onclick=()=>{redesignDraftV10.set(node.id,{});redesignRenderV10()};body.querySelector('#v10InspectorDone').onclick=v10InspectorClose;
   }
   function openRedesignV10(){const node=v10InspectorCurrentNode();if(!node){toast('请先进入某个页面的自由画布编辑');return}redesignDraftV10.set(node.id,ComposerV10Inspector.readDesignIntent(node));v10InspectorPanel.classList.add('open');redesignRenderV10()}
+  function bindRedesignEntriesV10(){if(v10InspectorButton){v10InspectorButton.textContent='重新设计本页';v10InspectorButton.title='设置设计意图并从 A/B/C 页面方案中选择';v10InspectorButton.onclick=openRedesignV10}const head=v10InspectorPanel?.querySelector('.v10-inspector-head');if(head){head.querySelector('h3').textContent='重新设计本页';head.querySelector('p').textContent='设计意图是约束，A/B/C 是最终模板结果。'}if(smartPageButton){smartPageButton.textContent='重新设计本页';smartPageButton.title='设置设计意图并从 A/B/C 页面方案中选择';smartPageButton.onclick=openRedesignV10}}
   v10InspectorRender=redesignRenderV10;
-  if(v10InspectorButton){v10InspectorButton.textContent='重新设计本页';v10InspectorButton.title='设置设计意图并从 A/B/C 页面方案中选择';v10InspectorButton.onclick=openRedesignV10}
-  const redesignHead=v10InspectorPanel?.querySelector('.v10-inspector-head');if(redesignHead){redesignHead.querySelector('h3').textContent='重新设计本页';redesignHead.querySelector('p').textContent='设计意图是约束，A/B/C 是最终模板结果。'}
-  if(smartPageButton){smartPageButton.textContent='重新设计本页';smartPageButton.onclick=openRedesignV10}
-  if(smartMobileButton)smartMobileButton.title='重新设计本页';
+  bindRedesignEntriesV10();
+  setTimeout(bindRedesignEntriesV10,0);
+  setTimeout(bindRedesignEntriesV10,80);
