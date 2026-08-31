@@ -8,6 +8,7 @@ const commands=[
   ['node',['tests/template-library.test.mjs']],
   ['node',['tests/design-intent.test.mjs']],
   ['node',['tests/chart.test.mjs']],
+  ['node',['tests/chart-editor.test.mjs']],
   ['node',['tests/table-diagram.test.mjs']],
   ['node',['tests/input-matrix.test.mjs']],
   ['node',['tests/source-planner.test.mjs']],
