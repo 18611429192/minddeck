@@ -20,8 +20,22 @@ function imageSizing(e){
 function addImage(slide,e){const src=e.src||e.url||e.data;if(!src)return false;const image={...optionsOf(e),transparency:alpha(e.opacity)};if(/^data:/i.test(src))image.data=src;else image.path=src;const sizing=imageSizing(e);if(sizing)image.sizing=sizing;slide.addImage(image);return true}
 function addBackgroundImage(slide,master,warnings){const src=master?.bgImage;if(!src)return;const fit=['contain','cover'].includes(master.bgFit)?master.bgFit:'cover';if(!addImage(slide,{id:'master-bg',type:'image',x:0,y:0,w:SLIDE_WIDTH,h:SLIDE_HEIGHT,src,fit,opacity:1}))warnings.push({code:'PPTX_BACKGROUND_IMAGE_MISSING'})}
 function addTable(slide,e){const data=normalizeTableData(e),rows=[];if(data.header?.visible)rows.push((data.header.cells||[]).map(cell=>({text:String(cell.text||''),options:{bold:true,align:cell.align||'left',color:color(cell.color,'172033'),fill:cell.background?{color:color(cell.background)}:undefined}})));for(const row of data.rows||[])rows.push((row.cells||[]).map(cell=>({text:String(cell.text||''),options:{align:cell.align||'left',color:color(cell.color,'172033'),fill:cell.background?{color:color(cell.background)}:undefined}})));slide.addTable(rows,{...optionsOf(e),border:{type:'solid',color:color(e.style?.borderColor,'D9DEEA'),pt:Math.max(.25,Number(e.style?.borderWidth||1)*.75)},fontFace:e.style?.fontFamily||'Arial',fontSize:Math.max(8,Number(e.style?.fontSize||18)*.75),margin:Math.max(1,Number(e.style?.cellPadding||8)*.75)})}
-function chartTypeOf(type,pptx){const C=pptx.ChartType||{};return type==='line'?C.line:type==='area'?C.area:type==='donut'?(C.doughnut||C.donut):C.bar}
-function addChart(slide,e,pptx,warnings){const d=normalizeChartData(e);if(!['bar','line','area','donut'].includes(d.chartType)){warnings.push({code:'PPTX_CHART_FALLBACK',elementId:e.id,type:d.chartType});return false}const series=d.chartType==='donut'?[{name:d.series[0]?.name||'Series 1',labels:d.labels,values:d.values}]:d.series.map(s=>({name:s.name,labels:d.categories,values:s.values}));slide.addChart(chartTypeOf(d.chartType,pptx),series,{...optionsOf(e),showLegend:d.options.showLegend,showValue:d.options.showValues,showCategoryName:d.options.showLabels,showTitle:false,showCatName:false,showPercent:d.chartType==='donut'&&d.options.showValues,holeSize:d.chartType==='donut'?Math.round(d.options.innerRadius*100):undefined});return true}
+function chartTypeResolution(type,pptx){
+  const C=pptx.ChartType||{};
+  if(type==='line')return {type:C.line||C.bar};
+  if(type==='area')return {type:C.area||C.line||C.bar};
+  if(type==='donut')return {type:C.doughnut||C.donut||C.pie||C.bar};
+  if(type==='radar')return {type:C.radar||C.line||C.bar,approximation:C.radar?null:'line'};
+  if(type==='funnel')return {type:C.bar||C.line,approximation:'bar'};
+  if(type==='waterfall')return {type:C.bar||C.line,approximation:'bar'};
+  return {type:C.bar};
+}
+function addChart(slide,e,pptx,warnings){
+  const d=normalizeChartData(e),resolved=chartTypeResolution(d.chartType,pptx);if(!resolved.type){warnings.push({code:'PPTX_CHART_FALLBACK',elementId:e.id,type:d.chartType});return false}
+  if(resolved.approximation)warnings.push({code:'PPTX_CHART_APPROXIMATION',elementId:e.id,type:d.chartType,editableAs:resolved.approximation,message:`${d.chartType} is exported as an editable ${resolved.approximation} chart because upstream PptxGenJS has no native ChartEx support for this type`});
+  const single=['donut','funnel','waterfall'].includes(d.chartType),series=single?[{name:d.series[0]?.name||'Series 1',labels:d.labels,values:d.values}]:d.series.map(s=>({name:s.name,labels:d.categories,values:s.values}));
+  slide.addChart(resolved.type,series,{...optionsOf(e),showLegend:d.options.showLegend,showValue:d.options.showValues,showCategoryName:d.options.showLabels,showTitle:false,showCatName:false,showPercent:d.chartType==='donut'&&d.options.showValues,holeSize:d.chartType==='donut'?Math.round(d.options.innerRadius*100):undefined});return true
+}
 function boxCenter(box){return {x:box.x+box.w/2,y:box.y+box.h/2}}
 function gridBoxes(e,items,cols,gap=12,pad=18){const count=Math.max(1,items.length),columns=Math.max(1,Math.min(count,Math.round(cols)||1)),rows=Math.ceil(count/columns),boxW=Math.max(32,(Number(e.w||600)-pad*2-gap*(columns-1))/columns),boxH=Math.max(32,(Number(e.h||300)-pad*2-gap*(rows-1))/rows);return items.map((item,index)=>({item,x:Number(e.x||0)+pad+(index%columns)*(boxW+gap),y:Number(e.y||0)+pad+Math.floor(index/columns)*(boxH+gap),w:boxW,h:boxH}))}
 function diagramBoxes(e,d){
