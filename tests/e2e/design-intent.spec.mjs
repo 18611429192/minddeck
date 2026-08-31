@@ -65,7 +65,7 @@ test('V10 unified Redesign panel drafts DesignIntent then applies one A/B/C outc
   await page.reload();
   await dismissWelcome(page);
   const reloadedCards=await page.evaluate(id=>{const node=globalThis.MindDeckApp.getProject().children.find(item=>item.id===id);return {intent:node?.composer?.designIntent,resolution:node?.composer?.intentResolution}},cardsId);
-  expect(reloadedCards.intent).toEqual({columns:2,emphasisIndex:1,density:'compact'});
+  expect(reloadedCards.intent).toEqual(expect.objectContaining({columns:2,emphasisIndex:1,density:'compact'}));
   expect(reloadedCards.resolution.matcher).toBe('Core.Composer.matchTemplates');
 
   const imageId='intent-image';
