@@ -30,9 +30,9 @@ export const Element={
       if(element.lineHeight!==undefined)el.style.lineHeight=String(element.lineHeight);
       if(options.editorTextLayout){el.style.alignItems='flex-start';el.style.justifyContent=element.textAlign==='center'?'center':element.textAlign==='right'?'flex-end':'flex-start'}
     }else if(element.type==='image'){
-      const img=doc.createElement('img');img.src=element.src||'';img.style.objectFit=element.fit||'contain';el.appendChild(img);
+      const img=doc.createElement('img');img.src=element.src||'';img.style.objectFit=element.fit||'contain';img.style.objectPosition=element.objectPosition||'50% 50%';el.appendChild(img);
     }else if(element.type==='video'){
-      const v=doc.createElement('video');v.src=element.src||'';v.preload=options.videoPreload||'metadata';v.style.objectFit=element.fit||'contain';v.controls=options.videoControls!==undefined?!!options.videoControls:element.controls!==false;v.autoplay=options.videoAutoplay!==undefined?!!options.videoAutoplay:!!element.autoplay;v.muted=options.videoMuted!==undefined?!!options.videoMuted:!!element.muted;v.loop=!!element.loop;v.playsInline=true;el.appendChild(v);
+      const v=doc.createElement('video');v.src=element.src||'';v.preload=options.videoPreload||'metadata';v.style.objectFit=element.fit||'contain';v.style.objectPosition=element.objectPosition||'50% 50%';v.controls=options.videoControls!==undefined?!!options.videoControls:element.controls!==false;v.autoplay=options.videoAutoplay!==undefined?!!options.videoAutoplay:!!element.autoplay;v.muted=options.videoMuted!==undefined?!!options.videoMuted:!!element.muted;v.loop=!!element.loop;v.playsInline=true;el.appendChild(v);
       if(v.autoplay&&options.playAutoplay!==false){const delay=(Number(element.animation?.delay)||0)*1000+(options.autoplayExtraDelay??80);setTimeout(()=>v.play().catch(()=>{}),Math.max(0,delay))}
     }else if(element.type==='shape'){
       el.style.background=element.fill||'#eee';el.style.borderStyle='solid';el.style.borderColor=element.borderColor||'transparent';el.style.borderWidth=(element.borderWidth||0)+'px';el.style.borderRadius=(element.shape==='circle'?999:(element.radius||0))+'px';
@@ -53,7 +53,7 @@ export const Slide={
     const shape=(kind='rect')=>({id:uid(),type:'shape',shape:kind,x:260,y:250,w:300,h:180,z:5,fill:'#edf2ff',borderColor:'#b8c5ff',borderWidth:2,radius:kind==='circle'?999:22,animation:{type:'inherit',delay:0,duration:.5}});
     const elements=[{...text(node?.title||'未命名节点'),x:110,y:105,w:1180,h:110,fontSize:58,fontWeight:800,z:10}];
     if(node?.text)elements.push({...text(node.text),x:115,y:260,w:node.image?760:1270,h:340,fontSize:30,fontWeight:400,color:'#5f6878',z:10});
-    if(node?.image)elements.push({id:uid(),type:'image',x:930,y:250,w:540,h:390,z:8,src:node.image,fit:'contain',animation:{type:'inherit',delay:.15,duration:.55}});
+    if(node?.image)elements.push({id:uid(),type:'image',x:930,y:250,w:540,h:390,z:8,src:node.image,fit:'contain',objectPosition:'50% 50%',animation:{type:'inherit',delay:.15,duration:.55}});
     if(Array.isArray(node?.points)&&node.points.some(Boolean)){
       node.points.filter(Boolean).slice(0,3).forEach((point,i)=>{
         elements.push({...shape('rect'),x:110+i*470,y:500,w:410,h:210,z:4,fill:'#f7f9fc',borderColor:'#dfe5ef',borderWidth:1,radius:22});
