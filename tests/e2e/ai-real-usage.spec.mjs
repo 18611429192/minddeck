@@ -42,7 +42,7 @@ function deckPlan(){
     tone:'clear',
     targetSlides:10,
     storyArc:['cover','context','native charts','structured data'],
-    sections:[{id:'all','title':'Full real usage verification'}],
+    sections:[{id:'all',title:'Full real usage verification'}],
     slideIntents:[
       {goal:'Open the test deck',roleHint:'cover',title:'AI Real Usage E2E',topic:'AI Real Usage E2E',facts:[],takeaway:'',emphasis:'title'},
       {goal:'Explain what is being tested',roleHint:'statement',title:'Usage scenario',topic:'Usage scenario',facts:['Generate through the AI UI','Edit every page','Edit every chart','Export editable PPTX'],takeaway:'All operations must use the real product path',emphasis:'balanced'},
@@ -95,7 +95,7 @@ async function projectNode(page,id){
 
 async function openNodeEditorByUi(page,id){
   if(await page.locator('#editorShell').evaluate(node=>node.classList.contains('open')))await page.locator('#backToMapBtn').click();
-  await page.locator('#mindmapModeBtn').click();
+  await page.locator('#presentationModeBtn').click();
   const mapNode=page.locator(`.node[data-id="${id}"]`);
   await expect(mapNode).toBeVisible();
   await mapNode.click();
