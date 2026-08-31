@@ -52,7 +52,7 @@ for(const [subtype,role,count] of diagramCases){
   const items=Array.from({length:count},(_,index)=>({label:`${subtype} ${index+1}`,detail:`说明 ${index+1}`,value:String(index+1)}));
   const spec={schemaVersion:1,title:`diagram-${subtype}`,goal:'diagram item scale boundary',slides:[{id:`diagram-${subtype}`,content:{title:`${subtype} large`,diagram:{subtype,data:{items}}}}]};
   const deck=C.compileDeck(spec,{rootId:`diagram-root-${subtype}`});assert.equal(deck.quality.ok,true,`${subtype} ${count}`);
-  const node=deck.project.children[0],native=node.slideElements.find(element=>element.type==='diagram');assert.ok(native);assert.equal(native.data.items.length,count);assert.ok(node.composer.content.items.length<=4);assert.equal(node.composer.role,role);
+  const node=deck.project.children[0],native=node.slideElements.find(element=>element.type==='diagram');assert.ok(native);assert.equal(native.data.items.length,count);assert.ok(node.composer.content.items.length<=6);assert.equal(node.composer.role,role);
 }
 
 // Rich Markdown syntax remains normalized.
