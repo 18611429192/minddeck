@@ -61,14 +61,17 @@ test('complex DeckSpec generates through real buttons and every native chart typ
     await category.fill(`已编辑-${type}`);await category.press('Tab');
     const value=page.locator('[data-chart-value-row="0"][data-chart-value-series="0"]');
     const editedValue=700+index*13;await value.fill(String(editedValue));await value.press('Tab');
+    const pointCountBefore=await page.locator('[data-chart-category]').count();
     await page.locator('[data-chart-action="add-point"]').click();
-    await expect(page.locator('[data-chart-category]')).not.toHaveCount(0);
+    await expect(page.locator('[data-chart-category]')).toHaveCount(pointCountBefore+1);
 
     if(['bar','line','area','radar'].includes(type)){
+      const names=page.locator('[data-chart-series-name]'),seriesCountBefore=await names.count();
       await page.locator('[data-chart-action="add-series"]').click();
-      const names=page.locator('[data-chart-series-name]');await expect(names).toHaveCount(3);
-      await names.nth(2).fill(`新增系列-${type}`);await names.nth(2).press('Tab');
-      const extra=page.locator('[data-chart-value-row="0"][data-chart-value-series="2"]');await extra.fill(String(90+index));await extra.press('Tab');
+      await expect(names).toHaveCount(seriesCountBefore+1);
+      const newSeriesIndex=seriesCountBefore;
+      await names.nth(newSeriesIndex).fill(`新增系列-${type}`);await names.nth(newSeriesIndex).press('Tab');
+      const extra=page.locator(`[data-chart-value-row="0"][data-chart-value-series="${newSeriesIndex}"]`);await extra.fill(String(90+index));await extra.press('Tab');
     }else{
       await expect(page.locator('[data-chart-action="add-series"]')).toBeDisabled();
     }
