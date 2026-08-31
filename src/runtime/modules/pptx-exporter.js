@@ -4,13 +4,14 @@ import { normalizeTableData, normalizeDiagramData } from './structured-data.js';
 const PX_PER_INCH=120;
 const SLIDE_WIDTH=1600,SLIDE_HEIGHT=900;
 const inch=value=>Number(value||0)/PX_PER_INCH;
-const color=(value,fallback='000000')=>String(value||fallback).replace(/^#/,'').slice(0,6);
+const isTransparent=value=>/^(transparent|none)$/i.test(String(value||'').trim());
+const color=(value,fallback='000000')=>isTransparent(value)?fallback:String(value||fallback).replace(/^#/,'').slice(0,6);
 const alpha=value=>Math.round((1-Math.max(0,Math.min(1,Number(value??1))))*100);
 const optionsOf=e=>({x:inch(e.x),y:inch(e.y),w:inch(e.w),h:inch(e.h),rotate:Number(e.rotation||0)});
 function slideNodes(project){const nodes=[];Tree.walkAll(project,node=>nodes.push(node));const order=Array.isArray(project.presentationOrder)&&project.presentationOrder.length?project.presentationOrder:null;if(!order)return nodes;const byId=new Map(nodes.map(n=>[n.id,n]));return order.map(id=>byId.get(id)).filter(Boolean)}
 async function resolvePptxGen(options={}){if(options.PptxGenJS)return options.PptxGenJS;if(globalThis.PptxGenJS)return globalThis.PptxGenJS;try{const mod=await import('pptxgenjs');return mod.default||mod}catch(err){const wrapped=new Error('PptxGenJS is unavailable. Install pptxgenjs or provide the browser PptxGenJS global.');wrapped.code='PPTX_LIBRARY_UNAVAILABLE';wrapped.cause=err;throw wrapped}}
 function addText(slide,e){slide.addText(String(e.text??''),{...optionsOf(e),fontFace:e.fontFamily||'Arial',fontSize:Math.max(1,Number(e.fontSize||28)*.75),bold:Number(e.fontWeight||400)>=650,color:color(e.color,'172033'),align:e.textAlign||'left',valign:e.verticalAlign||'mid',margin:0,breakLine:false,transparency:alpha(e.opacity)})}
-function addShape(slide,e,pptx){const shapeMap={rect:'rect',rectangle:'rect',roundRect:'roundRect',rounded:'roundRect',ellipse:'ellipse',circle:'ellipse',line:'line'},key=shapeMap[e.shape]||'rect',shapeType=pptx.ShapeType?.[key]||pptx.ShapeType?.rect||key,opts={...optionsOf(e),fill:{color:color(e.fill||e.background,'FFFFFF'),transparency:alpha(e.opacity)},line:{color:color(e.borderColor,'D9DEEA'),width:Math.max(.1,Number(e.borderWidth||0)*.75)}};slide.addShape(shapeType,opts);if(e.text)addText(slide,{...e,x:e.x+8,y:e.y+8,w:Math.max(0,e.w-16),h:Math.max(0,e.h-16),fill:undefined})}
+function addShape(slide,e,pptx){const shapeMap={rect:'rect',rectangle:'rect',roundRect:'roundRect',rounded:'roundRect',ellipse:'ellipse',circle:'ellipse',line:'line'},key=shapeMap[e.shape]||'rect',shapeType=pptx.ShapeType?.[key]||pptx.ShapeType?.rect||key,fillValue=e.fill||e.background,lineValue=e.borderColor,opts={...optionsOf(e),fill:{color:color(fillValue,'FFFFFF'),transparency:isTransparent(fillValue)?100:alpha(e.opacity)},line:{color:color(lineValue,'D9DEEA'),transparency:isTransparent(lineValue)?100:0,width:Math.max(.1,Number(e.borderWidth||0)*.75)}};slide.addShape(shapeType,opts);if(e.text)addText(slide,{...e,x:e.x+8,y:e.y+8,w:Math.max(0,e.w-16),h:Math.max(0,e.h-16),fill:undefined})}
 function imageSizing(e){
   const crop=e?.crop&&typeof e.crop==='object'&&!Array.isArray(e.crop)?e.crop:null;
   if(crop&&['x','y','w','h'].every(key=>Number.isFinite(Number(crop[key])))&&Number(crop.w)>0&&Number(crop.h)>0)return {type:'crop',x:inch(crop.x),y:inch(crop.y),w:inch(crop.w),h:inch(crop.h)};
