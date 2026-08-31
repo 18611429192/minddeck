@@ -38,16 +38,19 @@ for(const nodeId of ['chart-bar-complex','chart-line-complex']){
   const intent={density:'standard',alignment:'center',visualWeight:1,contentBalance:'balanced',titleWeight:'balanced'};
   const resolution=C.resolveDesignIntent({node,intent,role:node.composer.role,theme:node.deckTheme,limit:3});
   assert.equal(resolution.candidates.length,3,`${nodeId} must expose A/B/C candidates`);
-  const signatures=[];
+  assert.equal(new Set(resolution.candidates.map(item=>item.templateId)).size,3,`${nodeId} A/B/C candidate IDs must be unique`);
+  const signatures=[],diagnostics=[];
   for(const candidate of resolution.candidates){
     C.applyTemplate({node,templateId:candidate.templateId,params:candidate.params,theme:node.deckTheme,density:'standard',role:node.composer.role,force:true,strictParams:true,intent});
     const chart=node.slideElements.find(element=>element.type==='chart');
     assert.ok(chart,`${candidate.templateId} must keep a chart element`);
     assert.equal(chart.chartLayout?.templateId,candidate.templateId,`${candidate.templateId} must be the geometry source`);
     assert.deepEqual(node.composer.content.chart,sourceChart,`${candidate.templateId} must preserve canonical chart data`);
-    signatures.push(geometry(chart));
+    const signature=geometry(chart);signatures.push(signature);
+    diagnostics.push({templateId:candidate.templateId,family:candidate.family,signature,layout:chart.chartLayout});
   }
-  assert.equal(new Set(signatures).size,3,`${nodeId} A/B/C must produce three visibly different chart geometries`);
+  console.log('Chart A/B/C diagnostics',nodeId,JSON.stringify(diagnostics));
+  assert.equal(new Set(signatures).size,3,`${nodeId} A/B/C must produce three visibly different chart geometries: ${JSON.stringify(diagnostics)}`);
 
   const first=resolution.candidates[0];
   C.applyTemplate({node,templateId:first.templateId,params:first.params,theme:node.deckTheme,density:'standard',role:node.composer.role,force:true,strictParams:true,intent:{...intent,contentBalance:'text',visualWeight:.9}});
