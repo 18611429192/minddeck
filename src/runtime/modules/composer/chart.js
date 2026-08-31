@@ -8,16 +8,18 @@ import { normalizeChartData, validateChartData, resolveChartThemeStyle, validate
 
 const chartNormalizeSlideContentBase=normalizeSlideContent,chartNormalizeDeckSpecBase=normalizeDeckSpec,chartValidateDeckSpecBase=validateDeckSpec,chartBaseQuality=Quality;
 const chartRole=role=>role==='metrics'||role==='trend';
-const chartSuggestedRole=chart=>['line','area','waterfall'].includes(chart?.chartType)?'trend':'metrics';
 const rawChart=content=>content&&typeof content==='object'&&!Array.isArray(content)?content.chart:null;
+const chartPointCount=chart=>Math.max(chart?.categories?.length||0,chart?.labels?.length||0,chart?.values?.length||0,chart?.series?.[0]?.values?.length||0);
+const chartSuggestedRole=chart=>['line','area','waterfall'].includes(chart?.chartType)&&chartPointCount(chart)>=3?'trend':'metrics';
 function chartProblem(code,path,message){return {code,path,message}}
+function chartSampleIndices(count,limit=4){if(count<=0)return [];if(count<=limit)return Array.from({length:count},(_,index)=>index);const out=[];for(let index=0;index<limit;index++)out.push(Math.round(index*(count-1)/Math.max(1,limit-1)));return [...new Set(out)]}
 function chartMatcherItems(input){
-  const chart=normalizeChartData(input),labels=chart.labels.length?chart.labels:chart.categories,primary=chart.values.length?chart.values:(chart.series[0]?.values||[]);
-  return labels.map((label,index)=>({
+  const chart=normalizeChartData(input),labels=chart.labels.length?chart.labels:chart.categories,primary=chart.values.length?chart.values:(chart.series[0]?.values||[]),indices=chartSampleIndices(labels.length,4);
+  return indices.map((sourceIndex,index)=>({
     id:`chart-item-${index+1}`,
-    label:label||`Item ${index+1}`,
-    value:primary[index]===undefined?'':String(primary[index]),
-    detail:chart.series.length>1?chart.series.slice(1).map(series=>`${series.name} ${series.values[index]??''}`.trim()).filter(Boolean).join(' · '):'',
+    label:labels[sourceIndex]||`Item ${sourceIndex+1}`,
+    value:primary[sourceIndex]===undefined?'':String(primary[sourceIndex]),
+    detail:chart.series.length>1?chart.series.slice(1).map(series=>`${series.name} ${series.values[sourceIndex]??''}`.trim()).filter(Boolean).join(' · '):'',
     unit:'',image:''
   }));
 }
