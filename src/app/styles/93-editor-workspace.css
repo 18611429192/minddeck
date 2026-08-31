@@ -1,0 +1,218 @@
+/*
+ * Desktop slide-editor workspace polish.
+ *
+ * Keep the 1600x900 logical page untouched. This layer only changes editor chrome,
+ * reserves real space for the inspector, and makes the ribbon deterministic across
+ * desktop resolutions. Touch/mobile keeps the dedicated bottom-toolbar experience.
+ */
+@media (min-width:701px) and (pointer:fine){
+  #editorShell{
+    --editor-inspector-width:336px;
+    --editor-ribbon-height:94px;
+    --editor-chrome:#f8f9fb;
+    --editor-chrome-line:#d9dfe8;
+    --editor-workspace:#e6eaf0;
+    width:100vw!important;max-width:100vw!important;min-width:0!important;
+    overflow:hidden!important;box-sizing:border-box!important;
+    background:var(--editor-workspace)
+  }
+
+  .editor-topbar{
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    box-sizing:border-box!important;
+    min-height:var(--editor-ribbon-height)!important;
+    height:var(--editor-ribbon-height)!important;
+    max-height:var(--editor-ribbon-height)!important;
+    padding:48px 10px 8px!important;
+    gap:6px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#c4cbd6 transparent;
+    background:linear-gradient(180deg,#fff 0 42px,var(--editor-chrome) 42px 100%)!important;
+    border-bottom:1px solid var(--editor-chrome-line)!important;
+    box-shadow:0 1px 0 rgba(255,255,255,.85),0 3px 12px rgba(26,34,48,.05)
+  }
+  .editor-topbar::-webkit-scrollbar{height:5px}
+  .editor-topbar::-webkit-scrollbar-thumb{background:#c4cbd6;border-radius:99px}
+
+  /* Stable title strip: never participates in ribbon wrapping/scrolling. */
+  #backToMapBtn{
+    position:absolute!important;left:10px;top:7px;z-index:5;
+    height:32px!important;padding:0 11px!important;border-color:#dce2ea!important;background:#fff!important;
+    box-shadow:0 1px 2px rgba(24,32,45,.04)
+  }
+  .editor-title{
+    position:absolute!important;left:122px;right:286px;top:7px;height:32px;
+    display:flex;align-items:center;min-width:0;max-width:none!important;
+    font-size:13px!important;font-weight:800;letter-spacing:-.15px;color:#252d39
+  }
+  .editor-mode-pill{
+    position:absolute!important;right:198px;top:10px;z-index:5;
+    height:25px;display:flex;align-items:center;padding:0 9px!important;
+    border:1px solid #dbe4ff;background:#edf2ff;color:#315efb
+  }
+  #saveEditorBtn{
+    position:absolute!important;right:10px;top:7px;z-index:6;
+    height:32px!important;min-width:78px;padding:0 14px!important;
+    box-shadow:0 4px 12px rgba(49,94,251,.16)
+  }
+  .editor-topbar>.spacer{display:none!important}
+
+  /* Ribbon groups stay on one horizontal line. On a smaller desktop the ribbon scrolls
+     instead of turning into unpredictable multi-row chrome. */
+  .editor-topbar .toolbar-sep{
+    display:block!important;flex:0 0 1px;width:1px;height:29px!important;margin:0 2px!important;background:#dfe4eb
+  }
+  .editor-topbar .element-toolbar{
+    display:flex!important;flex:0 0 auto!important;align-items:center;gap:3px!important;
+    padding:3px;border:1px solid #e0e5ec;border-radius:9px;background:#fff;
+    box-shadow:0 1px 2px rgba(27,35,48,.035)
+  }
+  .editor-topbar .element-toolbar .btn{
+    flex:0 0 auto;white-space:nowrap;min-height:29px;padding:6px 8px!important;
+    border:0;background:transparent;font-size:11px!important;border-radius:7px
+  }
+  .editor-topbar .element-toolbar .btn:hover{background:#f1f4f8}
+
+  .editor-topbar .align-btns{
+    display:grid!important;flex:0 0 424px!important;min-width:424px!important;width:424px!important;
+    grid-template-columns:repeat(10,minmax(0,1fr))!important;gap:2px!important;
+    padding:3px;border:1px solid #e0e5ec;border-radius:9px;background:#fff;
+    box-shadow:0 1px 2px rgba(27,35,48,.035)
+  }
+  .editor-topbar .align-btns .btn{
+    min-width:0!important;min-height:29px;padding:5px 3px!important;border:0!important;
+    background:transparent!important;border-radius:6px!important;font-size:10px!important;white-space:nowrap
+  }
+  .editor-topbar .align-btns .btn:hover{background:#f1f4f8!important}
+
+  .editor-topbar>.btn:not(#backToMapBtn):not(#saveEditorBtn){
+    flex:0 0 auto;white-space:nowrap;min-height:34px;padding:7px 9px!important;
+    border-color:#dfe4eb;background:#fff;font-size:11px!important;border-radius:8px
+  }
+  .editor-topbar>.btn.danger{color:#b44249;background:#fff8f8;border-color:#efd7d9}
+  #toggleMasterModeBtn,#masterSettingsBtn{background:#f7f4fc!important;border-color:#e4dcf2!important;color:#6646a7!important}
+
+  .editor-body{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    box-sizing:border-box!important;overflow:hidden!important;
+    background:var(--editor-workspace)!important
+  }
+  .editor-stage-wrap{
+    inset:0!important;right:0!important;
+    max-width:100%!important;min-width:0!important;box-sizing:border-box!important;
+    padding:26px 32px 30px!important;
+    background:
+      radial-gradient(circle at 1px 1px,rgba(132,142,158,.20) 1px,transparent 1.15px),
+      linear-gradient(180deg,#edf0f4,#e4e8ee)!important;
+    background-size:22px 22px,100% 100%!important;
+    overflow:hidden!important
+  }
+  #editorShell.editor-inspector-docked .editor-stage-wrap{right:var(--editor-inspector-width)!important}
+
+  #editorStage{
+    border:1px solid rgba(198,205,216,.9);
+    box-shadow:0 18px 52px rgba(28,36,52,.18),0 2px 8px rgba(28,36,52,.08)!important
+  }
+  #editorShell.master-editing #editorStage{
+    outline:2px solid rgba(116,78,185,.18)!important;outline-offset:7px!important
+  }
+
+  /* Real docked inspector. It no longer covers the page. */
+  #propPanel{
+    position:absolute!important;right:0!important;top:0!important;bottom:0!important;
+    width:var(--editor-inspector-width)!important;max-width:none!important;
+    margin:0!important;padding:17px 16px 18px!important;
+    box-sizing:border-box!important;overflow-x:hidden!important;
+    border:0!important;border-left:1px solid #d9dfe8!important;border-radius:0!important;
+    background:rgba(255,255,255,.985)!important;
+    box-shadow:-8px 0 22px rgba(25,33,47,.055)!important;
+    backdrop-filter:blur(18px);z-index:40!important
+  }
+  #propPanel *,#propPanel *::before,#propPanel *::after{box-sizing:border-box}
+  #propPanel h3{
+    margin:1px 70px 15px 1px!important;font-size:15px!important;line-height:28px;
+    letter-spacing:-.1px;color:#2b3340
+  }
+  #desktopPropCollapse{
+    display:inline-flex!important;right:11px!important;top:10px!important;width:30px!important;height:30px!important;
+    align-items:center;justify-content:center;padding:0!important;background:#f2f4f7!important;border-color:#e1e5eb!important
+  }
+  #propPanel .field{margin:11px 0;min-width:0}
+  #propPanel .field label{font-size:10px;color:#737d8b;font-weight:700;margin-bottom:5px}
+  #propPanel .field input,#propPanel .field textarea,#propPanel .field select{
+    width:100%;max-width:100%;min-width:0;min-height:36px;border-radius:8px;background:#fbfcfd
+  }
+  #propPanel .prop-row{gap:8px;min-width:0}
+  #propPanel textarea{min-height:82px;resize:vertical}
+
+  #editorPropRestoreHandle{
+    right:0!important;width:28px!important;height:76px!important;border-radius:10px 0 0 10px!important;
+    background:rgba(255,255,255,.97)!important;box-shadow:-5px 8px 22px rgba(25,33,47,.11)!important
+  }
+
+  .canvas-hint{
+    left:14px!important;bottom:12px!important;max-width:calc(100% - 28px);
+    padding:6px 9px!important;border-radius:7px!important;
+    background:rgba(38,45,57,.78)!important;font-size:10px!important;line-height:1.35;
+    backdrop-filter:blur(8px)
+  }
+}
+
+/* Compact desktop/tablet widths: same structure, smaller dock and tighter ribbon. */
+@media (min-width:701px) and (max-width:1199px) and (pointer:fine){
+  #editorShell{--editor-inspector-width:292px;--editor-ribbon-height:88px}
+  .editor-topbar{padding:44px 8px 7px!important;gap:4px!important}
+  #backToMapBtn{left:8px;top:6px;height:30px!important}
+  .editor-title{left:116px;right:264px;top:6px;height:30px;font-size:12px!important}
+  .editor-mode-pill{right:183px;top:9px;height:23px;font-size:9px!important}
+  #saveEditorBtn{right:8px;top:6px;height:30px!important;min-width:72px}
+  .editor-topbar .element-toolbar .btn{padding:5px 7px!important;font-size:10px!important}
+  .editor-topbar .align-btns{flex-basis:374px!important;min-width:374px!important;width:374px!important}
+  .editor-topbar .align-btns .btn{font-size:9px!important;padding:4px 2px!important}
+  .editor-topbar>.btn:not(#backToMapBtn):not(#saveEditorBtn){font-size:10px!important;padding:6px 7px!important}
+  .editor-stage-wrap{padding:20px 22px 24px!important}
+  #propPanel{padding:14px 13px 16px!important}
+}
+
+/* Short landscape windows need vertical space more than chrome. */
+@media (min-width:701px) and (max-height:650px) and (pointer:fine){
+  #editorShell{--editor-ribbon-height:78px}
+  .editor-topbar{padding-top:39px!important;padding-bottom:5px!important}
+  #backToMapBtn,.editor-title,#saveEditorBtn{top:4px!important;height:28px!important}
+  .editor-mode-pill{top:7px!important;height:22px!important}
+  .editor-stage-wrap{padding-top:14px!important;padding-bottom:16px!important}
+  .canvas-hint{display:none!important}
+}
+
+/* Keep UI themes coherent inside the editor without changing slide design itself. */
+@media (min-width:701px) and (pointer:fine){
+  body[data-ui-theme="dark"] #editorShell{--editor-chrome:#1e252f;--editor-chrome-line:#323c49;--editor-workspace:#151b23}
+  body[data-ui-theme="dark"] .editor-topbar{
+    background:linear-gradient(180deg,#1b222c 0 42px,#1e252f 42px 100%)!important;border-color:#323c49!important
+  }
+  body[data-ui-theme="dark"] .editor-title{color:#e8edf3}
+  body[data-ui-theme="dark"] #backToMapBtn,
+  body[data-ui-theme="dark"] .editor-topbar .element-toolbar,
+  body[data-ui-theme="dark"] .editor-topbar .align-btns,
+  body[data-ui-theme="dark"] .editor-topbar>.btn:not(#saveEditorBtn){background:#252e3a!important;border-color:#394452!important;color:#dbe2eb!important}
+  body[data-ui-theme="dark"] .editor-topbar .element-toolbar .btn,
+  body[data-ui-theme="dark"] .editor-topbar .align-btns .btn{color:#d5dde8!important}
+  body[data-ui-theme="dark"] .editor-topbar .element-toolbar .btn:hover,
+  body[data-ui-theme="dark"] .editor-topbar .align-btns .btn:hover{background:#313b48!important}
+  body[data-ui-theme="dark"] .editor-stage-wrap{
+    background:radial-gradient(circle at 1px 1px,rgba(113,126,145,.20) 1px,transparent 1.15px),linear-gradient(180deg,#1a2028,#151a21)!important;
+    background-size:22px 22px,100% 100%!important
+  }
+  body[data-ui-theme="dark"] #propPanel{background:rgba(29,36,46,.99)!important;border-left-color:#384351!important;color:#e8edf3}
+  body[data-ui-theme="dark"] #propPanel h3{color:#eef2f7}
+  body[data-ui-theme="dark"] #propPanel .field input,
+  body[data-ui-theme="dark"] #propPanel .field textarea,
+  body[data-ui-theme="dark"] #propPanel .field select{background:#171d25!important;border-color:#3b4654!important;color:#eef2f7!important}
+}
