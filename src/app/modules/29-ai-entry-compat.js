@@ -1,4 +1,11 @@
   // Keep the established local Smart Compose entry stable and expose DeepSeek as an explicit sibling action.
+  // Chromium native fetch must keep Window/globalThis as its receiver when stored as a callback.
+  aiProviderV10=function(preset=aiPresetV10(),key=aiReadKeyV10()){
+    if(!key)throw Object.assign(new Error('请先输入 DeepSeek API Key'),{code:'AI_KEY_MISSING'});
+    const boundFetch=typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):undefined;
+    return Core.DeepSeek.createProvider({preset,apiKey:key,fetch:boundFetch});
+  };
+
   let aiComposeButtonV10=null,aiMobileComposeButtonV10=null;
   function installAIComposeEntryCompatV10(){
     if(smartComposeButton){
