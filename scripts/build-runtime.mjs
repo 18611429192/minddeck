@@ -8,7 +8,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8').trimEnd();
 const pkg=JSON.parse(read('package.json'));
 const version=pkg.version.split('-')[0];
 
-const modules=['src/runtime/modules/env.js','src/runtime/modules/chart-data.js','src/runtime/modules/chart-svg.js','src/runtime/modules/chart-special.js','src/runtime/modules/chart.js','src/runtime/modules/structured-data.js','src/runtime/modules/structured-elements.js','src/runtime/modules/model.js','src/runtime/modules/composer/themes.js','src/runtime/modules/composer/base.js','src/runtime/modules/composer/schema.js','src/runtime/modules/source-document.js','src/runtime/modules/planner.js','src/runtime/modules/composer/params.js','src/runtime/modules/composer/design-intent.js','src/runtime/modules/composer/outline.js','src/runtime/modules/composer/templates.js','src/runtime/modules/composer/professional-templates.js','src/runtime/modules/composer/professional-capacity.js','src/runtime/modules/composer/matcher.js','src/runtime/modules/composer/allocator.js','src/runtime/modules/composer/theme-style.js','src/runtime/modules/composer/compiler.js','src/runtime/modules/composer/provenance.js','src/runtime/modules/composer/quality.js','src/runtime/modules/composer/diversity.js','src/runtime/modules/composer/deck.js','src/runtime/modules/composer/chart.js','src/runtime/modules/composer/structured.js','src/runtime/modules/composer.js','src/runtime/modules/ai-provider.js','src/runtime/modules/pptx-exporter.js','src/runtime/modules/platform.js','src/runtime/modules/slide.js','src/runtime/modules/view.js','src/runtime/modules/portable.js','src/runtime/index.js'];
+const modules=['src/runtime/modules/env.js','src/runtime/modules/chart-data.js','src/runtime/modules/chart-svg.js','src/runtime/modules/chart-special.js','src/runtime/modules/chart.js','src/runtime/modules/structured-data.js','src/runtime/modules/structured-elements.js','src/runtime/modules/model.js','src/runtime/modules/composer/themes.js','src/runtime/modules/composer/base.js','src/runtime/modules/composer/schema.js','src/runtime/modules/source-document.js','src/runtime/modules/planner.js','src/runtime/modules/composer/params.js','src/runtime/modules/composer/design-intent.js','src/runtime/modules/composer/outline.js','src/runtime/modules/composer/templates.js','src/runtime/modules/composer/professional-templates.js','src/runtime/modules/composer/professional-capacity.js','src/runtime/modules/composer/matcher.js','src/runtime/modules/composer/allocator.js','src/runtime/modules/composer/theme-style.js','src/runtime/modules/composer/compiler.js','src/runtime/modules/composer/provenance.js','src/runtime/modules/composer/quality.js','src/runtime/modules/composer/diversity.js','src/runtime/modules/composer/deck.js','src/runtime/modules/composer/chart.js','src/runtime/modules/composer/structured.js','src/runtime/modules/composer/rich-layout.js','src/runtime/modules/composer.js','src/runtime/modules/ai-provider.js','src/runtime/modules/pptx-exporter.js','src/runtime/modules/platform.js','src/runtime/modules/slide.js','src/runtime/modules/view.js','src/runtime/modules/portable.js','src/runtime/index.js'];
 const moduleIndex=new Map(modules.map((file,index)=>[file,index]));
 
 function resolveImport(file,specifier){
@@ -24,11 +24,6 @@ function parseNamedList(text,{forImport=false}={}){
   });
 }
 
-// The runtime bundler is intentionally lightweight, but exported variable declarations
-// may contain more than one binding (for example: `export const A=1,B=2`). The old
-// declaration regex recorded only the first name, silently turning later imports into
-// `undefined` in the generated browser runtime. Scan each exported const/let/var statement
-// and collect every top-level declarator name while ignoring commas inside initializers.
 function exportedVariableNames(source,file){
   const names=[];
   const pattern=/\bexport\s+(?:const|let|var)\s+/g;
@@ -92,9 +87,6 @@ function transformModule(file){
   for(const name of multiExportNames)exports.set(name,name);
   if(/^\s*export\b/m.test(code))throw new Error(`unsupported export syntax remains in ${file}`);
 
-  // Fail early if our lightweight transform accidentally lost an exported declaration.
-  // The generic declaration regex sees only the first variable in `const A=1,B=2`, so
-  // include every name recovered from exported multi-declarator statements as declared.
   const declared=new Set();
   for(const match of code.matchAll(declarationPattern))declared.add(match[1]||match[2]);
   for(const name of multiExportNames)declared.add(name);
