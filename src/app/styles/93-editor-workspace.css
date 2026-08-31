@@ -12,6 +12,8 @@
     --editor-chrome:#f8f9fb;
     --editor-chrome-line:#d9dfe8;
     --editor-workspace:#e6eaf0;
+    width:100vw!important;max-width:100vw!important;min-width:0!important;
+    overflow:hidden!important;box-sizing:border-box!important;
     background:var(--editor-workspace)
   }
 
@@ -20,6 +22,8 @@
     display:flex!important;
     align-items:center!important;
     flex-wrap:nowrap!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    box-sizing:border-box!important;
     min-height:var(--editor-ribbon-height)!important;
     height:var(--editor-ribbon-height)!important;
     max-height:var(--editor-ribbon-height)!important;
@@ -95,9 +99,14 @@
   .editor-topbar>.btn.danger{color:#b44249;background:#fff8f8;border-color:#efd7d9}
   #toggleMasterModeBtn,#masterSettingsBtn{background:#f7f4fc!important;border-color:#e4dcf2!important;color:#6646a7!important}
 
-  .editor-body{background:var(--editor-workspace)!important}
+  .editor-body{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    box-sizing:border-box!important;overflow:hidden!important;
+    background:var(--editor-workspace)!important
+  }
   .editor-stage-wrap{
     inset:0!important;right:0!important;
+    max-width:100%!important;min-width:0!important;box-sizing:border-box!important;
     padding:26px 32px 30px!important;
     background:
       radial-gradient(circle at 1px 1px,rgba(132,142,158,.20) 1px,transparent 1.15px),
@@ -120,11 +129,13 @@
     position:absolute!important;right:0!important;top:0!important;bottom:0!important;
     width:var(--editor-inspector-width)!important;max-width:none!important;
     margin:0!important;padding:17px 16px 18px!important;
+    box-sizing:border-box!important;overflow-x:hidden!important;
     border:0!important;border-left:1px solid #d9dfe8!important;border-radius:0!important;
     background:rgba(255,255,255,.985)!important;
     box-shadow:-8px 0 22px rgba(25,33,47,.055)!important;
     backdrop-filter:blur(18px);z-index:40!important
   }
+  #propPanel *,#propPanel *::before,#propPanel *::after{box-sizing:border-box}
   #propPanel h3{
     margin:1px 70px 15px 1px!important;font-size:15px!important;line-height:28px;
     letter-spacing:-.1px;color:#2b3340
@@ -133,12 +144,12 @@
     display:inline-flex!important;right:11px!important;top:10px!important;width:30px!important;height:30px!important;
     align-items:center;justify-content:center;padding:0!important;background:#f2f4f7!important;border-color:#e1e5eb!important
   }
-  #propPanel .field{margin:11px 0}
+  #propPanel .field{margin:11px 0;min-width:0}
   #propPanel .field label{font-size:10px;color:#737d8b;font-weight:700;margin-bottom:5px}
   #propPanel .field input,#propPanel .field textarea,#propPanel .field select{
-    min-height:36px;border-radius:8px;background:#fbfcfd
+    width:100%;max-width:100%;min-width:0;min-height:36px;border-radius:8px;background:#fbfcfd
   }
-  #propPanel .prop-row{gap:8px}
+  #propPanel .prop-row{gap:8px;min-width:0}
   #propPanel textarea{min-height:82px;resize:vertical}
 
   #editorPropRestoreHandle{
