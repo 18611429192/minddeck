@@ -23,7 +23,7 @@ function structuredMatcherItems(kind,input){
     if(items.length===1)items.push({id:'table-row-summary',label:'数据行',value:'1',detail:'单行表格',unit:'',image:''});
     return items;
   }
-  const data=normalizeDiagramData(input),sample=structuredSample(data.data.items,4);
+  const data=normalizeDiagramData(input),sample=structuredSample(data.data.items,6);
   return sample.map(({value:item,index})=>({id:item.id||`diagram-item-${index+1}`,label:item.label||`Item ${index+1}`,value:item.value||'',detail:item.detail||'',unit:'',image:''}));
 }
 function structuredApplyMatcherFacts(content,kind,input){if(!content?.items?.length)content.items=structuredMatcherItems(kind,input);return content}
