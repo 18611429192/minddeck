@@ -10,6 +10,12 @@ async function dismissWelcome(page){
   await expect(overlay).not.toHaveClass(/open/);
 }
 
+async function openComposeMode(page,mode,{mobile=false}={}){
+  await page.locator(mobile?'#v99SmartMobileBtn':'#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  if(mode!=='ai')await page.locator(`[data-compose-mode="${mode}"]`).click();
+}
+
 function watchPageErrors(page){
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -115,13 +121,16 @@ test('desktop manual-style sweep clicks project, panel, node, editor and present
   if(await restoreBackup.isEnabled())await restoreBackup.click();
   await closeMapPanel(page,'healthPanel');
 
-  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('#v99DeckSpecBtn')).toHaveCount(0);
+  await expect(page.locator('#aiV10ComposeBtn')).toHaveCount(0);
+  await openComposeMode(page,'ai');
+  await expect(page.locator('#aiV10Source')).toBeVisible();
+  await page.locator('[data-compose-mode="local"]').click();
   await expect(page.locator('#v99Outline')).toBeVisible();
   await page.locator('#v99SampleBtn').click();
   const templateCount=await page.evaluate(()=>globalThis.MindDeckCore.Composer.templates.length);
   await expect(page.locator('#v99Preview')).toContainText(`${templateCount} 个结构模板`);
-  await page.locator('#v99CancelBtn').click();
-  await page.locator('#v99DeckSpecBtn').click();
+  await page.locator('[data-compose-mode="deckspec"]').click();
   await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
   await page.locator('#v99DeckSpecCancel').click();
 

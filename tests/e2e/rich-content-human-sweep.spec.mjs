@@ -9,6 +9,13 @@ async function dismissWelcome(page){
   await expect(overlay).not.toHaveClass(/open/);
 }
 
+async function openDeckSpecCompose(page){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
+  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+}
+
 function richDeckSpec(){
   const chartSlide=(id,title,chartType,values,role='metrics')=>({
     id,role,
@@ -109,9 +116,9 @@ test('desktop rich DeckSpec is generated and every native body renders through r
   await page.goto('/');
   await dismissWelcome(page);
 
-  await expect(page.locator('#v99DeckSpecBtn')).toBeVisible();
-  await page.locator('#v99DeckSpecBtn').click();
-  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+  await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
+  await expect(page.locator('#v99DeckSpecBtn')).toHaveCount(0);
+  await openDeckSpecCompose(page);
   await page.locator('#v99DeckSpecJson').fill(JSON.stringify(richDeckSpec(),null,2));
   await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
