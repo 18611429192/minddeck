@@ -10,6 +10,7 @@
   const openAISmartComposerOriginalV10=openAISmartComposerV10;
   const openSmartComposerOriginalV10=openSmartComposer;
   const openDeckSpecImporterOriginalV10=openDeckSpecImporter;
+  const unifiedComposeDraftV10={source:'',deckSpec:''};
 
   function installUnifiedComposeStylesV10(){
     if(document.getElementById('minddeck-v10-unified-compose-styles'))return;
@@ -25,6 +26,25 @@
       @media(max-width:700px){.compose-v10-modebar{grid-template-columns:1fr;padding:12px 16px 0}.compose-v10-mode{min-height:38px;text-align:left}.compose-v10-mode small{display:inline;margin-left:6px}}
     `;
     document.head.appendChild(style);
+  }
+
+  function captureUnifiedComposeDraftV10(dialog){
+    const source=dialog?.querySelector('#aiV10Source,#v99Outline');
+    const deckSpec=dialog?.querySelector('#v99DeckSpecJson');
+    if(source)unifiedComposeDraftV10.source=source.value;
+    if(deckSpec)unifiedComposeDraftV10.deckSpec=deckSpec.value;
+  }
+  function restoreUnifiedComposeDraftV10(mode,dialog){
+    if(mode==='ai'){
+      const source=dialog.querySelector('#aiV10Source');
+      if(source&&unifiedComposeDraftV10.source){source.value=unifiedComposeDraftV10.source;source.dispatchEvent(new Event('input',{bubbles:true}))}
+    }else if(mode==='local'){
+      const source=dialog.querySelector('#v99Outline');
+      if(source&&unifiedComposeDraftV10.source){source.value=unifiedComposeDraftV10.source;source.dispatchEvent(new Event('input',{bubbles:true}))}
+    }else if(mode==='deckspec'){
+      const source=dialog.querySelector('#v99DeckSpecJson');
+      if(source&&unifiedComposeDraftV10.deckSpec)source.value=unifiedComposeDraftV10.deckSpec;
+    }
   }
 
   function decorateUnifiedComposeV10(mode){
@@ -54,6 +74,7 @@
         button.innerHTML=`${label}<small>${note}</small>`;
         button.onclick=()=>{
           if(id===mode)return;
+          captureUnifiedComposeDraftV10(dialog);
           if(id==='ai')openAISmartComposerV10();
           else if(id==='local')openSmartComposer();
           else openDeckSpecImporter();
@@ -70,10 +91,10 @@
       button.setAttribute('aria-pressed',active?'true':'false');
     });
 
+    restoreUnifiedComposeDraftV10(mode,dialog);
     if(mode==='ai'){
-      const local=document.getElementById('aiV10LocalCompose');
+      document.getElementById('aiV10LocalCompose')?.remove();
       const generate=document.getElementById('aiV10ComposeGenerate');
-      if(local){local.textContent='本地快速组稿';local.title='切换到本地 Markdown / 大纲模式'}
       if(generate)generate.textContent='AI 智能生成';
     }else if(mode==='local'){
       const generate=document.getElementById('v99GenerateBtn');
