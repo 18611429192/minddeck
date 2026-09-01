@@ -1,4 +1,4 @@
-import { composerRoleOf } from './base.js';
+import { composerRoleOf, composerTruncate } from './base.js';
 import { normalizeSlideContent, contentFacts } from './schema.js';
 import { TemplateRegistry, capacityFits, requiredSlotsAvailable } from './templates.js';
 import { normalizeTemplateParams } from './params.js';
@@ -19,7 +19,11 @@ function traitScore(template,role,facts,reasons){
   if(role==='case'&&traits.has('proof')&&facts.numericItemCount)score+=8;
   return score;
 }
-export function matchTemplates({role,content,registry=TemplateRegistry,limit=12,currentTemplateId=null,density='standard',intent=null}={}){
+function coverFallbackContent(content){
+  const value=normalizeSlideContent(content);
+  return normalizeSlideContent({...value,title:composerTruncate(value.title,72),summary:composerTruncate(value.summary,150),items:value.items.slice(0,5),media:value.media.slice(0,1)});
+}
+export function matchTemplates({role,content,registry=TemplateRegistry,limit=12,currentTemplateId=null,density='standard',intent=null,allowCoverFallback=true}={}){
   const selectedRole=composerRoleOf(role),value=normalizeSlideContent(content),facts=contentFacts(value),designIntent=normalizeDesignIntent(intent||{},{content:value,role:selectedRole}),hasIntent=Object.keys(designIntent).length>0,candidates=[];
   for(const template of registry.list({role:selectedRole})){
     const capacity=capacityFits(value,template.capacity),required=requiredSlotsAvailable(value,template);
@@ -47,6 +51,9 @@ export function matchTemplates({role,content,registry=TemplateRegistry,limit=12,
     if(template.parametricFamily)reasons.push(`参数化 ${template.parametricFamily}`);
     candidates.push({templateId:template.id,label:template.label,family:template.family,parametricFamily:template.parametricFamily||null,params:parametric.params,score,reasons,warnings:[...warnings,...parametric.warnings],capacityFacts:facts,capacityFitness:fitness?.score??null,traits:[...(template.traits||[])],...(hasIntent?{intentScore:designScore}:{})})
   }
-  return candidates.sort((a,b)=>b.score-a.score||a.templateId.localeCompare(b.templateId)).slice(0,Math.max(0,limit));
+  const sorted=candidates.sort((a,b)=>b.score-a.score||a.templateId.localeCompare(b.templateId)).slice(0,Math.max(0,limit));
+  if(sorted.length||selectedRole!=='cover'||allowCoverFallback===false)return sorted;
+  const fallback=coverFallbackContent(value);
+  return matchTemplates({role:selectedRole,content:fallback,registry,limit,currentTemplateId,density,intent,allowCoverFallback:false}).map(candidate=>({...candidate,reasons:[...candidate.reasons,'封面超量内容安全适配'],warnings:[...candidate.warnings,'封面内容超出模板容量，渲染时将按封面安全上限截断']}));
 }
 export function recommendTemplates(request={}){return matchTemplates({...request,limit:request.limit??12})}
