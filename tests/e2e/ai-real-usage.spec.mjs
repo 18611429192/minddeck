@@ -125,12 +125,21 @@ test('real desktop use: configure DeepSeek, generate 10 pages, edit every page a
   await page.goto('/');
   await dismissWelcome(page);
 
-  await test.step('both local and explicit AI compose entries work',async()=>{
+  await test.step('unified compose entry exposes AI, local and DeckSpec modes',async()=>{
     await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
+    await expect(page.locator('#aiV10ComposeBtn')).toHaveCount(0);
+    await expect(page.locator('#v99DeckSpecBtn')).toHaveCount(0);
     await page.locator('#v99SmartComposeBtn').click();
+    await expect(page.locator('#aiV10Source')).toBeVisible();
+    await expect(page.locator('[data-compose-mode]')).toHaveCount(3);
+    await page.locator('[data-compose-mode="local"]').click();
     await expect(page.locator('#v99Outline')).toBeVisible();
-    await page.locator('#v99CancelBtn').click();
-    await expect(page.locator('#aiV10ComposeBtn')).toBeVisible();
+    await page.locator('#v99Outline').fill('# Unified draft\n\n## Local\n- preserved');
+    await page.locator('[data-compose-mode="ai"]').click();
+    await expect(page.locator('#aiV10Source')).toHaveValue('# Unified draft\n\n## Local\n- preserved');
+    await page.locator('[data-compose-mode="deckspec"]').click();
+    await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+    await page.locator('#v99DeckSpecCancel').click();
   });
 
   await test.step('configure DeepSeek in sessionStorage and test the connection',async()=>{
@@ -148,7 +157,7 @@ test('real desktop use: configure DeepSeek, generate 10 pages, edit every page a
   });
 
   await test.step('generate the complete presentation through the actual AI compose UI',async()=>{
-    await page.locator('#aiV10ComposeBtn').click();
+    await page.locator('#v99SmartComposeBtn').click();
     await expect(page.locator('#aiV10Source')).toBeVisible();
     await page.locator('#aiV10Source').fill(`# AI Real Usage E2E\n\nWe need a presentation that proves every native chart can be generated, manually edited, AI edited and exported.\n\n## Charts\nbar, line, area, donut, radar, funnel, waterfall\n\n## Structured\nInclude a final validation table.`);
     await page.locator('#aiV10Slides').fill('10');
@@ -258,15 +267,16 @@ test('real desktop use: configure DeepSeek, generate 10 pages, edit every page a
   console.log('REAL_USAGE_AI_E2E_OK',JSON.stringify({pages:10,pageEdits:10,chartTypes:CHART_TYPES,chartManualEdits:7,chartAiEdits:7,pptxSlides:10,pptxChartsAtLeast:7,deepSeekRequests:requests.length}));
 });
 
-test('real mobile entry smoke keeps local compose and AI compose separately usable',async({page},testInfo)=>{
+test('real mobile unified compose entry exposes all three modes',async({page},testInfo)=>{
   test.skip(!testInfo.project.name.includes('mobile'),'mobile entry verification');
   const requests=[];await installDeepSeekMock(page,requests);await page.goto('/');await dismissWelcome(page);
   await expect(page.locator('#v99SmartMobileBtn')).toBeVisible();
+  await expect(page.locator('#aiV10MobileComposeBtn')).toHaveCount(0);
   await page.locator('#v99SmartMobileBtn').click();
-  await expect(page.locator('#v99Outline')).toBeVisible();
-  await page.locator('#v99CancelBtn').click();
-  await expect(page.locator('#aiV10MobileComposeBtn')).toBeVisible();
-  await page.locator('#aiV10MobileComposeBtn').click();
   await expect(page.locator('#aiV10Source')).toBeVisible();
-  await page.locator('#aiV10ComposeCancel').click();
+  await page.locator('[data-compose-mode="local"]').click();
+  await expect(page.locator('#v99Outline')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
+  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+  await page.locator('#v99DeckSpecCancel').click();
 });
