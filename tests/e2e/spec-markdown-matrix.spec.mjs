@@ -10,14 +10,21 @@ async function dismissWelcome(page){
 async function project(page){return page.evaluate(()=>structuredClone(globalThis.MindDeckApp.getProject()))}
 async function openMarkdown(page,source){
   await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('#aiV10Source')).toBeVisible();
+  await page.locator('[data-compose-mode="local"]').click();
   await expect(page.locator('#v99Outline')).toBeVisible();
   await page.locator('#v99Outline').fill(source);
   await expect(page.locator('#v99Preview')).not.toContainText('无法解析');
   await expect(page.locator('#v99Preview')).toContainText('72 个结构模板');
 }
-async function generateSpec(page,spec){
-  await page.locator('#v99DeckSpecBtn').click();
+async function openDeckSpec(page){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('#aiV10Source')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
   await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+}
+async function generateSpec(page,spec){
+  await openDeckSpec(page);
   await page.locator('#v99DeckSpecJson').fill(JSON.stringify(spec,null,2));
   await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);
@@ -52,20 +59,22 @@ const markdownCases=[
 const longBullets=`# 长列表压力测试\n\n## 单一章节包含大量要点\n${Array.from({length:17},(_,index)=>`- 长列表要点 ${index+1}`).join('\n')}`;
 const manySections=['# 十二章节压力测试','> 封面只取有限摘要，不应因章节数量失败',...Array.from({length:12},(_,index)=>`\n## 章节 ${index+1}\n- 要点 A${index+1}\n- 要点 B${index+1}\n- 要点 C${index+1}`)].join('\n');
 
-test('Markdown entry stays toolbar-consistent in light/dark themes and accepts varied Markdown richness and scale',async({page},testInfo)=>{
+test('Markdown mode stays toolbar-consistent in light/dark themes and accepts varied Markdown richness and scale',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop input-entry sweep');
   const pageErrors=[];page.on('pageerror',err=>pageErrors.push(err.message));page.on('dialog',dialog=>dialog.accept());
   await page.goto('/');await dismissWelcome(page);
 
-  const smart=page.locator('#v99SmartComposeBtn'),deck=page.locator('#v99DeckSpecBtn');
-  await expect(smart).toBeVisible();await expect(deck).toBeVisible();
+  const smart=page.locator('#v99SmartComposeBtn');
+  await expect(smart).toBeVisible();
+  await expect(page.locator('#v99DeckSpecBtn')).toHaveCount(0);
+  await expect(page.locator('#aiV10ComposeBtn')).toHaveCount(0);
   await expect(smart).not.toHaveClass(/primary/);
-  const light=await page.evaluate(()=>{const a=getComputedStyle(document.getElementById('v99SmartComposeBtn')),b=getComputedStyle(document.getElementById('v99DeckSpecBtn'));return {smart:[a.backgroundColor,a.color,a.borderColor],deck:[b.backgroundColor,b.color,b.borderColor]}});
-  expect(light.smart).toEqual(light.deck);
+  const light=await page.evaluate(()=>{const style=getComputedStyle(document.getElementById('v99SmartComposeBtn'));return [style.backgroundColor,style.color,style.borderColor]});
+  expect(light.every(Boolean)).toBe(true);
 
   await page.locator('#appearanceBtn').click();await page.locator('[data-theme-choice="dark"]').click();
-  const dark=await page.evaluate(()=>{const a=getComputedStyle(document.getElementById('v99SmartComposeBtn')),b=getComputedStyle(document.getElementById('v99DeckSpecBtn'));return {smart:[a.backgroundColor,a.color,a.borderColor],deck:[b.backgroundColor,b.color,b.borderColor]}});
-  expect(dark.smart).toEqual(dark.deck);
+  const dark=await page.evaluate(()=>{const style=getComputedStyle(document.getElementById('v99SmartComposeBtn'));return [style.backgroundColor,style.color,style.borderColor]});
+  expect(dark.every(Boolean)).toBe(true);
   const closeTheme=page.locator('[data-close-panel="themePanel"]');if(await closeTheme.isVisible())await closeTheme.click();
 
   for(let index=0;index<markdownCases.length;index++){
@@ -89,7 +98,7 @@ test('Markdown entry stays toolbar-consistent in light/dark themes and accepts v
   expect(pageErrors).toEqual([]);
 });
 
-test('DeckSpec matrix accepts scaled chart/table/diagram-only bodies and rejects invalid rich-body contracts',async({page},testInfo)=>{
+test('DeckSpec advanced mode accepts scaled chart/table/diagram-only bodies and rejects invalid rich-body contracts',async({page},testInfo)=>{
   test.skip(testInfo.project.name.includes('mobile'),'desktop input-entry sweep');
   const pageErrors=[];page.on('pageerror',err=>pageErrors.push(err.message));page.on('dialog',dialog=>dialog.accept());
   await page.goto('/');await dismissWelcome(page);
@@ -110,11 +119,11 @@ test('DeckSpec matrix accepts scaled chart/table/diagram-only bodies and rejects
   expect(summary.filter(item=>item.diagram).map(item=>item.diagram.subtype)).toEqual(['swot','roadmap','pyramid','cycle']);expect(summary.filter(item=>item.diagram).every(item=>item.items<=6)).toBe(true);expect(summary.find(item=>item.id==='swot-auto').diagram.data.items.length).toBe(12);
 
   const invalid={schemaVersion:1,title:'Invalid rich body',goal:'必须明确拒绝冲突',slides:[{id:'bad',role:'metrics',content:{title:'冲突页',chart:chartData('bar'),table:{rows:[['A','1']]}}}]};
-  await page.locator('#v99DeckSpecBtn').click();await page.locator('#v99DeckSpecJson').fill(JSON.stringify(invalid));await page.locator('#v99DeckSpecGenerate').click();
+  await openDeckSpec(page);await page.locator('#v99DeckSpecJson').fill(JSON.stringify(invalid));await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('#v99DeckSpecStatus')).toContainText('RICH_BODY_CONFLICT');await page.locator('#v99DeckSpecCancel').click();
 
   const invalidRole={schemaVersion:1,title:'Invalid chart role',goal:'图表角色错误必须显式报告',slides:[{id:'bad-role',role:'statement',content:{title:'冲突角色',chart:chartData('line')}}]};
-  await page.locator('#v99DeckSpecBtn').click();await page.locator('#v99DeckSpecJson').fill(JSON.stringify(invalidRole));await page.locator('#v99DeckSpecGenerate').click();
+  await openDeckSpec(page);await page.locator('#v99DeckSpecJson').fill(JSON.stringify(invalidRole));await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('#v99DeckSpecStatus')).toContainText('CHART_ROLE_UNSUPPORTED');await page.locator('#v99DeckSpecCancel').click();
 
   await expect.poll(()=>page.evaluate(()=>globalThis.MindDeckCore.Composer.Quality.validateProject(globalThis.MindDeckApp.getProject()).ok)).toBe(true);
