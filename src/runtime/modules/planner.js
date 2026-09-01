@@ -19,12 +19,11 @@ export function validateDeckPlan(input){
     if(!clean(input.purpose))errors.push(planProblem('purpose','PLAN_PURPOSE','purpose is required'));
     if(!Number.isInteger(input.targetSlides)||input.targetSlides<1||input.targetSlides>60)errors.push(planProblem('targetSlides','PLAN_SLIDES','targetSlides must be 1..60'));
     if(!Array.isArray(input.slideIntents)||!input.slideIntents.length)errors.push(planProblem('slideIntents','PLAN_INTENTS','slideIntents are required'));
-    else if(input.slideIntents[0]?.roleHint!=='cover')errors.push(planProblem('slideIntents[0].roleHint','PLAN_COVER_REQUIRED','first slideIntent must be the cover'));
     const actual=Array.isArray(input.slideIntents)?input.slideIntents.length:0;
     if(input.actualSlides!==undefined&&input.actualSlides!==actual)errors.push(planProblem('actualSlides','PLAN_ACTUAL_SLIDES','actualSlides must equal slideIntents.length'));
     if(input.warnings!==undefined&&!Array.isArray(input.warnings))errors.push(planProblem('warnings','PLAN_WARNINGS','warnings must be an array'));
     if(Number.isInteger(input.targetSlides)&&actual>0&&actual!==input.targetSlides&&!hasTargetWarning(input,actual))errors.push(planProblem('warnings','PLAN_TARGET_SILENT_MISMATCH','target slide mismatch requires TARGET_SLIDES_UNSATISFIABLE warning'));
-    for(const [i,slide] of (input.slideIntents||[]).entries())if(slide.roleHint&&!SlideRoles.includes(slide.roleHint))errors.push(planProblem(`slideIntents[${i}].roleHint`,'PLAN_ROLE',`invalid role ${slide.roleHint}`));
+    // roleHint is advisory: the first intent is structurally used as the cover, and normalizeDeckSpec re-infers unknown body roles.
   }
   return {ok:errors.length===0,errors};
 }
