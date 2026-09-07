@@ -28,6 +28,7 @@ async function touchDrag(page,selector,dx,dy){
 
 async function openMobileMore(page){await page.locator('#mobileMainMore').click();await expect(page.locator('#mobileMainSheet')).toHaveClass(/open/)}
 async function setMobileLayout(page,value){await openMobileMore(page);await page.locator('#mobileMapLayoutSelect').selectOption(value);await expect.poll(async()=>(await project(page)).mapLayout).toBe(value)}
+async function openMobileLocalCompose(page){await page.locator('#v99SmartMobileBtn').click();await expect(page.locator('.compose-v10-modebar')).toBeVisible();await page.locator('[data-compose-mode="local"]').click();await expect(page.locator('#v99Outline')).toBeVisible()}
 
 
 test('desktop round4 validates auto package thresholds and repeated asset dedup',async({page},testInfo)=>{
@@ -48,7 +49,7 @@ test('mobile round4 exercises all layouts map pinch touch drag design intent tem
   test.skip(!testInfo.project.name.includes('mobile'),'mobile round4');
   const pageErrors=errors(page);dialogs(page);await page.goto('/');await dismissWelcome(page);
   const context=page.locator('#mobileNodeContext');if(await context.isVisible())await page.locator('#mobileNodeContextClose').click();
-  await page.locator('#v99SmartMobileBtn').click();await page.locator('#v99SampleBtn').click();await page.locator('#v99GenerateBtn').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);await healthy(page,'generated');
+  await openMobileLocalCompose(page);await page.locator('#v99SampleBtn').click();await page.locator('#v99GenerateBtn').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);await healthy(page,'generated');
 
   // Switch to mind-map and exercise every layout through the actual mobile More sheet.
   await page.locator('#mindmapModeBtn').click();const signatures=new Set();

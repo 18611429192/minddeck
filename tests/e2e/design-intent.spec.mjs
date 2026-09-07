@@ -5,6 +5,12 @@ async function dismissWelcome(page){
   const overlay=page.locator('#welcomeOverlay');
   if(await overlay.isVisible())await page.locator('#welcomeClose').click();
 }
+async function openDeckSpecCompose(page){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
+  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+}
 async function changeNumber(page,field,value){
   const locator=page.locator(`[data-intent-field="${field}"]`);
   await locator.evaluate((el,next)=>{el.value=String(next);el.dispatchEvent(new Event('change',{bubbles:true}))},value);
@@ -20,7 +26,7 @@ test('V10 unified Redesign panel drafts DesignIntent then applies one A/B/C outc
   await page.goto('/');
   await dismissWelcome(page);
 
-  await page.locator('#v99DeckSpecBtn').click();
+  await openDeckSpecCompose(page);
   await page.locator('#v99DeckSpecFile').setInputFiles('examples/v10-design-intent/design-intent.deck.json');
   await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);

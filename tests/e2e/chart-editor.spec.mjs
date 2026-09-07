@@ -8,6 +8,13 @@ async function dismissWelcome(page){
   if(await overlay.isVisible())await page.locator('#welcomeClose').click();
 }
 
+async function openDeckSpecCompose(page){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
+  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
+}
+
 function editableChartSpec(){
   return {
     schemaVersion:1,
@@ -49,7 +56,7 @@ test('native chart editor changes real data and survives unified redesign recomp
   await page.goto('/');
   await dismissWelcome(page);
 
-  await page.locator('#v99DeckSpecBtn').click();
+  await openDeckSpecCompose(page);
   await page.locator('#v99DeckSpecJson').fill(JSON.stringify(editableChartSpec(),null,2));
   await page.locator('#v99DeckSpecGenerate').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);

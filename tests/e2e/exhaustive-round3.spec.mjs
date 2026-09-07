@@ -51,6 +51,7 @@ async function downloads(page,action,count){
 async function bytes(download){const p=await download.path();expect(p).toBeTruthy();return readFile(p)}
 async function importBytes(page,name,mimeType,buffer){const pending=page.waitForEvent('filechooser');await page.locator('#importBtn').click();const chooser=await pending;await chooser.setFiles({name,mimeType,buffer})}
 async function mobileInsert(page,kind){await page.locator('#mobileInsertBtn').click();const b=page.locator(`[data-mi="${kind}"]`);await expect(b).toBeVisible();await b.click()}
+async function openMobileLocalCompose(page){await page.locator('#v99SmartMobileBtn').click();await expect(page.locator('.compose-v10-modebar')).toBeVisible();await page.locator('[data-compose-mode="local"]').click();await expect(page.locator('#v99Outline')).toBeVisible()}
 async function pinch(page){
   const box=await page.locator('#editorStageWrap').boundingBox();expect(box).toBeTruthy();
   const c=await page.context().newCDPSession(page),x=Math.round(box.x+box.width/2),y=Math.round(box.y+box.height/2);
@@ -102,7 +103,7 @@ test('mobile round3 smart compose media properties touch zoom master and present
   test.skip(!testInfo.project.name.includes('mobile'),'mobile round3');
   const errors=pageErrors(page);dialogs(page);await page.goto('/');await dismissWelcome(page);
   const context=page.locator('#mobileNodeContext');if(await context.isVisible()){await page.locator('#mobileNodeContextClose').click();await expect(context).not.toHaveClass(/open/)}
-  await expect(page.locator('#v99SmartMobileBtn')).toBeVisible();await page.locator('#v99SmartMobileBtn').click();await page.locator('#v99SampleBtn').click();await page.locator('#v99GenerateBtn').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);await healthy(page,'mobile compose');
+  await expect(page.locator('#v99SmartMobileBtn')).toBeVisible();await openMobileLocalCompose(page);await page.locator('#v99SampleBtn').click();await page.locator('#v99GenerateBtn').click();await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);await healthy(page,'mobile compose');
   const targetId=await page.evaluate(()=>globalThis.MindDeckApp.getProject().children[0]?.id);expect(targetId).toBeTruthy();await page.locator(`.node[data-id="${targetId}"]`).tap();await expect(page.locator('#mobileNodeContext')).toHaveClass(/open/);await page.locator('#mobileEditPageBtn').click();
 
   await mobileInsert(page,'text');const textId=await page.evaluate(id=>{const walk=n=>n.id===id?n:(n.children||[]).map(walk).find(Boolean);return walk(globalThis.MindDeckApp.getProject()).slideElements.at(-1).id},targetId);await page.locator('#mobilePropBtn').click();await page.locator('[data-p="text"]').fill('手机端真实属性编辑');await page.locator('[data-p="text"]').blur();await expect.poll(async()=>((await node(page,targetId)).slideElements.find(e=>e.id===textId)?.text)).toBe('手机端真实属性编辑');await page.locator('#mobilePropClose').click();

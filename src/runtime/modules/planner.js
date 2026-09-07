@@ -23,7 +23,9 @@ export function validateDeckPlan(input){
     if(input.actualSlides!==undefined&&input.actualSlides!==actual)errors.push(planProblem('actualSlides','PLAN_ACTUAL_SLIDES','actualSlides must equal slideIntents.length'));
     if(input.warnings!==undefined&&!Array.isArray(input.warnings))errors.push(planProblem('warnings','PLAN_WARNINGS','warnings must be an array'));
     if(Number.isInteger(input.targetSlides)&&actual>0&&actual!==input.targetSlides&&!hasTargetWarning(input,actual))errors.push(planProblem('warnings','PLAN_TARGET_SILENT_MISMATCH','target slide mismatch requires TARGET_SLIDES_UNSATISFIABLE warning'));
-    // roleHint is advisory: the first intent is structurally used as the cover, and normalizeDeckSpec re-infers unknown body roles.
+    const firstRole=actual>0?clean(input.slideIntents[0]?.roleHint):'';
+    if(firstRole&&SlideRoles.includes(firstRole)&&firstRole!=='cover')errors.push(planProblem('slideIntents[0].roleHint','PLAN_COVER_REQUIRED','the first slide intent must be cover when using a known roleHint'));
+    // Unknown roleHint values remain advisory so provider aliases such as title-slide can normalize through DeckSpec.
   }
   return {ok:errors.length===0,errors};
 }

@@ -12,7 +12,9 @@ async function dismissWelcome(page){
   if(await overlay.isVisible())await page.locator('#welcomeClose').click();
 }
 async function generateStressSpec(page){
-  await page.locator('#v99DeckSpecBtn').click();
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  await page.locator('[data-compose-mode="deckspec"]').click();
   await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
   await page.locator('#v99DeckSpecFile').setInputFiles('examples/v10-chart-scheme-stress/chart-scheme-stress.deck.json');
   await page.locator('#v99DeckSpecGenerate').click();

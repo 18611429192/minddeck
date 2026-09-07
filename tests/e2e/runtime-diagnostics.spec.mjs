@@ -7,6 +7,13 @@ async function dismissWelcome(page){
   if(await overlay.isVisible())await page.locator('#welcomeClose').click();
 }
 
+async function openLocalCompose(page){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  await page.locator('[data-compose-mode="local"]').click();
+  await expect(page.locator('#v99Outline')).toBeVisible();
+}
+
 function scriptSyntaxError(source,index){
   try{new Script(source,{filename:`minddeck-portable-export-${index}.js`});return null}
   catch(err){return String(err?.stack||err)}
@@ -28,7 +35,7 @@ test('A/B/C generated template hash matches rebuilt runtime output',async({page}
   page.on('dialog',dialog=>dialog.accept());
   await page.goto('/');
   await dismissWelcome(page);
-  await page.locator('#v99SmartComposeBtn').click();
+  await openLocalCompose(page);
   await page.locator('#v99Outline').fill(`# Provenance diagnostic\n\n## 推进流程\n- 明确问题\n- 形成方案\n- 小步验证\n- 交付复盘`);
   await page.locator('#v99GenerateBtn').click();
   await expect(page.locator('.v99-smart-overlay')).toHaveCount(0);

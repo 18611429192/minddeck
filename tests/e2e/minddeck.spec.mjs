@@ -11,6 +11,11 @@ async function dismissWelcome(page){
   if(await overlay.isVisible())await page.locator('#welcomeClose').click();
   await expect(overlay).not.toHaveClass(/open/);
 }
+async function openComposeMode(page,mode){
+  await page.locator('#v99SmartComposeBtn').click();
+  await expect(page.locator('.compose-v10-modebar')).toBeVisible();
+  if(mode!=='ai')await page.locator(`[data-compose-mode="${mode}"]`).click();
+}
 
 test('app exposes one runtime and the public app adapter',async({page})=>{
   await page.goto('/');
@@ -23,12 +28,14 @@ test('app exposes one runtime and the public app adapter',async({page})=>{
 });
 
 test('DeckSpec v1 file host compiles the checked-in example into the native Project',async({page},testInfo)=>{
-  test.skip(testInfo.project.name.includes('mobile'),'DeckSpec command currently lives in the desktop project toolbar');
+  test.skip(testInfo.project.name.includes('mobile'),'DeckSpec advanced mode currently lives in the desktop compose flow');
   page.on('dialog',dialog=>dialog.accept());
   await page.goto('/');
   await dismissWelcome(page);
-  await expect(page.locator('#v99DeckSpecBtn')).toBeVisible();
-  await page.locator('#v99DeckSpecBtn').click();
+  await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
+  await expect(page.locator('#v99DeckSpecBtn')).toHaveCount(0);
+  await openComposeMode(page,'deckspec');
+  await expect(page.locator('#v99DeckSpecJson')).toBeVisible();
   await page.locator('#v99DeckSpecFile').setInputFiles('examples/deck-spec-v1.json');
   await expect(page.locator('#v99DeckSpecStatus')).toContainText('deck-spec-v1.json');
   await page.locator('#v99DeckSpecGenerate').click();
@@ -87,11 +94,12 @@ test('Smart Deck → edit → A/B/C relayout → dirty protection → Presentati
   test.skip(testInfo.project.name.includes('mobile'),'desktop freeform workflow coverage');
   page.on('dialog',dialog=>dialog.accept());
 
-  await test.step('generate a Smart Deck through the real UI',async()=>{
+  await test.step('generate a Smart Deck through the real unified local-compose mode',async()=>{
     await page.goto('/');
     await dismissWelcome(page);
     await expect(page.locator('#v99SmartComposeBtn')).toBeVisible();
-    await page.locator('#v99SmartComposeBtn').click();
+    await openComposeMode(page,'local');
+    await expect(page.locator('#v99Outline')).toBeVisible();
     await page.locator('#v99Outline').fill(`# V10 E2E
 > Shared Runtime Composer
 
