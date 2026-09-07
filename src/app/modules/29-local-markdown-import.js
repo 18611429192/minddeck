@@ -1,4 +1,4 @@
-  // V10 local Markdown compose UX fix: direct .md loading and visible two-step generation feedback.
+  // V10 local Markdown compose UX fix: direct .md loading and visible generation feedback.
   const openSmartComposerBeforeMarkdownImportV10=openSmartComposer;
 
   function enhanceLocalMarkdownComposeV10(){
@@ -26,8 +26,7 @@
       status.className=state==='error'?'v99-smart-warning':state==='ok'?'v99-smart-ok':'v99-smart-note';
       status.textContent=text;
     };
-    const resetConfirmation=()=>{
-      delete generate.dataset.confirmPending;
+    const resetGenerate=()=>{
       generate.textContent=baseLabel;
       generate.disabled=false;
     };
@@ -36,7 +35,7 @@
     file.onchange=async()=>{
       const selected=file.files?.[0];
       if(!selected)return;
-      resetConfirmation();
+      resetGenerate();
       setStatus(`正在读取 ${selected.name}…`);
       try{
         source.value=await selected.text();
@@ -51,11 +50,11 @@
     };
 
     source.addEventListener('input',()=>{
-      if(generate.dataset.confirmPending==='1')resetConfirmation();
+      resetGenerate();
       const raw=source.value.trim();
       if(!raw){setStatus('等待 Markdown / 大纲输入。');return}
       const parsed=sourcePreview(raw);
-      setStatus(parsed.pageCount?`已解析 ${parsed.pageCount} 页。点击“${baseLabel}”开始。`:'当前内容没有解析出可生成页面。',parsed.pageCount?'note':'error');
+      setStatus(parsed.pageCount?`已解析 ${parsed.pageCount} 页。点击“${baseLabel}”后会先建立恢复备份，再替换当前项目。`:'当前内容没有解析出可生成页面。',parsed.pageCount?'note':'error');
     });
 
     generate.textContent=baseLabel;
@@ -65,17 +64,9 @@
       const parsed=sourcePreview(raw);
       if(!parsed.pageCount){setStatus('大纲无法解析：请至少提供标题或一个章节。','error');toast('大纲无法解析');return}
 
-      if(generate.dataset.confirmPending!=='1'){
-        generate.dataset.confirmPending='1';
-        generate.textContent='确认替换并生成';
-        setStatus(`已解析 ${parsed.pageCount} 页。生成会替换当前项目，并在替换前自动建立恢复备份；请再次点击“确认替换并生成”。`,'ok');
-        return;
-      }
-
-      delete generate.dataset.confirmPending;
       generate.disabled=true;
       generate.textContent='正在生成…';
-      setStatus(`正在本地生成 ${parsed.pageCount} 页…`);
+      setStatus(`正在本地生成 ${parsed.pageCount} 页，并创建恢复备份…`,'ok');
       try{
         checkpoint();
         createRecoveryBackup('before-v10-local-markdown-compose');
@@ -96,8 +87,7 @@
         toast(`已生成 ${ComposerV99.describe(data).pages} 页 · 使用 ${quality.metrics.templateCount} 个模板`);
       }catch(err){
         console.error(err);
-        generate.disabled=false;
-        generate.textContent=baseLabel;
+        resetGenerate();
         setStatus(`本地组稿失败：${err?.message||err}`,'error');
         toast('本地组稿失败：'+(err?.message||err));
       }
