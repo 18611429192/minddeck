@@ -142,7 +142,7 @@ export const DeepSeek=Object.freeze({
   createProvider:createDeepSeekProvider
 });
 
-const SYSTEM_PROMPT=`You are the MindDeck story planner. Return JSON only. Produce DeckPlan schemaVersion 1 with purpose, audience, tone, targetSlides, storyArc, sections, slideIntents. The slideIntents array MUST contain exactly the requested number of slides, including the cover. Each slideIntent may contain goal, roleHint, title, topic, facts, takeaway, chartIntent, tableIntent, diagramIntent, imageIntent, emphasis. Valid role hints: cover, section, agenda, statement, cards, metrics, trend, compare, process, timeline, quote, image, problem, solution, architecture, roadmap, matrix, case, table, conclusion. Never output DOM, HTML, CSS, x/y/width/height, slideElements, Project objects, or template IDs. Organize a narrative; do not map one paragraph to one slide.`;
+const SYSTEM_PROMPT=`You are the MindDeck story planner. Return JSON only. Produce DeckPlan schemaVersion 1 with purpose, audience, tone, targetSlides, storyArc, sections, slideIntents. The slideIntents array MUST contain exactly the requested number of slides, including the cover. Each slideIntent may contain goal, roleHint, title, topic, facts, takeaway, chartIntent, tableIntent, diagramIntent, imageIntent, emphasis. Valid role hints: cover, section, agenda, statement, cards, metrics, trend, compare, process, timeline, quote, image, problem, solution, architecture, roadmap, matrix, case, table, conclusion. Rich content must contain real data: tableIntent uses {columns:[{label}],header:{visible,cells:[]},rows:[[...]]}; chartIntent uses {chartType,categories,values,series:[{name,values}]}; diagramIntent uses {subtype,data:{items:[{label,detail,value}]}}; imageIntent uses {src,alt} where src is a real http(s) image URL already present in the source material or an image data URL. Never invent image URLs and never use recommended:true as a substitute for data. If no real image source exists, choose a non-image role. Never output DOM, HTML, CSS, x/y/width/height, slideElements, Project objects, or template IDs. Organize a narrative; do not map one paragraph to one slide.`;
 function userPrompt(doc,options,repair=null){
   const payload={
     task:repair?'Repair the presentation story plan':'Create a presentation story plan',
@@ -152,6 +152,21 @@ function userPrompt(doc,options,repair=null){
   };
   if(repair)payload.repair={reason:repair.reason,requested:repair.requested,actual:repair.actual,instruction:`Return exactly ${repair.requested} slideIntents. Do not change the requested target.`,previousPlan:repair.previousPlan};
   return JSON.stringify(payload);
+}
+function validateAIRichContent(plan){
+  const errors=[];
+  for(const [index,intent] of (plan?.slideIntents||[]).entries()){
+    const role=aiClean(intent?.roleHint),facts=Array.isArray(intent?.facts)?intent.facts.map(aiClean):[];
+    if(role==='table'){
+      const raw=intent?.tableIntent?.table||intent?.tableIntent?.data||intent?.tableIntent,hasRows=Array.isArray(raw?.rows)&&raw.rows.length>0,parseable=facts.some(value=>/^\|.*\|$/.test(value))||facts.filter(value=>/^.{1,48}[:：]\s*.+$/.test(value)).length>=2;
+      if(!hasRows&&!parseable)errors.push({path:`slideIntents[${index}].tableIntent`,code:'PLAN_TABLE_DATA_REQUIRED',message:'table slides require real rows'});
+    }
+    if(role==='image'){
+      const raw=intent?.imageIntent,src=aiClean(raw?.src||raw?.url||raw?.image);
+      if(!/^(?:https?:\/\/|data:image\/(?:png|jpe?g|webp|gif|svg\+xml);base64,)/i.test(src))errors.push({path:`slideIntents[${index}].imageIntent`,code:'PLAN_IMAGE_SOURCE_REQUIRED',message:'image slides require a real image source'});
+    }
+  }
+  return errors;
 }
 function fallbackResult(doc,options,attempts,warnings,reason){return {plan:deterministicPlan(doc,options),mode:'fallback',fallbackMode:'deterministic',fallbackReason:reason||warnings.at(-1)?.code||'AI_PROVIDER_FAILURE',attempts,warnings}}
 export async function planWithAI(source,options={}){
@@ -163,7 +178,7 @@ export async function planWithAI(source,options={}){
       const result=await provider.generateStructured({system:SYSTEM_PROMPT,user:userPrompt(doc,{...options,targetSlides},repair),schemaName:'deck_plan'}),parsed=extractJson(result.text),plan=sanitizePlan(parsed,doc,{...options,targetSlides}),actual=plan.slideIntents.length;
       if(actual!==targetSlides){warnings.push({code:'AI_PAGE_COUNT_MISMATCH',attempt,requested:targetSlides,actual});repair={reason:'AI_PAGE_COUNT_MISMATCH',requested:targetSlides,actual,previousPlan:plan};}
       else{
-        const check=validateDeckPlan(plan);
+        const check=validateDeckPlan(plan),richErrors=validateAIRichContent(plan);if(richErrors.length){check.ok=false;check.errors.push(...richErrors)}
         if(!check.ok){warnings.push({code:'AI_SCHEMA_REJECT',attempt,errors:check.errors});repair={reason:'AI_SCHEMA_REJECT',requested:targetSlides,actual,previousPlan:plan};}
         else return {plan,mode:'ai',attempts:attempt,warnings};
       }
@@ -178,7 +193,7 @@ export const AIStoryPlanner=Object.freeze({OpenAICompatibleProvider,plan:planWit
 const aiCommandClean=value=>String(value??'').trim();
 const aiCommandPlain=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const AI_COMMAND_SCOPES=Object.freeze(['deck','slide','selection']);
-const AI_COMMAND_ELEMENT_TYPES=Object.freeze(['text','chart','table','diagram']);
+const AI_COMMAND_ELEMENT_TYPES=Object.freeze(['text','chart','table','diagram','image']);
 const AI_COMMAND_ROLE_HINTS=new Set(['cover','section','agenda','statement','cards','metrics','trend','compare','process','timeline','quote','image','problem','solution','architecture','roadmap','matrix','case','table','conclusion']);
 
 function commandJson(text){
@@ -196,6 +211,11 @@ function finiteJson(value,seen=new Set()){
   seen.add(value);const children=Array.isArray(value)?value:Object.values(value),ok=children.every(item=>finiteJson(item,seen));seen.delete(value);return ok;
 }
 function cloneSafe(value){return finiteJson(value)?JSON.parse(JSON.stringify(value)):null}
+function safeImageSource(value){
+  const src=aiCommandClean(value);
+  if(!src||src.length>2_800_000)return '';
+  return /^(?:https?:\/\/|data:image\/(?:png|jpe?g|webp|gif|svg\+xml);base64,)/i.test(src)?src:'';
+}
 function targetMaps(context={}){
   const nodes=new Set(),elements=new Map();
   for(const node of Array.isArray(context.nodes)?context.nodes:[]){
@@ -212,6 +232,10 @@ function sanitizeElementPatch(value,maps){
   if(target.type==='chart'&&aiCommandPlain(value.chart)){const safe=cloneSafe(value.chart);if(safe)patch.chart=safe}
   if(target.type==='table'&&aiCommandPlain(value.table)){const safe=cloneSafe(value.table);if(safe)patch.table=safe}
   if(target.type==='diagram'&&aiCommandPlain(value.diagram)){const safe=cloneSafe(value.diagram);if(safe)patch.diagram=safe}
+  if(target.type==='image'&&aiCommandPlain(value.image)){
+    const src=safeImageSource(value.image.src||value.image.url),alt=aiCommandClean(value.image.alt).slice(0,1000),fit=['cover','contain'].includes(value.image.fit)?value.image.fit:'',objectPosition=/^(?:100|\d{1,2})(?:\.\d+)?%\s+(?:100|\d{1,2})(?:\.\d+)?%$/.test(aiCommandClean(value.image.objectPosition))?aiCommandClean(value.image.objectPosition):'';
+    if(src)patch.image={src,...(alt?{alt}:{}),...(fit?{fit}:{}),...(objectPosition?{objectPosition}:{})};
+  }
   return Object.keys(patch).length>2?patch:null;
 }
 function sanitizeSlideContent(value){
@@ -253,7 +277,7 @@ export function validateAICommandPatch(patch,context={},options={}){
   return {ok:errors.length===0,errors};
 }
 
-const COMMAND_SYSTEM=`You are the MindDeck AI editor. Return JSON only. You receive an exact snapshot of editable presentation nodes and elements. Never invent nodeId or elementId. Never output or modify geometry, x, y, w, h, z, rotation, CSS, HTML, DOM, template IDs, API keys, or renderer instructions. Preserve layout and styles unless allowRedesign is true. For text elements return only new text. For native chart elements return chart data only. For tables return table data only. For diagrams return diagram data only. When redesign is explicitly allowed, you may additionally return slide content plus redesign.enabled=true and an optional valid roleHint/designIntent. JSON example: {"schemaVersion":1,"scope":"selection","summary":"short description","slidePatches":[{"nodeId":"node-1","elementPatches":[{"elementId":"e-1","type":"text","text":"new text"}]}]}.`;
+const COMMAND_SYSTEM=`You are the MindDeck AI editor. Return JSON only. You receive an exact snapshot of editable presentation nodes and elements. Never invent nodeId or elementId. Never output or modify geometry, x, y, w, h, z, rotation, CSS, HTML, DOM, template IDs, API keys, or renderer instructions. Preserve layout and styles unless allowRedesign is true. For text elements return only new text. For native chart elements return chart data only. For tables return table data only. For diagrams return diagram data only. For images return {"image":{"src":"https://...","alt":"...","fit":"cover|contain","objectPosition":"50% 50%"}}; src must be a real http(s) image URL or image data URL, never an invented placeholder. When redesign is explicitly allowed, you may additionally return slide content plus redesign.enabled=true and an optional valid roleHint/designIntent. JSON example: {"schemaVersion":1,"scope":"selection","summary":"short description","slidePatches":[{"nodeId":"node-1","elementPatches":[{"elementId":"e-1","type":"text","text":"new text"}]}]}.`;
 function commandUserPayload(input,repair=null){
   const payload={task:'Edit the existing MindDeck presentation',instruction:aiCommandClean(input.instruction),scope:input.scope,allowRedesign:input.allowRedesign===true,context:input.context};
   if(repair)payload.repair={reason:repair.reason,errors:repair.errors,previousPatch:repair.previousPatch,instruction:'Return one corrected JSON object using only IDs present in context.'};

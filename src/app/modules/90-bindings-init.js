@@ -80,7 +80,7 @@
   document.getElementById("mobilePropClose").onclick=()=>{if(window.innerWidth>700)collapseEditorPropPanel();else{mobilePropOpen=false;propPanel.classList.remove("open")}};
   document.getElementById("mobileInsertBtn").onclick=()=>openMobileEditorSheet("insert");
   document.getElementById("mobileAlignBtn").onclick=()=>{if(selectedEls.size<2){toast("请先多选至少两个元素");return}openMobileEditorSheet("align")};
-  document.getElementById("mobileLayerBtn").onclick=()=>{if(!selectedEls.size){toast("请先选择元素");return}openMobileEditorSheet("layer")};
+  document.getElementById("mobileLayerBtn").onclick=()=>openOfficePagesSheet();
   document.getElementById("mobilePropBtn").onclick=()=>{
     closeMobileEditorSheet();
     propPanel.classList.remove("panel-collapsed");document.getElementById("editorPropRestoreHandle")?.classList.remove("open");mobilePropOpen=true;
@@ -158,6 +158,7 @@ window.addEventListener("keydown",e=>{
       if((e.key==="Delete"||e.key==="Backspace")&&!textEditing){e.preventDefault();deleteSelected();return}
       if(!textEditing && ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key) && selectedEls.size){
         e.preventDefault();checkpoint();const step=e.shiftKey?10:1;
+        if([...selectedEls].some(id=>findEditorEl(id)?.locked)){toast("请先解锁所选元素");return}
         selectedEls.forEach(id=>{const el=findEditorEl(id);if(!el)return;if(e.key==="ArrowLeft")el.x-=step;if(e.key==="ArrowRight")el.x+=step;if(e.key==="ArrowUp")el.y-=step;if(e.key==="ArrowDown")el.y+=step});
         save();renderEditorLight();syncSelectedGeometryFields();return
       }

@@ -64,6 +64,8 @@ export const Project={
   normalizeElement(element){
     if(!element)return element;
     if(!element.animation)element.animation={type:'inherit',delay:0,duration:.5};
+    if(element.locked!==undefined)element.locked=!!element.locked;
+    if(element.groupId!==undefined&&element.groupId!==null)element.groupId=String(element.groupId).trim()||null;
     if(element.type==='video')Project.normalizeVideo(element);
     return element;
   },
@@ -83,6 +85,8 @@ export const Project={
     if(!LAYOUTS.includes(project.mapLayout))project.mapLayout=options.fallbackLayout||'radial';
     project.uiTheme=Theme.normalize(project.uiTheme);
     if(!Array.isArray(project.presentationOrder))project.presentationOrder=[];
+    const editor=project.editorSettings&&typeof project.editorSettings==='object'&&!Array.isArray(project.editorSettings)?project.editorSettings:{};
+    project.editorSettings={gridVisible:editor.gridVisible!==false,snapToGrid:editor.snapToGrid!==false,gridSize:Math.max(4,Math.min(200,Math.round(Number(editor.gridSize)||20)))};
     if(!project.master||!Array.isArray(project.master.elements)){
       project.master=typeof options.defaultMaster==='function'?options.defaultMaster():{
         bgColor:'#f6f7fb',bgImage:null,bgFit:'cover',tocSide:'left',tocVisibility:'auto',defaultAnimation:'soft',elements:[]
@@ -256,6 +260,17 @@ export const Presentation={
 };
 
 export const Commands={
+  moveNode(root,nodeId,parentId,index=Infinity){
+    if(!root||nodeId===root.id)return {ok:false,reason:'root'};
+    const node=Tree.findNode(root,nodeId),oldParent=Tree.findParent(root,nodeId),parent=Tree.findNode(root,parentId);
+    if(!node||!oldParent||!parent)return {ok:false,reason:'missing'};
+    if(node===parent||Tree.descendants(node,true).some(item=>item.id===parent.id))return {ok:false,reason:'cycle'};
+    oldParent.children=oldParent.children.filter(item=>item.id!==nodeId);parent.children ||= [];
+    const target=Math.max(0,Math.min(parent.children.length,Number.isFinite(Number(index))?Math.round(Number(index)):parent.children.length));
+    parent.children.splice(target,0,node);parent.collapsed=false;Layout.apply(root,root.mapLayout||'balanced');
+    const order=[];Tree.walkAll(root,item=>order.push(item.id));root.presentationOrder=order;
+    return {ok:true,node,parent,oldParent,index:target,order};
+  },
   addChild(root,parentId,options={}){
     const parent=Tree.findNode(root,parentId);if(!parent)return null;
     const child=options.createNode?options.createNode():Project.createNode();

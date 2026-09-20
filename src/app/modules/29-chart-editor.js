@@ -91,6 +91,16 @@
     return ({bar:'柱状图',line:'折线图',area:'面积图',donut:'环形图',radar:'雷达图',funnel:'漏斗图',waterfall:'瀑布图'})[type]||type;
   }
 
+  function insertNativeChartV10(type='bar'){
+    if(!editorOpen||editorMode!=='slide'){toast('请先打开一个页面');return null}
+    const chartType=ChartEditorV10.types.includes(type)?type:'bar',node=findNode(editorNodeId);if(!node)return null;
+    checkpoint();const arr=node.slideElements,ordered=orderedCurrentElements(),source={chartType,categories:['第一季度','第二季度','第三季度','第四季度'],labels:['第一季度','第二季度','第三季度','第四季度'],values:[28,42,56,72],series:[{id:'series-1',name:'系列 1',values:[28,42,56,72]}],options:{showLegend:false,showLabels:true,showValues:true,showGrid:true,smooth:chartType==='line'||chartType==='area',stacked:false,orientation:'vertical'}},normalized=Core.NativeChart.normalize(source);
+    const element={id:uid(),type:'chart',x:260,y:210,w:1080,h:520,z:(ordered.at(-1)?.z??(SLIDE_Z_MIN-1))+1,...normalized,animation:{type:'inherit',delay:0,duration:.5}};
+    arr.push(element);node.composer ||= {};node.composer.content ||= {};
+    if(!node.composer.content.chart)chartSyncComposerContentV10(element);
+    selectedEls.clear();selectedEls.add(element.id);selectionAnchorId=element.id;save();renderEditor();showChartPropertyPanelV10(element.id);toast(`已插入${chartTypeLabelV10(chartType)}`);return element
+  }
+
   function chartBoolControlV10(field,label,value){return `<label class="chart-toggle"><input type="checkbox" data-chart-option="${field}" ${value?'checked':''}><span>${esc(label)}</span></label>`}
 
   function chartDataTableV10(dataValue){

@@ -6,7 +6,8 @@ const context={projectTitle:'Demo',nodes:[{id:'n1',title:'Slide',text:'Body',ele
   {id:'t1',type:'text',text:'Old'},
   {id:'c1',type:'chart',chart:{chartType:'bar',categories:['A','B'],series:[{name:'Revenue',values:[1,2]}]}},
   {id:'tb1',type:'table',table:{columns:[{label:'Item'},{label:'Value'}],rows:[['A','1']]}},
-  {id:'d1',type:'diagram',diagram:{subtype:'roadmap',data:{items:[{label:'A'},{label:'B'}]}}}
+  {id:'d1',type:'diagram',diagram:{subtype:'roadmap',data:{items:[{label:'A'},{label:'B'}]}}},
+  {id:'i1',type:'image',image:{src:'https://example.com/old.png',alt:'Old image',fit:'cover',objectPosition:'50% 50%'}}
 ]}]};
 class MockProvider{constructor(values){this.values=[...values];this.calls=0}async generateStructured(){this.calls++;const value=this.values.shift();if(value instanceof Error)throw value;return {text:typeof value==='string'?value:JSON.stringify(value)}}}
 
@@ -30,6 +31,15 @@ test('AI command carries native chart/table/diagram data without geometry',async
   assert.equal(patches[0].chart.chartType,'line');
   assert.equal(patches[1].type,'table');
   assert.equal(patches[2].type,'diagram');
+});
+
+test('AI command carries a real image replacement but rejects unsafe sources',()=>{
+  const raw={schemaVersion:1,scope:'selection',slidePatches:[{nodeId:'n1',elementPatches:[
+    {elementId:'i1',image:{src:'https://images.example.com/new.webp',alt:'New image',fit:'contain',objectPosition:'25% 60%',x:999}},
+    {elementId:'i1',image:{src:'javascript:alert(1)',alt:'unsafe'}}
+  ]}]};
+  const safe=AICommand.sanitize(raw,context,{scope:'selection'});
+  assert.deepEqual(safe.slidePatches[0].elementPatches,[{elementId:'i1',type:'image',image:{src:'https://images.example.com/new.webp',alt:'New image',fit:'contain',objectPosition:'25% 60%'}}]);
 });
 
 test('redesign is ignored unless the caller explicitly allows it',()=>{

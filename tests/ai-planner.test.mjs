@@ -16,3 +16,12 @@ test('AI page-count contract accepts exact requested count',async()=>{const prov
 test('AI page-count mismatch is repaired on bounded retry',async()=>{const provider=new MockProvider([JSON.stringify(planOf(2,10)),JSON.stringify(planOf(10,10))]),result=await AIStoryPlanner.plan(source,{provider,targetSlides:10,attempts:2});assert.equal(result.mode,'ai');assert.equal(result.attempts,2);assert.equal(provider.calls,2);assert.ok(result.warnings.some(item=>item.code==='AI_PAGE_COUNT_MISMATCH'&&item.requested===10&&item.actual===2));const repair=JSON.parse(provider.requests[1].user).repair;assert.equal(repair.reason,'AI_PAGE_COUNT_MISMATCH');assert.equal(repair.requested,10);assert.equal(repair.actual,2)});
 test('AI repeated page-count mismatch falls back deterministically and never reports mode=ai',async()=>{const provider=new MockProvider([JSON.stringify(planOf(2,10)),JSON.stringify(planOf(2,10))]),result=await AIStoryPlanner.plan(source,{provider,targetSlides:10,attempts:2});assert.equal(result.mode,'fallback');assert.equal(result.fallbackMode,'deterministic');assert.equal(result.fallbackReason,'AI_PAGE_COUNT_MISMATCH');assert.equal(result.plan.targetSlides,10);assert.equal(provider.calls,2)});
 test('AI zero-slide and over-count responses cannot succeed as mode=ai',async()=>{for(const count of [0,11]){const provider=new MockProvider([JSON.stringify(planOf(count,10)),JSON.stringify(planOf(count,10))]),result=await AIStoryPlanner.plan(source,{provider,targetSlides:10,attempts:2});assert.equal(result.mode,'fallback',`${count} slides must fall back`);assert.notEqual(result.mode,'ai');assert.equal(result.plan.targetSlides,10)}});
+test('AI planner rejects fake rich-content roles without real table data or image source',async()=>{
+  const fakeTable={...validPlan,slideIntents:validPlan.slideIntents.map((item,index)=>index===1?{...item,roleHint:'table',tableIntent:{recommended:true},facts:['not tabular']}:item)};
+  const fakeImage={...validPlan,slideIntents:validPlan.slideIntents.map((item,index)=>index===1?{...item,roleHint:'image',imageIntent:{prompt:'a futuristic office'}}:item)};
+  for(const fake of [fakeTable,fakeImage]){
+    const provider=new MockProvider([JSON.stringify(fake),JSON.stringify(fake)]),result=await AIStoryPlanner.plan(source,{provider,targetSlides:3,attempts:2});
+    assert.equal(result.mode,'fallback');
+    assert.ok(result.warnings.some(item=>item.code==='AI_SCHEMA_REJECT'));
+  }
+});

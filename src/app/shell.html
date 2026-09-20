@@ -207,51 +207,49 @@ __MINDDECK_SHARED_STYLES__
 
     <!-- freeform editor -->
     <div id="editorShell">
-      <div class="editor-topbar">
-        <button class="btn" id="backToMapBtn">← 返回导图</button>
-        <div class="editor-title" id="editorTitle"></div>
-        <span class="editor-mode-pill" id="editorModePill">页面</span>
-        <div class="toolbar-sep"></div>
-
-        <div class="element-toolbar">
-          <button class="btn" id="addTextBtn">+ 文字</button>
-          <button class="btn" id="addImageBtn">+ 图片</button>
-          <button class="btn" id="addVideoBtn">+ 视频</button>
-          <button class="btn" id="addVideoUrlBtn">+ 视频 URL</button>
-          <button class="btn" id="addRectBtn">+ 矩形</button>
-          <button class="btn" id="addCircleBtn">+ 圆形</button>
-          <input class="file-input" id="editorImageFile" type="file" accept="image/*">
-          <input class="file-input" id="editorVideoFile" type="file" accept="video/mp4,video/webm,video/ogg">
+      <div class="editor-topbar office-ribbon">
+        <div class="office-titlebar">
+          <button class="office-back" id="backToMapBtn" title="返回思维导图">‹</button>
+          <div class="office-app-mark">M</div>
+          <div class="office-doc-title"><div class="editor-title" id="editorTitle"></div><span class="editor-mode-pill" id="editorModePill">页面</span></div>
+          <div class="office-quick-actions">
+            <button class="office-icon-btn" id="officeUndoBtn" title="撤销 Ctrl/⌘+Z">↶</button>
+            <button class="office-icon-btn" id="officeRedoBtn" title="重做 Ctrl/⌘+Shift+Z">↷</button>
+          </div>
+          <div class="spacer"></div>
+          <span class="office-save-state">自动保存</span>
+          <button class="btn primary office-save" id="saveEditorBtn">保存</button>
         </div>
-
-        <div class="toolbar-sep"></div>
-        <div class="align-btns" style="width:455px;grid-template-columns:repeat(10,1fr)">
-          <button class="btn icon" data-align="left" title="按基准元素左边缘对齐">左</button>
-          <button class="btn icon" data-align="hcenter" title="按基准元素水平中心对齐">横中</button>
-          <button class="btn icon" data-align="right" title="按基准元素右边缘对齐">右</button>
-          <button class="btn icon" data-align="top" title="按基准元素顶部对齐">上</button>
-          <button class="btn icon" data-align="vcenter" title="按基准元素垂直中心对齐">纵中</button>
-          <button class="btn icon" data-align="bottom" title="按基准元素底部对齐">下</button>
-          <button class="btn icon" data-align="sameWidth" title="和基准元素等宽">等宽</button>
-          <button class="btn icon" data-align="sameHeight" title="和基准元素等高">等高</button>
-          <button class="btn icon" data-align="distributeH" title="水平等距分布">横距</button>
-          <button class="btn icon" data-align="distributeV" title="垂直等距分布">纵距</button>
+        <div class="office-tabbar" role="tablist" aria-label="编辑工具栏">
+          <button class="office-tab active" data-office-tab="home">开始</button>
+          <button class="office-tab" data-office-tab="insert">插入</button>
+          <button class="office-tab" data-office-tab="design">设计</button>
+          <button class="office-tab" data-office-tab="arrange">排列</button>
+          <button class="office-tab" data-office-tab="animation">动画</button>
+          <button class="office-tab office-tab-ai" data-office-tab="ai">AI 助手</button>
         </div>
-
-        <div class="toolbar-sep"></div>
-        <button class="btn" id="duplicateElBtn">复制</button>
-        <button class="btn" id="layerUpBtn">上移一层</button>
-        <button class="btn" id="layerDownBtn">下移一层</button>
-        <button class="btn" id="frontBtn">置于顶层</button>
-        <button class="btn" id="backBtn">置于底层</button>
-        <button class="btn danger" id="deleteElBtn">删除</button>
-        <div class="spacer"></div>
-        <button class="btn" id="masterSettingsBtn" style="display:none">母版设置</button>
-        <button class="btn" id="toggleMasterModeBtn">切到母版</button>
-        <button class="btn primary" id="saveEditorBtn">保存</button>
+        <div class="office-ribbon-panels">
+          <div class="office-ribbon-panel active" data-office-panel="home">
+            <div class="office-group"><div class="office-row"><button class="office-command" id="officePasteBtn"><b>▣</b><span>粘贴</span></button><button class="office-small" id="officeCutBtn">剪切</button><button class="office-small" id="officeCopyBtn">复制</button><button class="office-small" id="duplicateElBtn">创建副本</button></div><label>剪贴板</label></div>
+            <div class="office-group office-font-group"><div class="office-row"><input id="officeFontFamily" list="officeFontFamilies" value="Microsoft YaHei" aria-label="字体"><datalist id="officeFontFamilies"></datalist><input id="officeFontSize" type="number" min="8" max="240" value="32" aria-label="字号"><button class="office-small office-bold" id="officeBoldBtn" title="加粗">B</button></div><label>字体</label></div>
+            <div class="office-group"><div class="office-row"><button class="office-command" id="officeGroupBtn"><b>▦</b><span>组合</span></button><button class="office-command" id="officeUngroupBtn"><b>▤</b><span>取消组合</span></button><button class="office-command" id="officeLockBtn"><b>◇</b><span>锁定</span></button><button class="office-command danger" id="deleteElBtn"><b>⌫</b><span>删除</span></button></div><label>编辑</label></div>
+          </div>
+          <div class="office-ribbon-panel" data-office-panel="insert">
+            <div class="office-group element-toolbar"><div class="office-row"><button class="office-command" id="addTextBtn"><b>T</b><span>文本框</span></button><button class="office-command" id="addImageBtn"><b>▧</b><span>图片</span></button><button class="office-command" id="officeInsertChartBtn"><b>▥</b><span>图表</span></button><button class="office-command" id="addRectBtn"><b>□</b><span>矩形</span></button><button class="office-command" id="addCircleBtn"><b>○</b><span>圆形</span></button><button class="office-command" id="addVideoBtn"><b>▶</b><span>视频</span></button><button class="office-command" id="addVideoUrlBtn"><b>⌁</b><span>视频链接</span></button></div><label>插入对象</label><input class="file-input" id="editorImageFile" type="file" accept="image/*"><input class="file-input" id="editorVideoFile" type="file" accept="video/mp4,video/webm,video/ogg"></div>
+          </div>
+          <div class="office-ribbon-panel" data-office-panel="design"><div class="office-group"><div class="office-row"><button class="office-command" id="officeDesignerHost"><b>✦</b><span>设计灵感</span></button><button class="office-command" id="masterSettingsBtn" style="display:none"><b>▣</b><span>母版设置</span></button><button class="office-command" id="toggleMasterModeBtn"><b>▰</b><span>切到母版</span></button></div><label>页面设计</label></div></div>
+          <div class="office-ribbon-panel" data-office-panel="arrange">
+            <div class="office-group"><div class="office-row"><button class="office-small" id="layerUpBtn">上移一层</button><button class="office-small" id="layerDownBtn">下移一层</button><button class="office-small" id="frontBtn">置于顶层</button><button class="office-small" id="backBtn">置于底层</button></div><label>图层</label></div>
+            <div class="office-group"><div class="align-btns"><button class="office-small" data-align="left">左对齐</button><button class="office-small" data-align="hcenter">水平居中</button><button class="office-small" data-align="right">右对齐</button><button class="office-small" data-align="top">顶部</button><button class="office-small" data-align="vcenter">垂直居中</button><button class="office-small" data-align="bottom">底部</button><button class="office-small" data-align="sameWidth">等宽</button><button class="office-small" data-align="sameHeight">等高</button><button class="office-small" data-align="distributeH">横向分布</button><button class="office-small" data-align="distributeV">纵向分布</button></div><label>对齐与分布</label></div>
+            <div class="office-group"><div class="office-row"><button class="office-command" id="officeGridBtn"><b>⌗</b><span>网格</span></button><button class="office-command" id="officeSnapBtn"><b>⊞</b><span>吸附</span></button></div><label>辅助线</label></div>
+          </div>
+          <div class="office-ribbon-panel" data-office-panel="animation"><div class="office-group"><div class="office-row"><select id="officeAnimationType" aria-label="进入动画"><option value="none">无动画</option><option value="fade">淡入</option><option value="up">上浮</option><option value="left">左侧飞入</option><option value="zoom">缩放</option></select><label class="office-inline-label">延迟 <input id="officeAnimationDelay" type="number" min="0" max="10000" step="50" value="0"> ms</label></div><label>进入动画</label></div></div>
+          <div class="office-ribbon-panel" data-office-panel="ai"><div class="office-group" id="officeAiHost"><div class="office-ai-copy"><b>用自然语言修改当前页面</b><span>支持文字、布局、图片、表格与原生图表。</span></div><label>MindDeck AI</label></div></div>
+        </div>
       </div>
 
       <div class="editor-body">
+        <aside id="editorThumbnails" aria-label="页面缩略图"><div class="office-thumbs-head"><b>幻灯片</b><button id="officeThumbsCollapse" title="收起页面栏">‹</button></div><div id="editorThumbnailList"></div></aside>
         <div class="editor-stage-wrap" id="editorStageWrap">
           <div id="editorStage">
             <div class="master-bg" id="editorBg"></div>
@@ -306,6 +304,7 @@ __MINDDECK_SHARED_STYLES__
 
         <div class="canvas-hint">拖动元素移动 · 四角缩放 · Ctrl/⌘ 或 Shift + 点击多选 · 双击文字直接编辑 · 工具栏会随窗口自动换行</div>
       </div>
+      <div id="editorStatusBar"><span id="officeSlideStatus">第 1 张，共 1 张</span><span class="office-status-hint">拖动左侧缩略图可重排；向右缩进可改变层级</span><div class="spacer"></div><button id="officeFitBtn">适应窗口</button><button id="officeZoomOut" aria-label="缩小">−</button><input id="officeZoomRange" type="range" min="50" max="400" value="100" aria-label="缩放"><button id="officeZoomIn" aria-label="放大">＋</button><span id="officeZoomValue">100%</span></div>
     </div>
 
     <!-- presentation -->

@@ -19,6 +19,13 @@
   function isMobileEditor(){
     return window.innerWidth<=700 || window.matchMedia("(pointer:coarse)").matches;
   }
+  function editorSettings(){data.editorSettings ||= {gridVisible:true,snapToGrid:true,gridSize:20};return data.editorSettings}
+  function snapEditorValue(value,bypass=false){const settings=editorSettings();if(bypass||!settings.snapToGrid)return Math.round(value);return Math.round(value/settings.gridSize)*settings.gridSize}
+  function groupMembersFor(id){const element=findEditorEl(id),groupId=element?.groupId;if(!groupId)return element?[element]:[];return currentEditorElements().filter(item=>item.groupId===groupId)}
+  function selectElementGroup(id,{toggle=false}={}){const members=groupMembersFor(id);if(!members.length)return;if(!toggle)selectedEls.clear();for(const item of members){if(toggle&&selectedEls.has(item.id))selectedEls.delete(item.id);else selectedEls.add(item.id)}selectionAnchorId=selectedEls.has(id)?id:(selectedEls.values().next().value||null)}
+  function groupSelectedElements(){const items=[...selectedEls].map(findEditorEl).filter(Boolean);if(items.length<2){toast("请至少选择两个元素进行组合");return}checkpoint();const groupId=uid().replace(/^e_/,"g_");items.forEach(item=>item.groupId=groupId);save();renderEditor();toast(`已组合 ${items.length} 个元素`)}
+  function ungroupSelectedElements(){const items=[...selectedEls].map(findEditorEl).filter(Boolean),groups=new Set(items.map(item=>item.groupId).filter(Boolean));if(!groups.size){toast("当前选择没有组合");return}checkpoint();currentEditorElements().forEach(item=>{if(groups.has(item.groupId))item.groupId=null});save();renderEditor();toast("已取消组合")}
+  function toggleSelectedLock(force){const items=[...selectedEls].map(findEditorEl).filter(Boolean);if(!items.length)return;checkpoint();const next=force??!items.every(item=>item.locked);items.forEach(item=>item.locked=next);save();renderEditor();toast(next?"已锁定所选元素":"已解锁所选元素")}
   function applyEditorViewTransform(){
     editorStage.style.transform=`translate(${editorPanX}px,${editorPanY}px) scale(${editorScale})`;
     const label=document.getElementById("mobileZoomLabel");
@@ -87,6 +94,7 @@
       SlideCore.compose(data,node).forEach(item=>editorStage.appendChild(renderCanvasElement(item.element,item.master,!item.master)));
     }
     updateSelectionVisual();
+    editorShell.classList.toggle("editor-grid-visible",!!editorSettings().gridVisible);
     masterEmptyPanel.classList.remove("open");
     if(selectedEls.size===1){
       showPropertyPanel([...selectedEls][0]);
@@ -153,6 +161,7 @@
 
   function beginInlineTextEdit(e,tc){
     if(!tc)return;
+    if(e.locked){toast("元素已锁定");return}
     checkpoint();
     selectedEls.clear();selectedEls.add(e.id);selectionAnchorId=e.id;refreshSelectionUI();
     tc.contentEditable="true";
@@ -191,25 +200,21 @@
   });
   function beginElementPointer(ev,id,corner=null){
     ev.preventDefault();ev.stopPropagation();
+    const clicked=findEditorEl(id);
     if((ev.shiftKey||ev.ctrlKey||ev.metaKey) && !corner){
-      if(selectedEls.has(id)){
-        selectedEls.delete(id);
-        if(selectionAnchorId===id)selectionAnchorId=selectedEls.values().next().value||null;
-      }else{
-        if(!selectedEls.size)selectionAnchorId=id;
-        selectedEls.add(id);
-      }
+      selectElementGroup(id,{toggle:true});
       refreshSelectionUI();return
     }
     if(!selectedEls.has(id)||selectedEls.size>1){
-      selectedEls.clear();selectedEls.add(id);selectionAnchorId=id;
+      selectElementGroup(id);selectionAnchorId=id;
     }else if(!selectionAnchorId){
       selectionAnchorId=id;
     }
     refreshSelectionUI();
+    if(clicked?.locked){toast("元素已锁定");return}
     checkpoint();
     activeElId=id;resizeCorner=corner;pointerStart={x:ev.clientX,y:ev.clientY};
-    const targets=[...selectedEls].map(x=>findEditorEl(x)).filter(Boolean);
+    const targets=[...selectedEls].map(x=>findEditorEl(x)).filter(item=>item&&!item.locked);
     elStart=new Map(targets.map(x=>[x.id,{x:x.x,y:x.y,w:x.w,h:x.h}]));
     resizingEl=!!corner;draggingEl=!corner
   }
@@ -233,7 +238,10 @@
   }
   function handleEditorPointerMove(e){
     const dx=(e.clientX-pointerStart.x)/editorScale,dy=(e.clientY-pointerStart.y)/editorScale;
-    if(resizingEl){
+    if(resizingEl&&groupResizeStart){
+      const start=groupResizeStart.bounds,nw=Math.max(60,snapEditorValue(start.w+dx,e.altKey)),nh=Math.max(40,snapEditorValue(start.h+dy,e.altKey)),sx=nw/start.w,sy=nh/start.h;
+      groupResizeStart.items.forEach((st,id)=>{const el=findEditorEl(id);if(!el)return;el.x=Math.round(start.x+(st.x-start.x)*sx);el.y=Math.round(start.y+(st.y-start.y)*sy);el.w=Math.max(20,Math.round(st.w*sx));el.h=Math.max(20,Math.round(st.h*sy))});
+    }else if(resizingEl){
       const el=findEditorEl(activeElId),st=elStart.get(activeElId);if(!el||!st)return;
       const minW=40,minH=30;
       let nx=st.x,ny=st.y,nw=st.w,nh=st.h;
@@ -251,8 +259,10 @@
         nx=st.x+(st.w-nw);ny=st.y+(st.h-nh);
       }
       el.x=Math.round(nx);el.y=Math.round(ny);el.w=Math.round(nw);el.h=Math.round(nh);
+      if(editorSettings().snapToGrid&&!e.altKey){el.x=snapEditorValue(el.x);el.y=snapEditorValue(el.y);el.w=snapEditorValue(el.w);el.h=snapEditorValue(el.h)}
+      el.w=Math.max(minW,el.w);el.h=Math.max(minH,el.h);
     }else{
-      elStart.forEach((st,id)=>{const el=findEditorEl(id);if(el){el.x=Math.round(st.x+dx);el.y=Math.round(st.y+dy)}})
+      elStart.forEach((st,id)=>{const el=findEditorEl(id);if(el){el.x=Math.round(st.x+dx);el.y=Math.round(st.y+dy);if(editorSettings().snapToGrid&&!e.altKey){el.x=snapEditorValue(el.x);el.y=snapEditorValue(el.y)}}})
     }
     renderEditorLight()
   }
@@ -300,14 +310,14 @@
   },{passive:false});
   window.addEventListener("touchend",ev=>{
     if(ev.touches?.length===0)mobileEditorGesture=null;
-    if(draggingEl||resizingEl){draggingEl=false;resizingEl=false;resizeCorner=null;activeElId=null;save();syncSelectedGeometryFields();renderEditorLight()}
+    if(draggingEl||resizingEl){draggingEl=false;resizingEl=false;resizeCorner=null;activeElId=null;groupResizeStart=null;save();syncSelectedGeometryFields();renderEditorLight()}
   },{passive:false});
 
   function renderEditorLight(){
     document.querySelectorAll(".canvas-el").forEach(dom=>{
       const id=dom.dataset.id,el=findEditorEl(id);if(!el)return;
       dom.style.left=el.x+"px";dom.style.top=el.y+"px";dom.style.width=el.w+"px";dom.style.height=el.h+"px"
-    })
+    });renderGroupSelectionBox()
   }
   function findEditorEl(id){
     let x=data.master.elements.find(e=>e.id===id);if(x)return x;
@@ -319,7 +329,18 @@
       el.classList.toggle("selected",sel&&selectedEls.size===1);
       el.classList.toggle("multi-selected",sel&&selectedEls.size>1);
       el.classList.toggle("selection-anchor",sel&&selectedEls.size>1&&el.dataset.id===selectionAnchorId);
-    })
+      el.classList.toggle("element-locked",!!findEditorEl(el.dataset.id)?.locked);
+    });renderGroupSelectionBox()
+  }
+
+  function renderGroupSelectionBox(){
+    editorStage.querySelector('.group-selection-box')?.remove();
+    if(selectedEls.size<2)return;const items=[...selectedEls].map(findEditorEl).filter(Boolean),groupId=items[0]?.groupId;
+    if(!groupId||items.some(item=>item.groupId!==groupId))return;
+    const left=Math.min(...items.map(item=>item.x)),top=Math.min(...items.map(item=>item.y)),right=Math.max(...items.map(item=>item.x+item.w)),bottom=Math.max(...items.map(item=>item.y+item.h));
+    const box=document.createElement('div');box.className='group-selection-box';box.style.cssText=`left:${left}px;top:${top}px;width:${right-left}px;height:${bottom-top}px`;
+    const handle=document.createElement('button');handle.type='button';handle.className='group-resize-handle';handle.title='按比例缩放组合';handle.onmousedown=event=>{event.preventDefault();event.stopPropagation();if(items.some(item=>item.locked)){toast('请先解锁组合');return}checkpoint();pointerStart={x:event.clientX,y:event.clientY};groupResizeStart={bounds:{x:left,y:top,w:right-left,h:bottom-top},items:new Map(items.map(item=>[item.id,{x:item.x,y:item.y,w:item.w,h:item.h}]))};resizingEl=true;draggingEl=false};
+    box.appendChild(handle);editorStage.appendChild(box)
   }
 
   function showPropertyPanel(id){
@@ -340,6 +361,7 @@
           <div class="field"><label>字号</label><input type="number" data-p="fontSize" value="${e.fontSize||32}"></div>
           <div class="field"><label>粗细</label><select data-p="fontWeight"><option value="400" ${e.fontWeight==400?"selected":""}>常规</option><option value="600" ${e.fontWeight==600?"selected":""}>半粗</option><option value="700" ${e.fontWeight==700?"selected":""}>粗体</option><option value="800" ${e.fontWeight==800?"selected":""}>特粗</option></select></div>
         </div>
+        <div class="field"><label>字体</label><input data-p="fontFamily" value="${esc(e.fontFamily||"Microsoft YaHei")}" list="officeFontFamilies"></div>
         <div class="field"><label>颜色</label><input type="color" data-p="color" value="${e.color||"#1f2329"}"></div>
         <div class="field"><label>对齐</label><select data-p="textAlign"><option value="left" ${e.textAlign==="left"?"selected":""}>左</option><option value="center" ${e.textAlign==="center"?"selected":""}>中</option><option value="right" ${e.textAlign==="right"?"selected":""}>右</option></select></div>`;
     }else if(e.type==="image"){
@@ -384,6 +406,7 @@
     })
   }
   function applyPropChange(e,p,v){
+    if(e.locked){toast("元素已锁定");return}
     if(["x","y","w","h","fontSize","fontWeight","borderWidth"].includes(p))v=Number(v);
     if(["controls","autoplay","muted","loop"].includes(p))v=(v==="true");
     if(p==="animType"){e.animation=e.animation||{};e.animation.type=v}
@@ -408,7 +431,7 @@
     if(!dom)return;
     dom.style.left=e.x+"px";dom.style.top=e.y+"px";dom.style.width=e.w+"px";dom.style.height=e.h+"px";dom.style.zIndex=e.z||1;
     if(e.type==="text"){
-      dom.style.fontSize=(e.fontSize||32)+"px";dom.style.fontWeight=e.fontWeight||400;dom.style.color=e.color||"#222";dom.style.textAlign=e.textAlign||"left";
+      dom.style.fontSize=(e.fontSize||32)+"px";dom.style.fontWeight=e.fontWeight||400;dom.style.fontFamily=e.fontFamily||"";dom.style.color=e.color||"#222";dom.style.textAlign=e.textAlign||"left";
       dom.style.justifyContent=e.textAlign==="center"?"center":e.textAlign==="right"?"flex-end":"flex-start";
       const tc=dom.querySelector(".text-content");
       if(tc && !tc.isContentEditable && tc.textContent!==(e.text||""))tc.textContent=e.text||"";
@@ -454,6 +477,7 @@
   }
   function deleteSelected(){
     if(!selectedEls.size)return;
+    if([...selectedEls].some(id=>findEditorEl(id)?.locked)){toast("所选元素包含锁定对象，请先解锁");return}
     checkpoint();
     const ids=new Set(selectedEls);
     if(editorMode==="master")data.master.elements=data.master.elements.filter(e=>!ids.has(e.id));
@@ -463,11 +487,13 @@
   function duplicateSelected(){
     checkpoint();
     const arr=currentEditorElements(),copies=[];
-    selectedEls.forEach(id=>{const e=arr.find(x=>x.id===id);if(e){const c=clone(e);c.id=uid();c.x+=28;c.y+=28;c.z=((orderedCurrentElements().at(-1)?.z)??(editorMode==="master"?MASTER_Z_MIN-1:SLIDE_Z_MIN-1))+1;arr.push(c);copies.push(c.id)}});
+    const groupMap=new Map();
+    selectedEls.forEach(id=>{const e=arr.find(x=>x.id===id);if(e){const c=clone(e);c.id=uid();c.x+=28;c.y+=28;c.locked=false;if(c.groupId){if(!groupMap.has(c.groupId))groupMap.set(c.groupId,uid().replace(/^e_/,"g_"));c.groupId=groupMap.get(c.groupId)}c.z=((orderedCurrentElements().at(-1)?.z)??(editorMode==="master"?MASTER_Z_MIN-1:SLIDE_Z_MIN-1))+1;arr.push(c);copies.push(c.id)}});
     selectedEls=new Set(copies);selectionAnchorId=copies[0]||null;save();renderEditor()
   }
   function moveLayerStep(direction){
     const arr=orderedCurrentElements();if(!selectedEls.size)return;
+    if([...selectedEls].some(id=>findEditorEl(id)?.locked)){toast("请先解锁所选元素");return}
     checkpoint();
 
     if(direction>0){
@@ -490,6 +516,7 @@
 
   function zMove(front=true){
     const arr=orderedCurrentElements();if(!selectedEls.size)return;
+    if([...selectedEls].some(id=>findEditorEl(id)?.locked)){toast("请先解锁所选元素");return}
     checkpoint();
     const selected=arr.filter(e=>selectedEls.has(e.id));
     const others=arr.filter(e=>!selectedEls.has(e.id));
@@ -499,6 +526,7 @@
   function alignSelected(kind){
     const arr=[...selectedEls].map(findEditorEl).filter(Boolean);
     if(arr.length<2){toast("请至少选择两个元素进行对齐");return}
+    if(arr.some(item=>item.locked)){toast("请先解锁所选元素");return}
 
     let anchor=findEditorEl(selectionAnchorId);
     if(!anchor || !selectedEls.has(anchor.id)){
@@ -594,7 +622,7 @@
       title.textContent="插入元素";
       content=`<div class="mobile-sheet-grid">
         <button class="btn" data-mi="text">文字</button><button class="btn" data-mi="image">图片</button><button class="btn" data-mi="video">视频</button>
-        <button class="btn" data-mi="videoUrl">视频 URL</button><button class="btn" data-mi="rect">矩形</button><button class="btn" data-mi="circle">圆形</button>
+        <button class="btn" data-mi="videoUrl">视频 URL</button><button class="btn" data-mi="chart">图表</button><button class="btn" data-mi="rect">矩形</button><button class="btn" data-mi="circle">圆形</button>
       </div><div class="mobile-sheet-grid two" style="margin-top:8px"><button class="btn" data-mi="master">${editorMode==="master"?"切到当前页":"切到母版"}</button><button class="btn" data-mi="duplicate" ${selectedEls.size?"":"disabled"}>复制所选</button></div>`;
     }else if(kind==="align"){
       title.textContent="多元素对齐";
@@ -620,6 +648,7 @@
       else if(a==="image")document.getElementById("editorImageFile").click();
       else if(a==="video")document.getElementById("editorVideoFile").click();
       else if(a==="videoUrl")document.getElementById("addVideoUrlBtn").click();
+      else if(a==="chart")openNativeChartDialogV10();
       else if(a==="rect")addElement("rect");
       else if(a==="circle")addElement("circle");
       else if(a==="master")openEditor(editorMode==="master"?"slide":"master",editorNodeId||selectedNodeId);

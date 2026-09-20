@@ -60,7 +60,7 @@
   // editor state
   let editorOpen=false,editorMode="slide",editorNodeId=null,selectedEls=new Set(),selectionAnchorId=null;
   let editorScale=1,editorFitScale=1,editorPanX=0,editorPanY=0,editorViewTouched=false;
-  let draggingEl=false,resizingEl=false,resizeCorner=null,activeElId=null,elStart=null,pointerStart=null;
+  let draggingEl=false,resizingEl=false,resizeCorner=null,activeElId=null,elStart=null,pointerStart=null,groupResizeStart=null;
   let mobileMultiSelectMode=false,mobilePropOpen=false,mobileEditorGesture=null;
   let elementClipboard=[];
   let undoStack=[],redoStack=[];

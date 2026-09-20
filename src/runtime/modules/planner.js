@@ -103,7 +103,7 @@ function normalizeDiagramIntent(intent){
 }
 function normalizeImageIntent(intent){
   const raw=intent?.imageIntent;if(!raw||typeof raw!=='object'||Array.isArray(raw))return [];
-  const src=clean(raw.src||raw.url||raw.image);if(!src)return [];
+  const src=clean(raw.src||raw.url||raw.image);if(!/^(?:https?:\/\/|data:image\/(?:png|jpe?g|webp|gif|svg\+xml);base64,)/i.test(src))return [];
   return [{type:'image',src,alt:clean(raw.alt)||clean(intent?.title)||clean(intent?.topic)}];
 }
 function intentContent(intent){

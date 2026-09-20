@@ -16,6 +16,7 @@
     "modules/29-ai-assistant.js",
     "modules/29-ai-entry-compat.js",
     "modules/29-local-markdown-import.js",
+    "modules/29-office-editor.js",
     "modules/30-presentation.js",
     "modules/40-portable-export.js",
     "modules/41-pptx-export.js",
@@ -32,6 +33,7 @@
     "styles/90-responsive.css",
     "styles/91-workspace.css",
     "styles/92-components.css",
-    "styles/93-editor-workspace.css"
+    "styles/93-editor-workspace.css",
+    "styles/94-office-editor.css"
   ]
 }

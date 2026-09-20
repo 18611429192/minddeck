@@ -52,7 +52,7 @@
   });
   window.addEventListener("mouseup",()=>{
     if(nodeDragging){document.querySelector(`.node[data-id="${dragNodeId}"]`)?.classList.remove("dragging");nodeDragging=false;dragNodeId=null;save();return}
-    if(draggingEl||resizingEl){draggingEl=false;resizingEl=false;resizeCorner=null;activeElId=null;save();syncSelectedGeometryFields();renderEditorLight();return}
+    if(draggingEl||resizingEl){draggingEl=false;resizingEl=false;resizeCorner=null;activeElId=null;groupResizeStart=null;save();syncSelectedGeometryFields();renderEditorLight();return}
     panning=false;viewport.classList.remove("panning")
   });
   function redrawEdges(){document.querySelectorAll(".edge").forEach(p=>{const a=findNode(p.dataset.from),b=findNode(p.dataset.to);if(a&&b)p.setAttribute("d",LayoutCore.edgePath(a.pos,b.pos,data.mapLayout||"radial"))})}
