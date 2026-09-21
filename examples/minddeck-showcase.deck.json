@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "title": "2026 增长经营复盘",
+  "goal": "用一套可编辑演示展示 MindDeck 的图表、表格、结构图和导出能力",
+  "audience": "产品、销售与经营团队",
+  "theme": "cobalt",
+  "randomSeed": "minddeck-showcase-2026",
+  "slides": [
+    {
+      "id": "revenue-by-region",
+      "role": "metrics",
+      "content": {
+        "title": "区域收入保持增长",
+        "summary": "华东与海外成为主要增量来源，利润结构同步改善。",
+        "chart": {
+          "chartType": "bar",
+          "categories": ["华北", "华东", "华南", "西南", "海外"],
+          "series": [
+            {"id": "revenue", "name": "收入", "values": [128, 176, 164, 118, 205]},
+            {"id": "profit", "name": "利润", "values": [34, 51, 46, 28, 63]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "annual-trend",
+      "role": "trend",
+      "content": {
+        "title": "全年收入稳步超过计划",
+        "summary": "下半年增长斜率提升，第四季度差距进一步拉开。",
+        "chart": {
+          "chartType": "line",
+          "categories": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+          "series": [
+            {"id": "actual", "name": "实际", "values": [82, 88, 96, 103, 111, 126, 132, 145, 153, 166, 178, 194]},
+            {"id": "plan", "name": "计划", "values": [80, 90, 98, 108, 116, 124, 134, 144, 154, 164, 176, 188]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": false, "showGrid": true, "smooth": true}
+        }
+      }
+    },
+    {
+      "id": "capacity-area",
+      "role": "trend",
+      "content": {
+        "title": "容量储备覆盖业务峰值",
+        "summary": "容量与峰值负载保持安全间隔，可支撑下一阶段扩张。",
+        "chart": {
+          "chartType": "area",
+          "categories": ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+          "series": [
+            {"id": "capacity", "name": "容量", "values": [55, 60, 66, 72, 79, 86, 92, 100]},
+            {"id": "peak", "name": "峰值", "values": [42, 47, 53, 61, 66, 73, 78, 84]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "customer-mix",
+      "role": "metrics",
+      "content": {
+        "title": "客户结构更加均衡",
+        "summary": "中型与小微客户贡献提升，收入来源不再依赖单一客群。",
+        "chart": {
+          "chartType": "donut",
+          "labels": ["大型企业", "中型企业", "小微企业", "政府", "教育", "其他"],
+          "values": [32, 24, 18, 11, 9, 6],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "innerRadius": 0.62}
+        }
+      }
+    },
+    {
+      "id": "capability-radar",
+      "role": "metrics",
+      "content": {
+        "title": "产品能力接近行业标杆",
+        "summary": "稳定性与安全性领先，易用性和成本仍有优化空间。",
+        "chart": {
+          "chartType": "radar",
+          "categories": ["性能", "稳定性", "易用性", "安全性", "扩展性", "成本"],
+          "series": [
+            {"id": "current", "name": "当前", "values": [82, 91, 73, 94, 78, 69]},
+            {"id": "benchmark", "name": "标杆", "values": [88, 90, 86, 92, 85, 80]}
+          ],
+          "options": {"showLegend": true, "showLabels": true, "showValues": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "sales-funnel",
+      "role": "metrics",
+      "content": {
+        "title": "销售漏斗的主要损耗在首次沟通",
+        "summary": "有效线索后的转化较稳定，下一步优先改善访问到留资环节。",
+        "chart": {
+          "chartType": "funnel",
+          "labels": ["曝光", "访问", "留资", "有效线索", "方案", "谈判", "签约"],
+          "values": [12000, 7200, 3100, 1900, 980, 520, 286],
+          "options": {"showLegend": false, "showLabels": true, "showValues": true}
+        }
+      }
+    },
+    {
+      "id": "profit-waterfall",
+      "role": "trend",
+      "content": {
+        "title": "新增收入抵消成本压力",
+        "summary": "效率提升和采购优化共同推动期末利润达到 162。",
+        "chart": {
+          "chartType": "waterfall",
+          "labels": ["期初", "新增收入", "价格影响", "效率提升", "人工成本", "采购优化", "一次性费用", "期末"],
+          "values": [120, 35, -28, 42, -17, 31, -21, 162],
+          "options": {"showLegend": false, "showLabels": true, "showValues": true, "showGrid": true}
+        }
+      }
+    },
+    {
+      "id": "project-table",
+      "role": "table",
+      "content": {
+        "title": "重点项目按计划推进",
+        "summary": "移动端适配与模板扩展需要在下个迭代重点跟进。",
+        "table": {
+          "columns": [{"label": "项目"}, {"label": "负责人"}, {"label": "进度"}, {"label": "风险"}],
+          "rows": [
+            ["统一编辑器", "产品组", "92%", "低"],
+            ["PPTX 导出", "平台组", "86%", "中"],
+            ["移动端适配", "体验组", "78%", "中"],
+            ["图表编辑", "数据组", "88%", "低"],
+            ["模板扩展", "设计组", "74%", "中"]
+          ]
+        }
+      }
+    },
+    {
+      "id": "growth-roadmap",
+      "role": "roadmap",
+      "content": {
+        "title": "下一阶段聚焦从输入到交付",
+        "summary": "每一步都有明确产物，并在最终交付前完成验证。",
+        "diagram": {
+          "subtype": "roadmap",
+          "data": {"items": [
+            {"label": "输入", "detail": "资料与目标"},
+            {"label": "规划", "detail": "结构与重点"},
+            {"label": "设计", "detail": "模板与图表"},
+            {"label": "编辑", "detail": "内容与数据"},
+            {"label": "交付", "detail": "演示与 PPTX"}
+          ]}
+        }
+      }
+    },
+    {
+      "id": "next-actions",
+      "role": "conclusion",
+      "content": {
+        "title": "下一步：把增长动作落实到周",
+        "summary": "保留有效策略，修复漏斗损耗，并持续跟踪利润结构。",
+        "items": [
+          {"label": "稳住优势区域", "detail": "复制华东与海外的增长打法"},
+          {"label": "修复关键漏斗", "detail": "优化访问到留资的承接路径"},
+          {"label": "改善产品体验", "detail": "优先补齐易用性与成本短板"},
+          {"label": "每周复盘数据", "detail": "用同一套指标持续跟踪变化"}
+        ]
+      }
+    }
+  ]
+}

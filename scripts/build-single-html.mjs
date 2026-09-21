@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compileDeck } from '../src/core/composer.js';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
@@ -11,10 +12,16 @@ const versionBadge=version.split('.').slice(0,2).join('.');
 const isRc=/-rc(?:\.|$)/.test(pkg.version);
 const display=`V${version}${isRc?' RC':''}`;
 const manifest=JSON.parse(read('src/app/app.manifest.json'));
+const demoSpec=JSON.parse(read('examples/minddeck-showcase.deck.json'));
+const demoResult=compileDeck(demoSpec,{rootId:'minddeck-showcase',mapLayout:'right'});
+if(!demoResult.quality?.ok)throw new Error('Showcase project failed quality validation: '+demoResult.quality.errors?.map(item=>item.code).join(','));
+const demoProject={...demoResult.project,projectName:demoSpec.title,uiTheme:'light'};
+fs.writeFileSync(path.join(root,'examples/demo.json'),JSON.stringify(demoProject,null,2)+'\n');
 const shell=read('src/app/shell.html');
 const appStyles=manifest.styles.map(p=>read('src/app/'+p)).join('\n\n');
 let appBundle=manifest.scripts.map(p=>read('src/app/'+p)).join('\n\n');
 appBundle=appBundle
+  .replace('__MINDDECK_DEMO_PROJECT__',JSON.stringify(demoProject))
   .replace(/APP_VERSION="\d+\.\d+\.\d+(?: RC)?"/,`APP_VERSION="${version}${isRc?' RC':''}"`)
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
   .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`)

@@ -29,6 +29,7 @@
   document.getElementById("welcomeClose").onclick=closeWelcome;
   document.getElementById("welcomeStart").onclick=closeWelcome;
   document.getElementById("welcomeMindmap").onclick=()=>{setAppMode("mindmap");closeWelcome();setTimeout(fitAll,40)};
+  document.getElementById("welcomeDemo").onclick=loadDemoProject;
   document.getElementById("welcomeOverlay").onclick=e=>{if(e.target.id==="welcomeOverlay")closeWelcome()};
   document.getElementById("runHealthCheckBtn").onclick=()=>{const r=runProjectHealthCheck(true);renderHealthReport(r);toast(r.fail?"自检发现失败项":r.warn?"自检完成：有风险提示":"自检通过")};
   document.getElementById("copyHealthReportBtn").onclick=async()=>{if(!lastHealthReport){renderHealthReport(runProjectHealthCheck(true))}const text=healthReportText();try{await navigator.clipboard.writeText(text);toast("自检报告已复制")}catch{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("自检报告已复制")}};

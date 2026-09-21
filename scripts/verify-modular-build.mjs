@@ -10,7 +10,9 @@ let runtime=fs.readFileSync(new URL('../src/runtime/shared-core.js',import.meta.
 runtime=runtime.replace(/const VERSION='[^']+';/,`const VERSION='${version}';`);
 const sharedStyles=fs.readFileSync(new URL('../src/runtime/shared-styles.css',import.meta.url),'utf8').trimEnd();
 let appBundle=manifest.scripts.map(read).join('\n\n');
+const demoProject=JSON.parse(fs.readFileSync(new URL('../examples/demo.json',import.meta.url),'utf8'));
 appBundle=appBundle
+  .replace('__MINDDECK_DEMO_PROJECT__',JSON.stringify(demoProject))
   .replace(/APP_VERSION="\d+\.\d+\.\d+(?: RC)?"/,`APP_VERSION="${version}${isRc?' RC':''}"`)
   .replace(/RUNTIME_VERSION="\d+\.\d+\.\d+"/,`RUNTIME_VERSION="${version}"`)
   .replace(/RELEASE_CHANNEL="(?:rc|stable)"/,`RELEASE_CHANNEL="${isRc?'rc':'stable'}"`)

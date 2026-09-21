@@ -8,33 +8,7 @@
   const defaultMaster=()=>ProjectCore.createDefaultMaster({footerText:"MindDeck · 思维导图式演示"});
   function nodeSlideFromLegacy(n){return SlideCore.defaultElementsForNode(n,{uid:()=>IdsCore.create("e_",8)})}
 
-  const demo={
-    id:"root",title:"代码之外，研发真正的价值在哪里？",text:"从会写代码，走向理解业务、发现问题、解决真实需求。",
-    collapsed:false,pos:{x:0,y:0},children:[
-      {id:"business",title:"业务理解",text:"理解目标、流程和约束，而不是只接收需求转述。",collapsed:false,pos:{x:0,y:-400},children:[
-        {id:"need",title:"真正的需求",text:"需求文档写的是功能，现场暴露的是问题。",collapsed:false,pos:{x:-250,y:-720},children:[
-          {id:"deep",title:"把问题问到具体",text:"谁在用、什么时候用、真正卡住的是什么？",collapsed:false,pos:{x:-430,y:-1000},children:[]}
-        ]},
-        {id:"process",title:"业务流程",text:"搞清楚上下游、使用场景和失败后的影响。",collapsed:false,pos:{x:30,y:-760},children:[]},
-        {id:"result",title:"结果价值",text:"不以功能数量衡量，而以是否真正解决问题衡量。",collapsed:false,pos:{x:310,y:-710},children:[]}
-      ]},
-      {id:"onsite",title:"到现场去",text:"现场不是替代研发，而是帮助研发建立真实认知。",collapsed:false,pos:{x:430,y:0},children:[
-        {id:"observe",title:"看真实使用",text:"看用户怎么操作、在哪里卡住。",collapsed:false,pos:{x:750,y:-220},children:[]},
-        {id:"talk",title:"直接沟通",text:"和真正使用系统的人聊。",collapsed:false,pos:{x:790,y:20},children:[]},
-        {id:"return",title:"带着问题回来",text:"把现场问题转成可验证、可交付的方案。",collapsed:false,pos:{x:740,y:270},children:[]}
-      ]},
-      {id:"solid",title:"把功能做扎实",text:"少做自以为是的创新，多做真正有人用的功能。",collapsed:false,pos:{x:0,y:400},children:[
-        {id:"stable",title:"稳定可用",text:"交付出去的东西首先要稳定、清晰、可维护。",collapsed:false,pos:{x:-190,y:720},children:[]},
-        {id:"feedback",title:"快速反馈",text:"小步验证，让使用者尽快给反馈。",collapsed:false,pos:{x:190,y:720},children:[]}
-      ]},
-      {id:"growth",title:"我的成长",text:"价值不只来自代码量，而来自解决问题的能力。",collapsed:false,pos:{x:-430,y:0},children:[
-        {id:"tech",title:"技术能力",text:"技术仍然是基础，但不是终点。",collapsed:false,pos:{x:-735,y:-250},children:[]},
-        {id:"judge",title:"判断能力",text:"知道什么值得做、什么不值得做。",collapsed:false,pos:{x:-790,y:0},children:[]},
-        {id:"owner",title:"对结果负责",text:"从完成任务转向把问题解决。",collapsed:false,pos:{x:-735,y:250},children:[]}
-      ]}
-    ],
-    schemaVersion:1,presentationOrder:[],mapLayout:"balanced",uiTheme:"light",master:defaultMaster()
-  };
+  const demo=__MINDDECK_DEMO_PROJECT__;
 
   const STORAGE_KEY="minddeck-v9-data",BACKUP_KEY="minddeck-v9-backup",LEGACY_STORAGE_KEYS=["minddeck-v8-data","minddeck-v6-data","minddeck-v5-data"];
   let startupRecovery=null,loadedStorageKey=null;
@@ -440,6 +414,10 @@
   function closeWelcome(){
     const el=document.getElementById("welcomeOverlay");el.classList.remove("open");el.setAttribute("aria-hidden","true");
     if(document.getElementById("welcomeDontShow")?.checked){try{localStorage.setItem(ONBOARDING_KEY,"1")}catch{}}
+  }
+  function loadDemoProject(){
+    if(lastSavedJson&&data.id!==demo.id&&!confirm("打开示例会替换当前项目；现有内容会保留为恢复备份。继续吗？"))return;
+    createRecoveryBackup("before-demo");data=clone(demo);normalize();selectedNodeId=data.id;appMode="presentation";applyUiTheme();syncMapLayoutControls();saveNow("load-demo");setAppMode(appMode);renderMap();renderOrderPanel();closeWelcome();setTimeout(fitAll,40);toast("已打开全功能示例")
   }
 
   const UI_THEMES=Core.THEMES;
